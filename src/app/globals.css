@@ -1,0 +1,117 @@
+@import "tailwindcss";
+
+:root {
+  --background: #f8fafc; /* slate-50 */
+  --card: #ffffff; /* white */
+  --border: #e2e8f0; /* slate-200 */
+  --border-light: #f1f5f9; /* slate-100 */
+  --foreground: #0f172a; /* slate-900 */
+  --foreground-muted: #334155; /* slate-700 */
+  --text-muted: #64748b; /* slate-500 */
+}
+
+html.dark {
+  --background: #020617; /* slate-955 */
+  --card: #0f172a; /* slate-900 */
+  --border: #1e293b; /* slate-800 */
+  --border-light: #1e293b; /* slate-800 */
+  --foreground: #f8fafc; /* slate-50 */
+  --foreground-muted: #cbd5e1; /* slate-300 */
+  --text-muted: #94a3b8; /* slate-400 */
+}
+
+@theme {
+  --font-sans: var(--font-geist-sans), sans-serif;
+  --color-slate-955: var(--background);
+  --color-slate-950: var(--background);
+  --color-slate-900: var(--card);
+  --color-slate-800: var(--border);
+  --color-slate-850: var(--border-light);
+  --color-slate-855: var(--border-light);
+  --color-slate-100: var(--foreground);
+  --color-slate-200: var(--foreground-muted);
+  --color-slate-300: var(--foreground-muted);
+  --color-slate-350: var(--text-muted);
+  --color-slate-400: var(--text-muted);
+  --color-slate-450: var(--text-muted);
+}
+
+@utility animate-slide-in {
+  animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@utility animate-float-slow {
+  animation: floatSlow 15s ease-in-out infinite;
+}
+
+@utility animate-float-medium {
+  animation: floatMedium 12s ease-in-out infinite;
+}
+
+@keyframes floatSlow {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  33% {
+    transform: translate(40px, -60px) scale(1.15);
+  }
+  66% {
+    transform: translate(-30px, 30px) scale(0.9);
+  }
+}
+
+@keyframes floatMedium {
+  0%, 100% {
+    transform: translate(0px, 0px) scale(1);
+  }
+  50% {
+    transform: translate(-50px, 50px) scale(1.1);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateY(1rem);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Custom premium styling utilities */
+body {
+  background: var(--background);
+  color: var(--foreground);
+}
+
+/* Custom premium scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--background);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 99px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}
+
+/* Print CSS Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  .print\:hidden {
+    display: none !important;
+  }
+}

@@ -1,0 +1,641 @@
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { useAuth } from '@/context/AuthContext';
+import {
+  Building2,
+  Plus,
+  Compass,
+  Bed,
+  CheckCircle,
+  HelpCircle,
+  Wrench,
+  AlertTriangle,
+  Loader2,
+  ChevronRight,
+  User,
+  ExternalLink,
+  Info,
+  Calendar,
+  X
+} from 'lucide-react';
+import Link from 'next/link';
+import Toast from '@/components/Toast';
+
+export default function RoomsPage() {
+  const { hasPermission } = useAuth();
+  
+  const [buildings, setBuildings] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+
+  // Selection states
+  const [selectedBuildingId, setSelectedBuildingId] = useState<string>('');
+  const [selectedFloorNumber, setSelectedFloorNumber] = useState<number>(1);
+
+  // Modals state
+  const [buildingModalOpen, setBuildingModalOpen] = useState(false);
+  const [roomModalOpen, setRoomModalOpen] = useState(false);
+  const [studentModalOpen, setStudentModalOpen] = useState(false);
+
+  // Form states
+  const [newBuildingName, setNewBuildingName] = useState('');
+  const [newBuildingFloors, setNewBuildingFloors] = useState('3');
+
+  const [newRoomNumber, setNewRoomNumber] = useState('');
+  const [newRoomType, setNewRoomType] = useState('Non-AC');
+  const [newRoomCapacity, setNewRoomCapacity] = useState('2');
+  const [newRoomRent, setNewRoomRent] = useState('6000');
+  const [newRoomFacilities, setNewRoomFacilities] = useState('Wifi, Wardrobe');
+
+  // Selected student occupant info for checkout modal
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [selectedBedName, setSelectedBedName] = useState('');
+  const [selectedRoomNumber, setSelectedRoomNumber] = useState('');
+  const [checkoutDate, setCheckoutDate] = useState(new Date().toISOString().slice(0, 10));
+  const [checkoutSubmitting, setCheckoutSubmitting] = useState(false);
+
+  const fetchData = async () => {
+    try {
+      const res = await fetch('/api/buildings');
+      if (res.ok) {
+        const data = await res.json();
+        setBuildings(data);
+        if (data.length > 0) {
+          // If no building is selected yet, select the first one
+          if (!selectedBuildingId) {
+            setSelectedBuildingId(data[0].id);
+            if (data[0].floors.length > 0) {
+              setSelectedFloorNumber(data[0].floors[0].number);
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch rooms hierarchy:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, [selectedBuildingId]);
+
+  const activeBuilding = buildings.find(b => b.id === selectedBuildingId);
+  const activeFloor = activeBuilding?.floors.find((f: any) => f.number === selectedFloorNumber);
+  const activeRooms = activeFloor?.rooms || [];
+
+  const handleAddBuildingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBuildingName.trim()) return;
+
+    try {
+      const res = await fetch('/api/buildings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newBuildingName, floorsCount: newBuildingFloors })
+      });
+
+      if (res.ok) {
+        const newB = await res.json();
+        setToast({ message: `Successfully created ${newB.name}!`, type: 'success' });
+        setNewBuildingName('');
+        setBuildingModalOpen(false);
+        // Refresh
+        const updatedRes = await fetch('/api/buildings');
+        const updatedData = await updatedRes.json();
+        setBuildings(updatedData);
+        setSelectedBuildingId(newB.id);
+        setSelectedFloorNumber(1);
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to create building', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleAddRoomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newRoomNumber.trim() || !activeFloor) return;
+
+    try {
+      const res = await fetch('/api/rooms', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          number: newRoomNumber,
+          type: newRoomType,
+          capacity: newRoomCapacity,
+          rent: newRoomRent,
+          facilities: newRoomFacilities,
+          floorId: activeFloor.id,
+          buildingId: selectedBuildingId
+        })
+      });
+
+      if (res.ok) {
+        setToast({ message: `Room ${newRoomNumber} added successfully!`, type: 'success' });
+        setNewRoomNumber('');
+        setRoomModalOpen(false);
+        fetchData();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to add room', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleOccupantClick = (student: any, bedName: string, roomNo: string) => {
+    setSelectedStudent(student);
+    setSelectedBedName(bedName);
+    setSelectedRoomNumber(roomNo);
+    setStudentModalOpen(true);
+  };
+
+  const handleCheckoutSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedStudent || !checkoutDate) return;
+
+    setCheckoutSubmitting(true);
+    try {
+      const res = await fetch('/api/admissions', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          studentId: selectedStudent.id,
+          checkoutDate
+        })
+      });
+
+      if (res.ok) {
+        setToast({ message: `${selectedStudent.name} checked out successfully!`, type: 'success' });
+        setStudentModalOpen(false);
+        setSelectedStudent(null);
+        fetchData();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Checkout failed', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setCheckoutSubmitting(false);
+    }
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE':
+        return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'OCCUPIED':
+        return 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20';
+      case 'RESERVED':
+        return 'bg-amber-500/10 text-amber-400 border-amber-500/20';
+      case 'MAINTENANCE':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
+      default:
+        return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
+    }
+  };
+
+  const getBedStatusIcon = (status: string) => {
+    switch (status) {
+      case 'AVAILABLE':
+        return <CheckCircle className="h-4 w-4 text-emerald-400" />;
+      case 'OCCUPIED':
+        return <Bed className="h-4 w-4 text-indigo-400" />;
+      case 'RESERVED':
+        return <HelpCircle className="h-4 w-4 text-amber-400" />;
+      case 'MAINTENANCE':
+        return <Wrench className="h-4 w-4 text-rose-400" />;
+      default:
+        return <HelpCircle className="h-4 w-4 text-slate-400" />;
+    }
+  };
+
+  if (loading) {
+    return (
+      <div className="flex flex-col items-center justify-center py-20">
+        <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
+        <p className="text-slate-400 text-sm">Loading hostel map...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-slide-in">
+      {/* Title */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Rooms & Beds Manager</h1>
+          <p className="text-slate-400 text-sm mt-1">Manage hostel properties, rooms inventory, and bed status mappings.</p>
+        </div>
+        <div className="flex gap-3">
+          {hasPermission('rooms', 'create') && (
+            <>
+              <button
+                onClick={() => setBuildingModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-200 transition-colors cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                Add Wing / Block
+              </button>
+              <button
+                onClick={() => setRoomModalOpen(true)}
+                className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                <Plus className="h-4 w-4" />
+                Add Room
+              </button>
+            </>
+          )}
+        </div>
+      </div>
+
+      {/* Buildings tabs */}
+      <div className="flex flex-wrap gap-3 border-b border-slate-800/60 pb-5">
+        {buildings.map((b) => (
+          <button
+            key={b.id}
+            onClick={() => {
+              setSelectedBuildingId(b.id);
+              if (b.floors.length > 0) {
+                setSelectedFloorNumber(b.floors[0].number);
+              }
+            }}
+            className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+              selectedBuildingId === b.id
+                ? 'bg-violet-600 text-white border-violet-500/30 shadow-lg shadow-violet-600/10'
+                : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-855 hover:text-slate-200'
+            }`}
+          >
+            <Building2 className="h-4 w-4" />
+            {b.name}
+          </button>
+        ))}
+      </div>
+
+      {/* Floor navigation tabs */}
+      {activeBuilding && activeBuilding.floors.length > 0 && (
+        <div className="flex gap-2 p-1 bg-slate-900 border border-slate-800/60 rounded-xl w-fit">
+          {activeBuilding.floors.map((f: any) => (
+            <button
+              key={f.id}
+              onClick={() => setSelectedFloorNumber(f.number)}
+              className={`px-5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                selectedFloorNumber === f.number
+                  ? 'bg-slate-950 text-white border border-slate-800/80'
+                  : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Floor {f.number}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* Rooms visual grid */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {activeRooms.length === 0 ? (
+          <div className="col-span-full bg-slate-900/40 border border-slate-800/60 border-dashed rounded-2xl p-12 text-center">
+            <Compass className="h-10 w-10 text-slate-600 mx-auto mb-3" />
+            <p className="text-slate-400 text-sm font-semibold">No rooms added to Floor {selectedFloorNumber} yet.</p>
+            {hasPermission('rooms', 'create') && (
+              <button
+                onClick={() => setRoomModalOpen(true)}
+                className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-200 transition-colors cursor-pointer"
+              >
+                Add First Room
+              </button>
+            )}
+          </div>
+        ) : (
+          activeRooms.map((room: any) => {
+            const occupiedCount = room.beds.filter((b: any) => b.status === 'OCCUPIED').length;
+            const cap = room.capacity;
+            return (
+              <div
+                key={room.id}
+                className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden"
+              >
+                {/* Room Header */}
+                <div className="p-6 border-b border-slate-800/60 bg-slate-950/20">
+                  <div className="flex justify-between items-start mb-3">
+                    <div>
+                      <h3 className="text-lg font-bold text-white tracking-wide">Room {room.number}</h3>
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{room.type}</span>
+                    </div>
+                    <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${getStatusColor(room.status)}`}>
+                      {room.status.replace('_', ' ')}
+                    </span>
+                  </div>
+
+                  <div className="flex justify-between items-center text-xs text-slate-400 pt-2">
+                    <span>Rent: <strong className="text-slate-200">₹{room.rent.toLocaleString('en-IN')}/mo</strong></span>
+                    <span>Beds: <strong className="text-slate-200">{occupiedCount}/{cap}</strong></span>
+                  </div>
+                </div>
+
+                {/* Beds visual layout */}
+                <div className="p-6 space-y-4 flex-1">
+                  <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Beds Inventory</span>
+                  <div className="grid grid-cols-2 gap-3">
+                    {room.beds.map((bed: any) => {
+                      const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                      return (
+                        <div
+                          key={bed.id}
+                          className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-950/40 relative ${
+                            isOverdue
+                              ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
+                              : bed.status === 'AVAILABLE'
+                              ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
+                              : bed.status === 'OCCUPIED'
+                              ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
+                              : 'border-slate-850'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <span className="text-xs font-bold text-slate-200">{bed.name}</span>
+                            {isOverdue ? (
+                              <AlertTriangle className="h-4 w-4 text-rose-550 animate-pulse" />
+                            ) : (
+                              getBedStatusIcon(bed.status)
+                            )}
+                          </div>
+
+                          {bed.status === 'OCCUPIED' && bed.student ? (
+                            <button
+                              onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
+                              className="text-left group cursor-pointer"
+                            >
+                              <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+                                {bed.student.name}
+                              </span>
+                              <span className="text-[9px] text-slate-505 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
+                                <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
+                                  {bed.student.phone}
+                                </a>
+                              </span>
+                            </button>
+                          ) : bed.status === 'AVAILABLE' ? (
+                            hasPermission('students', 'edit') ? (
+                              <Link
+                                href={`/admin/admissions?bedId=${bed.id}`}
+                                className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
+                              >
+                                Allocate Bed
+                                <ChevronRight className="h-3 w-3" />
+                              </Link>
+                            ) : (
+                              <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
+                            )
+                          ) : (
+                            <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                {/* Room Facilities footer */}
+                {room.facilities && (
+                  <div className="px-6 py-3.5 bg-slate-950/30 border-t border-slate-800/40 text-[10px] text-slate-500 font-semibold truncate flex items-center gap-1.5">
+                    <Info className="h-3.5 w-3.5 text-slate-600 flex-shrink-0" />
+                    <span>{room.facilities}</span>
+                  </div>
+                )}
+              </div>
+            );
+          })
+        )}
+      </div>
+
+      {/* MODAL: ADD BUILDING */}
+      {buildingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setBuildingModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-base font-bold text-white mb-4">Add Wing / Block</h3>
+            <form onSubmit={handleAddBuildingSubmit} className="space-y-4">
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Wing Name</label>
+                <input
+                  type="text"
+                  value={newBuildingName}
+                  onChange={(e) => setNewBuildingName(e.target.value)}
+                  placeholder="Block C (New Wing)"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Total Floors to Pre-populate</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={newBuildingFloors}
+                  onChange={(e) => setNewBuildingFloors(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                Create Wing
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD ROOM */}
+      {roomModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setRoomModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-base font-bold text-white mb-4">Add Room to Floor {selectedFloorNumber}</h3>
+            <form onSubmit={handleAddRoomSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Room Number</label>
+                  <input
+                    type="text"
+                    value={newRoomNumber}
+                    onChange={(e) => setNewRoomNumber(e.target.value)}
+                    placeholder="103"
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Room Type</label>
+                  <select
+                    value={newRoomType}
+                    onChange={(e) => setNewRoomType(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  >
+                    <option>AC</option>
+                    <option>Non-AC</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Beds Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={newRoomCapacity}
+                    onChange={(e) => setNewRoomCapacity(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Monthly Rent (₹)</label>
+                  <input
+                    type="number"
+                    value={newRoomRent}
+                    onChange={(e) => setNewRoomRent(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Room Facilities (comma-separated)</label>
+                <input
+                  type="text"
+                  value={newRoomFacilities}
+                  onChange={(e) => setNewRoomFacilities(e.target.value)}
+                  placeholder="Wifi, Geyser, Wardrobe"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                Add Room & Generate Beds
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: STUDENT DETAILS & CHECKOUT */}
+      {studentModalOpen && selectedStudent && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setStudentModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <div className="flex items-center gap-3 mb-6 pb-4 border-b border-slate-800/60">
+              <div className="h-12 w-12 bg-slate-950 border border-slate-800 rounded-2xl flex items-center justify-center text-slate-400">
+                <User className="h-6 w-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-bold text-white leading-snug">{selectedStudent.name}</h3>
+                <span className="text-[10px] text-violet-400 font-bold uppercase tracking-wider">
+                  Room {selectedRoomNumber} • {selectedBedName}
+                </span>
+              </div>
+            </div>
+
+            <div className="space-y-4 mb-6">
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-500 block mb-0.5">Phone Number</span>
+                  <span className="text-slate-200 font-semibold">
+                    <a href={`tel:+91${selectedStudent.phone}`} className="hover:underline text-violet-400 font-semibold">
+                      📞 +91 {selectedStudent.phone}
+                    </a>
+                  </span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block mb-0.5">Email Address</span>
+                  <span className="text-slate-200 font-semibold">{selectedStudent.email || 'N/A'}</span>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-xs">
+                <div>
+                  <span className="text-slate-500 block mb-0.5">Monthly Rent</span>
+                  <span className="text-slate-200 font-semibold">₹{selectedStudent.monthlyRent.toLocaleString('en-IN')}</span>
+                </div>
+                <div>
+                  <span className="text-slate-500 block mb-0.5">Security Deposit</span>
+                  <span className="text-slate-200 font-semibold">₹{selectedStudent.securityDeposit.toLocaleString('en-IN')}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Checkout Form */}
+            {hasPermission('students', 'edit') && (
+              <form onSubmit={handleCheckoutSubmit} className="pt-4 border-t border-slate-800/60 space-y-4">
+                <div className="flex items-center gap-2 text-rose-400 font-bold text-[10px] uppercase tracking-wider mb-2">
+                  <AlertTriangle className="h-4 w-4" />
+                  <span>Student Checkout System</span>
+                </div>
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Actual Checkout Date</label>
+                  <div className="relative">
+                    <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
+                      <Calendar className="h-4 w-4" />
+                    </span>
+                    <input
+                      type="date"
+                      value={checkoutDate}
+                      onChange={(e) => setCheckoutDate(e.target.value)}
+                      className="w-full bg-slate-950/80 border border-slate-800 focus:border-rose-500/80 rounded-xl py-2 px-10 text-xs text-slate-100 focus:outline-none"
+                      required
+                    />
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={checkoutSubmitting}
+                  className="w-full py-2.5 bg-rose-600 hover:bg-rose-500 disabled:bg-rose-800 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+                >
+                  {checkoutSubmitting ? 'Checking out...' : 'Checkout & Release Bed'}
+                </button>
+              </form>
+            )}
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
+    </div>
+  );
+}

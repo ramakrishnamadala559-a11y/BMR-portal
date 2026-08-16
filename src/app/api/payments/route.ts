@@ -1,0 +1,138 @@
+import { NextResponse } from 'next/server';
+import { db } from '@/lib/db';
+import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
+
+// GET payment transactions list (filtered, with student restrictions)
+export async function GET(request: Request) {
+  try {
+    const { user, errorResponse } = await checkAuthAndPermission(request);
+    if (errorResponse) return errorResponse;
+
+    const { searchParams } = new URL(request.url);
+    const search = searchParams.get('search') || '';
+
+    let studentIdFilter: string | undefined = undefined;
+
+    if (user!.role === 'STUDENT') {
+      const student = await db.student.findFirst({
+        where: { phone: user!.phone }
+      });
+      if (!student) {
+        return NextResponse.json({ error: 'Student profile not found' }, { status: 404 });
+      }
+      studentIdFilter = student.id;
+    } else {
+      studentIdFilter = searchParams.get('studentId') || undefined;
+    }
+
+    const payments = await db.payment.findMany({
+      where: {
+        studentId: studentIdFilter,
+        OR: search
+          ? [
+              { paymentId: { contains: search } },
+              { recordedBy: { contains: search } }
+            ]
+          : undefined
+      },
+      include: {
+        student: true,
+        invoice: true
+      },
+      orderBy: {
+        date: 'desc'
+      }
+    });
+
+    return NextResponse.json(payments);
+  } catch (error) {
+    console.error('GET payments error:', error);
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+// POST to log a payment and update the corresponding invoice
+export async function POST(request: Request) {
+  try {
+    const { user: currentUser, errorResponse } = await checkAuthAndPermission(request, 'payments', 'create');
+    if (errorResponse) return errorResponse;
+
+    const { invoiceId, amount, method, notes } = await request.json();
+
+    if (!invoiceId || !amount || !method) {
+      return NextResponse.json({ error: 'Invoice ID, payment amount, and payment method are required' }, { status: 400 });
+    }
+
+    const paymentAmount = parseFloat(amount);
+    if (paymentAmount <= 0) {
+      return NextResponse.json({ error: 'Payment amount must be greater than zero' }, { status: 400 });
+    }
+
+    const result = await db.$transaction(async (tx) => {
+      // 1. Fetch invoice
+      const invoice = await tx.invoice.findUnique({
+        where: { id: invoiceId }
+      });
+
+      if (!invoice) {
+        throw new Error('Invoice not found');
+      }
+
+      if (invoice.balance <= 0) {
+        throw new Error('This invoice is already fully paid');
+      }
+
+      // Allow partial payments, but not overpaying more than balance
+      const newPaidAmount = invoice.paidAmount + paymentAmount;
+      const newBalance = Math.max(0, invoice.total - newPaidAmount);
+
+      let invoiceStatus = 'PARTIALLY_PAID';
+      if (newBalance <= 0) {
+        invoiceStatus = 'PAID';
+      }
+
+      // 2. Update Invoice
+      const updatedInvoice = await tx.invoice.update({
+        where: { id: invoiceId },
+        data: {
+          paidAmount: newPaidAmount,
+          balance: newBalance,
+          status: invoiceStatus
+        }
+      });
+
+      // 3. Generate transaction ref
+      const dateStr = new Date().toISOString().slice(0, 10).replace(/-/g, '');
+      const rand = Math.floor(1000 + Math.random() * 9000);
+      const paymentId = `PAY-${dateStr}-${rand}`;
+
+      // 4. Create Payment record
+      const payment = await tx.payment.create({
+        data: {
+          paymentId,
+          studentId: invoice.studentId,
+          invoiceId,
+          amount: paymentAmount,
+          method,
+          notes: notes || '',
+          recordedBy: currentUser!.name
+        }
+      });
+
+      return { payment, invoice: updatedInvoice };
+    });
+
+    await logActivity(
+      currentUser!.userId,
+      currentUser!.name,
+      'RECORD_PAYMENT',
+      'PAYMENTS',
+      `Recorded payment of ${paymentAmount} via ${method} for invoice "${result.invoice.invoiceNumber}"`
+    );
+
+    return NextResponse.json(result, { status: 201 });
+  } catch (error: any) {
+    console.error('POST payment error:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
