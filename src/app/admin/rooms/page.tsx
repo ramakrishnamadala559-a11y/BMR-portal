@@ -64,6 +64,7 @@ export default function RoomsPage() {
   const [newRoomCapacity, setNewRoomCapacity] = useState('2');
   const [newRoomRent, setNewRoomRent] = useState('6000');
   const [newRoomFacilities, setNewRoomFacilities] = useState('Wifi, Wardrobe');
+  const [newRoomSubRooms, setNewRoomSubRooms] = useState('');
 
   // Room edit form states
   const [editRoomNumber, setEditRoomNumber] = useState('');
@@ -374,13 +375,15 @@ export default function RoomsPage() {
           rent: newRoomRent,
           facilities: newRoomFacilities,
           floorId: activeFloor.id,
-          buildingId: selectedBuildingId
+          buildingId: selectedBuildingId,
+          subRoomsConfig: newRoomSubRooms
         })
       });
 
       if (res.ok) {
         setToast({ message: `Room ${newRoomNumber} added successfully!`, type: 'success' });
         setNewRoomNumber('');
+        setNewRoomSubRooms('');
         setRoomModalOpen(false);
         fetchData();
       } else {
@@ -473,6 +476,24 @@ export default function RoomsPage() {
     const occupiedCount = room.beds.filter((b: any) => b.status === 'OCCUPIED').length;
     const isMaintenance = room.status === 'MAINTENANCE';
 
+    // Group beds by sub-room prefix
+    const bedsBySubRoom: { [key: string]: any[] } = {};
+    const standardBeds: any[] = [];
+
+    room.beds.forEach((bed: any) => {
+      if (bed.name.includes(' - ')) {
+        const subRoomName = bed.name.split(' - ')[0].trim();
+        if (!bedsBySubRoom[subRoomName]) {
+          bedsBySubRoom[subRoomName] = [];
+        }
+        bedsBySubRoom[subRoomName].push(bed);
+      } else {
+        standardBeds.push(bed);
+      }
+    });
+
+    const subRoomNames = Object.keys(bedsBySubRoom).sort();
+
     return (
       <div key={room.id} className="group p-4 border rounded-2xl flex flex-col justify-between h-40 transition-all bg-slate-900 border-slate-800 hover:border-slate-700/80 hover:bg-slate-855/40 relative">
         {/* Room Info */}
@@ -492,7 +513,7 @@ export default function RoomsPage() {
                 )}
               </div>
             </div>
-            <span className="text-[9px] text-slate-505 font-bold uppercase tracking-wider mt-0.5 inline-block">{room.type}</span>
+            <span className="text-[9px] text-slate-555 font-bold uppercase tracking-wider mt-0.5 inline-block">{room.type}</span>
           </div>
           <div className="text-right">
             <span className="text-[10px] font-bold text-slate-200">₹{room.rent.toLocaleString('en-IN')}</span>
@@ -501,67 +522,138 @@ export default function RoomsPage() {
         </div>
 
         {/* Beds list in the room box */}
-        <div className="flex flex-wrap gap-2 mt-2 justify-center items-center">
-          {room.beds.map((bed: any) => {
-            const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
-            return (
-              <div key={bed.id} className="relative group/bed">
-                {/* Bed Icon Button */}
-                <button
-                  onClick={() => {
-                    if (bed.status === 'OCCUPIED' && bed.student) {
-                      handleOccupantClick(bed.student, bed.name, room.number);
-                    }
-                  }}
-                  className={`p-2 border rounded-xl flex items-center justify-center transition-all ${
-                    isOverdue
-                      ? 'bg-rose-500/20 border-rose-500/40 text-rose-450 hover:bg-rose-500/30'
-                      : bed.status === 'AVAILABLE'
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-450 hover:bg-emerald-500/20'
-                      : bed.status === 'OCCUPIED'
-                      ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20'
-                      : bed.status === 'RESERVED'
-                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20'
-                      : 'bg-rose-500/10 border-rose-500/20 text-rose-455'
-                  }`}
-                  title={`${bed.name}: ${bed.status.toLowerCase()}${bed.student ? ` - ${bed.student.name}` : ''}`}
-                >
-                  <Bed className="h-4.5 w-4.5" />
-                </button>
-
-                {/* Tooltip on Hover */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-slate-955 border border-slate-850 rounded-xl p-2.5 shadow-2xl opacity-0 scale-95 group-hover/bed:opacity-100 group-hover/bed:scale-100 transition-all pointer-events-none group-hover/bed:pointer-events-auto z-50 text-left text-[10px] space-y-1">
-                  <div className="flex justify-between items-center pb-1 border-b border-slate-850">
-                    <span className="font-bold text-slate-200">{bed.name}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
-                      bed.status === 'AVAILABLE' ? 'bg-emerald-500/15 text-emerald-455' : 'bg-indigo-500/15 text-indigo-455'
-                    }`}>{bed.status}</span>
-                  </div>
-                  {bed.student ? (
-                    <div className="pt-1">
-                      <p className="text-slate-200 font-bold truncate">👤 {bed.student.name}</p>
-                      <p className="text-slate-400 mt-0.5">📞 +91 {bed.student.phone}</p>
-                      {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
-                    </div>
-                  ) : bed.status === 'AVAILABLE' ? (
-                    hasPermission('students', 'edit') ? (
-                      <Link
-                        href={`/admin/admissions?bedId=${bed.id}`}
-                        className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
+        <div className="mt-2 space-y-1.5 max-h-[75px] overflow-y-auto w-full pr-0.5">
+          {subRoomNames.map((srName) => (
+            <div key={srName} className="flex items-center gap-1.5 border-b border-slate-850/40 pb-1 last:border-b-0 last:pb-0">
+              <span className="text-[7.5px] font-extrabold text-violet-400 bg-violet-950/40 border border-violet-900/30 px-1 py-0.5 rounded truncate min-w-[20px] text-center">{srName}</span>
+              <div className="flex flex-wrap gap-1">
+                {bedsBySubRoom[srName].map((bed: any) => {
+                  const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                  return (
+                    <div key={bed.id} className="relative group/bed">
+                      <button
+                        onClick={() => {
+                          if (bed.status === 'OCCUPIED' && bed.student) {
+                            handleOccupantClick(bed.student, bed.name, room.number);
+                          }
+                        }}
+                        className={`p-1.5 border rounded-lg flex items-center justify-center transition-all ${
+                          isOverdue
+                            ? 'bg-rose-500/20 border-rose-500/40 text-rose-455 hover:bg-rose-500/30'
+                            : bed.status === 'AVAILABLE'
+                            ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-450 hover:bg-emerald-500/20'
+                            : bed.status === 'OCCUPIED'
+                            ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20'
+                            : bed.status === 'RESERVED'
+                            ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20'
+                            : 'bg-rose-500/10 border-rose-500/20 text-rose-455'
+                        }`}
+                        title={`${bed.name}: ${bed.status.toLowerCase()}${bed.student ? ` - ${bed.student.name}` : ''}`}
                       >
-                        ⚡ Allocate Bed
-                        <ChevronRight className="h-3 w-3" />
-                      </Link>
-                    ) : (
-                      <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
-                    )
-                  ) : (
-                    <p className="text-slate-500 mt-1 italic font-medium">Not available</p>
-                  )}
-                </div>
+                        <Bed className="h-3 w-3" />
+                      </button>
+
+                      {/* Tooltip on Hover */}
+                      <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-slate-955 border border-slate-850 rounded-xl p-2.5 shadow-2xl opacity-0 scale-95 group-hover/bed:opacity-100 group-hover/bed:scale-100 transition-all pointer-events-none group-hover/bed:pointer-events-auto z-50 text-left text-[10px] space-y-1">
+                        <div className="flex justify-between items-center pb-1 border-b border-slate-850">
+                          <span className="font-bold text-slate-200">{bed.name}</span>
+                          <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                            bed.status === 'AVAILABLE' ? 'bg-emerald-500/15 text-emerald-455' : 'bg-indigo-500/15 text-indigo-455'
+                          }`}>{bed.status}</span>
+                        </div>
+                        {bed.student ? (
+                          <div className="pt-1">
+                            <p className="text-slate-200 font-bold truncate">👤 {bed.student.name}</p>
+                            <p className="text-slate-400 mt-0.5">📞 +91 {bed.student.phone}</p>
+                            {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
+                          </div>
+                        ) : bed.status === 'AVAILABLE' ? (
+                          hasPermission('students', 'edit') ? (
+                            <Link
+                              href={`/admin/admissions?bedId=${bed.id}`}
+                              className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
+                            >
+                              ⚡ Allocate Bed
+                              <ChevronRight className="h-3 w-3" />
+                            </Link>
+                          ) : (
+                            <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
+                          )
+                        ) : (
+                          <p className="text-slate-500 mt-1 italic font-medium">Not available</p>
+                        )}
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </div>
+          ))}
+
+          {standardBeds.length > 0 && (
+            <div className="flex flex-wrap gap-1 justify-center">
+              {standardBeds.map((bed: any) => {
+                const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                return (
+                  <div key={bed.id} className="relative group/bed">
+                    {/* Bed Icon Button */}
+                    <button
+                      onClick={() => {
+                        if (bed.status === 'OCCUPIED' && bed.student) {
+                          handleOccupantClick(bed.student, bed.name, room.number);
+                        }
+                      }}
+                      className={`p-2 border rounded-xl flex items-center justify-center transition-all ${
+                        isOverdue
+                          ? 'bg-rose-500/20 border-rose-500/40 text-rose-450 hover:bg-rose-500/30'
+                          : bed.status === 'AVAILABLE'
+                          ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-450 hover:bg-emerald-500/20'
+                          : bed.status === 'OCCUPIED'
+                          ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20'
+                          : bed.status === 'RESERVED'
+                          ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20'
+                          : 'bg-rose-500/10 border-rose-500/20 text-rose-455'
+                      }`}
+                      title={`${bed.name}: ${bed.status.toLowerCase()}${bed.student ? ` - ${bed.student.name}` : ''}`}
+                    >
+                      <Bed className="h-4.5 w-4.5" />
+                    </button>
+
+                    {/* Tooltip on Hover */}
+                    <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-slate-955 border border-slate-850 rounded-xl p-2.5 shadow-2xl opacity-0 scale-95 group-hover/bed:opacity-100 group-hover/bed:scale-100 transition-all pointer-events-none group-hover/bed:pointer-events-auto z-50 text-left text-[10px] space-y-1">
+                      <div className="flex justify-between items-center pb-1 border-b border-slate-850">
+                        <span className="font-bold text-slate-200">{bed.name}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                          bed.status === 'AVAILABLE' ? 'bg-emerald-500/15 text-emerald-455' : 'bg-indigo-500/15 text-indigo-455'
+                        }`}>{bed.status}</span>
+                      </div>
+                      {bed.student ? (
+                        <div className="pt-1">
+                          <p className="text-slate-200 font-bold truncate">👤 {bed.student.name}</p>
+                          <p className="text-slate-400 mt-0.5">📞 +91 {bed.student.phone}</p>
+                          {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
+                        </div>
+                      ) : bed.status === 'AVAILABLE' ? (
+                        hasPermission('students', 'edit') ? (
+                          <Link
+                            href={`/admin/admissions?bedId=${bed.id}`}
+                            className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
+                          >
+                            ⚡ Allocate Bed
+                            <ChevronRight className="h-3 w-3" />
+                          </Link>
+                        ) : (
+                          <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
+                        )
+                      ) : (
+                        <p className="text-slate-500 mt-1 italic font-medium">Not available</p>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
 
         {/* Footer facilities summary */}
@@ -861,6 +953,25 @@ export default function RoomsPage() {
             {activeRooms.map((room: any) => {
               const occupiedCount = room.beds.filter((b: any) => b.status === 'OCCUPIED').length;
               const cap = room.capacity;
+
+              // Group beds by sub-room prefix
+              const bedsBySubRoom: { [key: string]: any[] } = {};
+              const standardBeds: any[] = [];
+
+              room.beds.forEach((bed: any) => {
+                if (bed.name.includes(' - ')) {
+                  const subRoomName = bed.name.split(' - ')[0].trim();
+                  if (!bedsBySubRoom[subRoomName]) {
+                    bedsBySubRoom[subRoomName] = [];
+                  }
+                  bedsBySubRoom[subRoomName].push(bed);
+                } else {
+                  standardBeds.push(bed);
+                }
+              });
+
+              const subRoomNames = Object.keys(bedsBySubRoom).sort();
+
               return (
                 <div
                   key={room.id}
@@ -909,64 +1020,195 @@ export default function RoomsPage() {
                   {/* Beds visual layout */}
                   <div className="p-6 space-y-4 flex-1">
                     <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Beds Inventory</span>
-                    <div className="grid grid-cols-2 gap-3">
-                      {room.beds.map((bed: any) => {
-                        const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
-                        return (
-                          <div
-                            key={bed.id}
-                            className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-950/40 relative ${
-                              isOverdue
-                                ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
-                                : bed.status === 'AVAILABLE'
-                                ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
-                                : bed.status === 'OCCUPIED'
-                                ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
-                                : 'border-slate-850'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <span className="text-xs font-bold text-slate-200">{bed.name}</span>
-                              {isOverdue ? (
-                                <AlertTriangle className="h-4 w-4 text-rose-555 animate-pulse" />
+                    {subRoomNames.length > 0 ? (
+                      <div className="space-y-4 max-h-[220px] overflow-y-auto pr-1">
+                        {subRoomNames.map((srName) => (
+                          <div key={srName} className="space-y-2 border border-slate-800/40 p-2.5 bg-slate-950/20 rounded-xl">
+                            <span className="text-[9px] font-bold text-violet-400 bg-violet-955/40 border border-violet-900/30 px-2 py-0.5 rounded uppercase tracking-wider inline-block">{srName} Sub-Room</span>
+                            <div className="grid grid-cols-2 gap-3">
+                              {bedsBySubRoom[srName].map((bed: any) => {
+                                const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                                return (
+                                  <div
+                                    key={bed.id}
+                                    className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-955/40 relative ${
+                                      isOverdue
+                                        ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
+                                        : bed.status === 'AVAILABLE'
+                                        ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
+                                        : bed.status === 'OCCUPIED'
+                                        ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
+                                        : 'border-slate-850'
+                                    }`}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <span className="text-xs font-bold text-slate-200">{bed.name.split(' - ')[1] || bed.name}</span>
+                                      {isOverdue ? (
+                                        <AlertTriangle className="h-4 w-4 text-rose-555 animate-pulse" />
+                                      ) : (
+                                        getBedStatusIcon(bed.status)
+                                      )}
+                                    </div>
+
+                                    {bed.status === 'OCCUPIED' && bed.student ? (
+                                      <button
+                                        onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
+                                        className="text-left group cursor-pointer"
+                                      >
+                                        <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+                                          {bed.student.name}
+                                        </span>
+                                        <span className="text-[9px] text-slate-550 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
+                                          <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
+                                            {bed.student.phone}
+                                          </a>
+                                        </span>
+                                      </button>
+                                    ) : bed.status === 'AVAILABLE' ? (
+                                      hasPermission('students', 'edit') ? (
+                                        <Link
+                                          href={`/admin/admissions?bedId=${bed.id}`}
+                                          className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
+                                        >
+                                          Allocate Bed
+                                          <ChevronRight className="h-3 w-3" />
+                                        </Link>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
+                                      )
+                                    ) : (
+                                      <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        ))}
+                        {standardBeds.length > 0 && (
+                          <div className="space-y-2 border border-slate-800/40 p-2.5 bg-slate-950/20 rounded-xl">
+                            <span className="text-[9px] font-bold text-slate-400 bg-slate-900 border border-slate-800 px-2 py-0.5 rounded uppercase tracking-wider inline-block">Beds</span>
+                            <div className="grid grid-cols-2 gap-3">
+                              {standardBeds.map((bed: any) => {
+                                const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                                return (
+                                  <div
+                                    key={bed.id}
+                                    className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-955/40 relative ${
+                                      isOverdue
+                                        ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
+                                        : bed.status === 'AVAILABLE'
+                                        ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
+                                        : bed.status === 'OCCUPIED'
+                                        ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
+                                        : 'border-slate-850'
+                                    }`}
+                                  >
+                                    <div className="flex justify-between items-start">
+                                      <span className="text-xs font-bold text-slate-200">{bed.name}</span>
+                                      {isOverdue ? (
+                                        <AlertTriangle className="h-4 w-4 text-rose-555 animate-pulse" />
+                                      ) : (
+                                        getBedStatusIcon(bed.status)
+                                      )}
+                                    </div>
+
+                                    {bed.status === 'OCCUPIED' && bed.student ? (
+                                      <button
+                                        onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
+                                        className="text-left group cursor-pointer"
+                                      >
+                                        <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+                                          {bed.student.name}
+                                        </span>
+                                        <span className="text-[9px] text-slate-550 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
+                                          <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
+                                            {bed.student.phone}
+                                          </a>
+                                        </span>
+                                      </button>
+                                    ) : bed.status === 'AVAILABLE' ? (
+                                      hasPermission('students', 'edit') ? (
+                                        <Link
+                                          href={`/admin/admissions?bedId=${bed.id}`}
+                                          className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
+                                        >
+                                          Allocate Bed
+                                          <ChevronRight className="h-3 w-3" />
+                                        </Link>
+                                      ) : (
+                                        <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
+                                      )
+                                    ) : (
+                                      <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <div className="grid grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
+                        {room.beds.map((bed: any) => {
+                          const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+                          return (
+                            <div
+                              key={bed.id}
+                              className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-950/40 relative ${
+                                isOverdue
+                                  ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
+                                  : bed.status === 'AVAILABLE'
+                                  ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
+                                  : bed.status === 'OCCUPIED'
+                                  ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
+                                  : 'border-slate-850'
+                              }`}
+                            >
+                              <div className="flex justify-between items-start">
+                                <span className="text-xs font-bold text-slate-200">{bed.name}</span>
+                                {isOverdue ? (
+                                  <AlertTriangle className="h-4 w-4 text-rose-555 animate-pulse" />
+                                ) : (
+                                  getBedStatusIcon(bed.status)
+                                )}
+                              </div>
+
+                              {bed.status === 'OCCUPIED' && bed.student ? (
+                                <button
+                                  onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
+                                  className="text-left group cursor-pointer"
+                                >
+                                  <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
+                                    {bed.student.name}
+                                  </span>
+                                  <span className="text-[9px] text-slate-550 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
+                                    <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
+                                      {bed.student.phone}
+                                    </a>
+                                  </span>
+                                </button>
+                              ) : bed.status === 'AVAILABLE' ? (
+                                hasPermission('students', 'edit') ? (
+                                  <Link
+                                    href={`/admin/admissions?bedId=${bed.id}`}
+                                    className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
+                                  >
+                                    Allocate Bed
+                                    <ChevronRight className="h-3 w-3" />
+                                  </Link>
+                                ) : (
+                                  <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
+                                )
                               ) : (
-                                getBedStatusIcon(bed.status)
+                                <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
                               )}
                             </div>
-
-                            {bed.status === 'OCCUPIED' && bed.student ? (
-                              <button
-                                onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
-                                className="text-left group cursor-pointer"
-                              >
-                                <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
-                                  {bed.student.name}
-                                </span>
-                                <span className="text-[9px] text-slate-550 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
-                                  <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
-                                    {bed.student.phone}
-                                  </a>
-                                </span>
-                              </button>
-                            ) : bed.status === 'AVAILABLE' ? (
-                              hasPermission('students', 'edit') ? (
-                                <Link
-                                  href={`/admin/admissions?bedId=${bed.id}`}
-                                  className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
-                                >
-                                  Allocate Bed
-                                  <ChevronRight className="h-3 w-3" />
-                                </Link>
-                              ) : (
-                                <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
-                              )
-                            ) : (
-                              <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
 
                   {/* Room Facilities footer */}
@@ -1121,6 +1363,17 @@ export default function RoomsPage() {
                   placeholder="Wifi, Geyser, Wardrobe"
                   className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
                 />
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Sub-Rooms Allocation (Optional)</label>
+                <input
+                  type="text"
+                  value={newRoomSubRooms}
+                  onChange={(e) => setNewRoomSubRooms(e.target.value)}
+                  placeholder="e.g. 10A:5,10B:5 (Must sum to Beds Capacity)"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
+                />
+                <span className="text-[10px] text-slate-500 block mt-1">Split room capacity into sub-rooms. E.g. room "10" is split into sub-rooms "10A" (5 beds) and "10B" (5 beds).</span>
               </div>
               <button
                 type="submit"

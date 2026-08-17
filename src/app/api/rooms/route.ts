@@ -48,7 +48,7 @@ export async function POST(request: Request) {
     const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'create');
     if (errorResponse) return errorResponse;
 
-    const { number, type, capacity, rent, status, facilities, floorId, buildingId } = await request.json();
+    const { number, type, capacity, rent, status, facilities, floorId, buildingId, subRoomsConfig } = await request.json();
 
     if (!number || !type || !capacity || !rent || !floorId || !buildingId) {
       return NextResponse.json({ error: 'Missing required parameters' }, { status: 400 });
@@ -83,14 +83,53 @@ export async function POST(request: Request) {
         }
       });
 
-      // Automatically create beds: "Bed A", "Bed B", "Bed C", etc.
-      const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-      const bedData = Array.from({ length: roomCapacity }, (_, i) => ({
-        name: `Bed ${alphabet[i] || i + 1}`,
-        status: 'AVAILABLE',
-        roomId: newRoom.id,
-        buildingId
-      }));
+      // Automatically create beds: Or parse subRoomsConfig
+      let bedData: any[] = [];
+      if (subRoomsConfig && typeof subRoomsConfig === 'string' && subRoomsConfig.trim() !== '') {
+        const parts = subRoomsConfig.split(',');
+        let bedIndexTotal = 0;
+
+        for (const part of parts) {
+          const [subRoomName, countStr] = part.split(':');
+          if (subRoomName && countStr) {
+            const count = parseInt(countStr.trim());
+            if (!isNaN(count)) {
+              for (let i = 0; i < count; i++) {
+                bedData.push({
+                  name: `${subRoomName.trim()} - Bed ${i + 1}`,
+                  status: 'AVAILABLE',
+                  roomId: newRoom.id,
+                  buildingId
+                });
+              }
+              bedIndexTotal += count;
+            }
+          }
+        }
+
+        // If total parsed is less than capacity, fill the rest with standard beds
+        if (bedIndexTotal < roomCapacity) {
+          const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+          const diff = roomCapacity - bedIndexTotal;
+          for (let i = 0; i < diff; i++) {
+            const index = bedIndexTotal + i;
+            bedData.push({
+              name: `Bed ${alphabet[index] || index + 1}`,
+              status: 'AVAILABLE',
+              roomId: newRoom.id,
+              buildingId
+            });
+          }
+        }
+      } else {
+        const alphabet = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        bedData = Array.from({ length: roomCapacity }, (_, i) => ({
+          name: `Bed ${alphabet[i] || i + 1}`,
+          status: 'AVAILABLE',
+          roomId: newRoom.id,
+          buildingId
+        }));
+      }
 
       await tx.bed.createMany({
         data: bedData
