@@ -82,6 +82,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
 
+    if (student.status === 'PAUSED') {
+      return NextResponse.json({ error: 'Cannot generate invoice. This student profile is currently PAUSED.' }, { status: 400 });
+    }
+
     const rentAmount = parseFloat(amount);
     const settings = await db.hostelSettings.findUnique({
       where: { id: 'GLOBAL' }
