@@ -37,6 +37,50 @@ export async function POST(request: Request) {
         throw new Error(`Bed "${bed.name}" is not available (Status: ${bed.status})`);
       }
 
+      // Generate Custom Student ID based on building and room floor-wise beds sequence
+      const buildings = await tx.building.findMany({
+        orderBy: { name: 'asc' }
+      });
+      const buildingIndex = buildings.findIndex(b => b.id === bed.buildingId) + 1; // 1-based index
+
+      const allBedsInBuilding = await tx.bed.findMany({
+        where: { buildingId: bed.buildingId },
+        include: {
+          room: {
+            include: {
+              floor: true
+            }
+          }
+        }
+      });
+
+      // Sort beds floor-wise, then room-wise, then bed-wise
+      allBedsInBuilding.sort((a, b) => {
+        const floorA = a.room.floor.number;
+        const floorB = b.room.floor.number;
+        if (floorA !== floorB) return floorA - floorB;
+
+        const roomA = a.room.number;
+        const roomB = b.room.number;
+        const numA = parseInt(roomA);
+        const numB = parseInt(roomB);
+        if (!isNaN(numA) && !isNaN(numB)) {
+          if (numA !== numB) return numA - numB;
+        } else {
+          if (roomA !== roomB) return roomA.localeCompare(roomB);
+        }
+
+        return a.name.localeCompare(b.name);
+      });
+
+      const bedIdx = allBedsInBuilding.findIndex(b => b.id === bedId);
+      if (bedIdx === -1) {
+        throw new Error('Selected bed not found in building beds list');
+      }
+      const bedSequence = bedIdx + 1;
+      const bedSeqStr = String(bedSequence).padStart(3, '0');
+      const generatedStudentId = `STU${buildingIndex}${bedSeqStr}`;
+
       let activeStudentId = studentId;
 
       // 2. If new student, generate custom Student ID and create student profile
@@ -94,50 +138,6 @@ export async function POST(request: Request) {
           throw new Error('A user with this phone number is already registered');
         }
 
-        // Generate Custom Student ID based on building and room floor-wise beds sequence
-        const buildings = await tx.building.findMany({
-          orderBy: { name: 'asc' }
-        });
-        const buildingIndex = buildings.findIndex(b => b.id === bed.buildingId) + 1; // 1-based index
-
-        const allBedsInBuilding = await tx.bed.findMany({
-          where: { buildingId: bed.buildingId },
-          include: {
-            room: {
-              include: {
-                floor: true
-              }
-            }
-          }
-        });
-
-        // Sort beds floor-wise, then room-wise, then bed-wise
-        allBedsInBuilding.sort((a, b) => {
-          const floorA = a.room.floor.number;
-          const floorB = b.room.floor.number;
-          if (floorA !== floorB) return floorA - floorB;
-
-          const roomA = a.room.number;
-          const roomB = b.room.number;
-          const numA = parseInt(roomA);
-          const numB = parseInt(roomB);
-          if (!isNaN(numA) && !isNaN(numB)) {
-            if (numA !== numB) return numA - numB;
-          } else {
-            if (roomA !== roomB) return roomA.localeCompare(roomB);
-          }
-
-          return a.name.localeCompare(b.name);
-        });
-
-        const bedIdx = allBedsInBuilding.findIndex(b => b.id === bedId);
-        if (bedIdx === -1) {
-          throw new Error('Selected bed not found in building beds list');
-        }
-        const bedSequence = bedIdx + 1;
-        const bedSeqStr = String(bedSequence).padStart(3, '0');
-        const generatedStudentId = `STU${buildingIndex}${bedSeqStr}`;
-
         activeStudentId = generatedStudentId;
 
         // Create student login credentials in User table
@@ -184,6 +184,19 @@ export async function POST(request: Request) {
             status: 'ACTIVE'
           }
         });
+      } else {
+        // For existing student, update their ID to the custom generated Student ID
+        if (studentId !== generatedStudentId) {
+          // Update related documents to prevent foreign key errors
+          await tx.document.updateMany({
+            where: { studentId },
+            data: { studentId: generatedStudentId }
+          });
+
+          // Run raw SQL to update the Student ID primary key
+          await tx.$executeRaw`UPDATE "Student" SET id = ${generatedStudentId} WHERE id = ${studentId}`;
+          activeStudentId = generatedStudentId;
+        }
       }
 
       // 3. Fetch Student (if it was an existing student or newly created)
