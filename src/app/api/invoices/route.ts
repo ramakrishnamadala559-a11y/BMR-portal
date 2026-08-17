@@ -90,23 +90,56 @@ export async function POST(request: Request) {
     const today = new Date();
     const invoiceNumber = `${settings.invoicePrefix}${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
-    const newInvoice = await db.invoice.create({
-      data: {
-        invoiceNumber,
-        studentId,
-        studentName: student.name,
-        roomNumber: student.bed?.room.number || 'N/A',
-        bedName: student.bed?.name || 'N/A',
-        billingPeriodStart: billingPeriodStart ? new Date(billingPeriodStart) : today,
-        billingPeriodEnd: billingPeriodEnd ? new Date(billingPeriodEnd) : today,
-        dueDate: new Date(dueDate),
-        subtotal: parseFloat(subtotal) || rentAmount,
-        lateFee: parseFloat(lateFee) || 0,
-        discount: parseFloat(discount) || 0,
-        total: rentAmount,
-        balance: rentAmount,
-        status: 'PENDING'
+    const newInvoice = await db.$transaction(async (tx) => {
+      // Find all previous unpaid invoices
+      const unpaidInvoices = await tx.invoice.findMany({
+        where: {
+          studentId,
+          status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
+          balance: { gt: 0 }
+        }
+      });
+      const arrearsAmount = unpaidInvoices.reduce((sum, inv) => sum + inv.balance, 0);
+
+      const subtotalVal = parseFloat(subtotal) || rentAmount;
+      const lateFeeVal = parseFloat(lateFee) || 0;
+      const discountVal = parseFloat(discount) || 0;
+      const totalVal = subtotalVal + arrearsAmount + lateFeeVal - discountVal;
+
+      const created = await tx.invoice.create({
+        data: {
+          invoiceNumber,
+          studentId,
+          studentName: student.name,
+          roomNumber: student.bed?.room.number || 'N/A',
+          bedName: student.bed?.name || 'N/A',
+          billingPeriodStart: billingPeriodStart ? new Date(billingPeriodStart) : today,
+          billingPeriodEnd: billingPeriodEnd ? new Date(billingPeriodEnd) : today,
+          dueDate: new Date(dueDate),
+          subtotal: subtotalVal,
+          arrears: arrearsAmount,
+          lateFee: lateFeeVal,
+          discount: discountVal,
+          total: totalVal,
+          balance: totalVal,
+          status: 'PENDING'
+        }
+      });
+
+      // Clear balance and mark old invoices as paid so they aren't double counted
+      if (unpaidInvoices.length > 0) {
+        await tx.invoice.updateMany({
+          where: {
+            id: { in: unpaidInvoices.map(inv => inv.id) }
+          },
+          data: {
+            balance: 0,
+            status: 'PAID'
+          }
+        });
       }
+
+      return created;
     });
 
     await logActivity(

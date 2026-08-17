@@ -266,7 +266,14 @@ export default function BillingPage() {
                         <td className="py-4 px-6 text-slate-400">Room {inv.roomNumber} ({inv.bedName})</td>
 
                         <td className="py-4 px-6 text-slate-400">{new Date(inv.dueDate).toLocaleDateString()}</td>
-                        <td className="py-4 px-6 font-bold text-slate-100">₹{inv.total.toLocaleString('en-IN')}</td>
+                        <td className="py-4 px-6 font-bold text-slate-100">
+                          ₹{inv.total.toLocaleString('en-IN')}
+                          {inv.arrears > 0 && (
+                            <span className="block text-[10px] text-amber-500 font-semibold mt-0.5">
+                              (Inc. ₹{inv.arrears.toLocaleString('en-IN')} arrears)
+                            </span>
+                          )}
+                        </td>
                         <td className="py-4 px-6 text-slate-300 font-semibold">₹{inv.balance.toLocaleString('en-IN')}</td>
                         <td className="py-4 px-6">
                           <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getInvoiceBadge(inv.status)}`}>
@@ -527,12 +534,17 @@ export default function BillingPage() {
                   <tr className="border-b border-slate-200">
                     <td className="py-3">
                       <p className="font-bold text-slate-800">Monthly PG Rent Charges</p>
-
                     </td>
                     <td className="py-3 text-right font-semibold text-slate-900">
                       ₹{(selectedInvoice.subtotal || 0).toLocaleString('en-IN')}
                     </td>
                   </tr>
+                  {selectedInvoice.arrears > 0 && (
+                    <tr className="border-b border-slate-100 text-amber-700 font-semibold">
+                      <td className="py-2 pl-4">Unpaid Arrears Carried Over</td>
+                      <td className="py-2 text-right font-bold">+₹{(selectedInvoice.arrears || 0).toLocaleString('en-IN')}</td>
+                    </tr>
+                  )}
                   {selectedInvoice.lateFee > 0 && (
                     <tr className="border-b border-slate-100 text-rose-600">
                       <td className="py-2 pl-4">Late Payment Penalty</td>

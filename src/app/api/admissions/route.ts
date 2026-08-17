@@ -132,6 +132,17 @@ export async function POST(request: Request) {
         dueDate.setTime(nextDueDate.getTime());
       }
 
+      // Check for any previous unpaid invoices (e.g. from registration fees or previous occupancy)
+      const unpaidInvoices = await tx.invoice.findMany({
+        where: {
+          studentId,
+          status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
+          balance: { gt: 0 }
+        }
+      });
+      const arrearsAmount = unpaidInvoices.reduce((sum, inv) => sum + inv.balance, 0);
+      const totalVal = rentAmount + arrearsAmount;
+
       await tx.invoice.create({
         data: {
           invoiceNumber,
@@ -143,11 +154,24 @@ export async function POST(request: Request) {
           billingPeriodEnd,
           dueDate,
           subtotal: rentAmount,
-          total: rentAmount,
-          balance: rentAmount,
+          arrears: arrearsAmount,
+          total: totalVal,
+          balance: totalVal,
           status: 'PENDING'
         }
       });
+
+      if (unpaidInvoices.length > 0) {
+        await tx.invoice.updateMany({
+          where: {
+            id: { in: unpaidInvoices.map(inv => inv.id) }
+          },
+          data: {
+            balance: 0,
+            status: 'PAID'
+          }
+        });
+      }
 
       return { admission, updatedStudent, updatedBed };
     });

@@ -151,6 +151,7 @@ model Invoice {
   billingPeriodEnd   DateTime
   dueDate            DateTime
   subtotal           Float
+  arrears            Float     @default(0)
   lateFee            Float     @default(0)
   discount           Float     @default(0)
   total              Float

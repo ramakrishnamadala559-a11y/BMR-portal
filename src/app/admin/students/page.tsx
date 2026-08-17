@@ -526,7 +526,14 @@ export default function StudentsPage() {
                           <tr key={inv.id} className="hover:bg-slate-855/10 transition-colors">
                             <td className="py-2.5 px-4 font-mono text-slate-300 font-semibold">{inv.invoiceNumber}</td>
                             <td className="py-2.5 px-4 text-slate-450">{new Date(inv.dueDate).toLocaleDateString()}</td>
-                            <td className="py-2.5 px-4 text-slate-400">₹{inv.total.toLocaleString('en-IN')}</td>
+                            <td className="py-2.5 px-4 text-slate-400">
+                              ₹{inv.total.toLocaleString('en-IN')}
+                              {inv.arrears > 0 && (
+                                <span className="block text-[9px] text-amber-500 font-semibold">
+                                  (Inc. ₹{inv.arrears.toLocaleString('en-IN')} arrears)
+                                </span>
+                              )}
+                            </td>
                             <td className="py-2.5 px-4 font-bold text-amber-500 text-right">₹{inv.balance.toLocaleString('en-IN')}</td>
                           </tr>
                         ))}
