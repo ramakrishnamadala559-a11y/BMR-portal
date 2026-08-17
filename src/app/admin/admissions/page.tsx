@@ -62,6 +62,7 @@ export default function AdmissionsPage() {
   const [newStudentIdNo, setNewStudentIdNo] = useState('');
   const [newStudentCollege, setNewStudentCollege] = useState('');
   const [newStudentDept, setNewStudentDept] = useState('');
+  const [tempStudentDetails, setTempStudentDetails] = useState<any>(null);
 
   const fetchInitialData = async () => {
     try {
@@ -110,6 +111,7 @@ export default function AdmissionsPage() {
   const handleRegisterInlineStudent = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedStudentId) {
+      setTempStudentDetails(null);
       setStep(2);
       return;
     }
@@ -119,59 +121,31 @@ export default function AdmissionsPage() {
       return;
     }
 
-    try {
-      const res = await fetch('/api/students', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: newStudentName,
-          phone: newStudentPhone,
-          email: newStudentEmail,
-          dob: 'N/A',
-          gender: newStudentGender,
-          address: newStudentAddress,
-          emergencyContact: newStudentEmergency || newStudentGuardianPhone || 'N/A',
-          guardianName: newStudentGuardian || 'N/A',
-          guardianPhone: newStudentGuardianPhone || 'N/A',
-          collegeOrCompany: 'N/A',
-          courseOrDept: 'N/A',
-          idNumber: newStudentIdNo || 'N/A',
-          idProofType: 'Aadhaar Card',
-          monthlyRent: 0,
-          securityDeposit: parseFloat(securityDeposit) || 0,
-          joiningDate: joiningDate
-        })
-      });
-
-      if (res.ok) {
-        const student = await res.json();
-        setToast({ message: `Student ${student.name} registered successfully!`, type: 'success' });
-        // Refresh list
-        const updatedRes = await fetch('/api/students?status=INACTIVE');
-        const studs = await updatedRes.json();
-        setInactiveStudents(studs);
-        // Select newly created student
-        setSelectedStudentId(student.id);
-        setStep(2); // Proceed to bed allocation step directly!
-        // Clear inputs
-        setNewStudentName('');
-        setNewStudentPhone('');
-        setNewStudentEmail('');
-        setNewStudentDob('');
-        setNewStudentAddress('');
-        setNewStudentIdNo('');
-      } else {
-        const errData = await res.json();
-        setToast({ message: errData.error || 'Registration failed', type: 'error' });
-      }
-    } catch (err) {
-      setToast({ message: 'Registration failed due to network error.', type: 'error' });
-    }
+    setTempStudentDetails({
+      name: newStudentName,
+      phone: newStudentPhone,
+      email: newStudentEmail,
+      dob: 'N/A',
+      gender: newStudentGender,
+      address: newStudentAddress,
+      emergencyContact: newStudentEmergency || newStudentGuardianPhone || 'N/A',
+      guardianName: newStudentGuardian || 'N/A',
+      guardianPhone: newStudentGuardianPhone || 'N/A',
+      collegeOrCompany: 'N/A',
+      courseOrDept: 'N/A',
+      idNumber: newStudentIdNo || 'N/A',
+      idProofType: 'Aadhaar Card'
+    });
+    setStep(2);
   };
 
   const handleFinalSubmit = async () => {
-    if (!selectedStudentId || !selectedBedId || !joiningDate) {
-      setToast({ message: 'Student ID, allocated bed, and joining date are required', type: 'error' });
+    if (!selectedStudentId && !tempStudentDetails) {
+      setToast({ message: 'Student information is missing. Please complete Step 1.', type: 'error' });
+      return;
+    }
+    if (!selectedBedId || !joiningDate) {
+      setToast({ message: 'Allocated bed and joining date are required', type: 'error' });
       return;
     }
 
@@ -181,7 +155,8 @@ export default function AdmissionsPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          studentId: selectedStudentId,
+          studentId: selectedStudentId || undefined,
+          studentDetails: tempStudentDetails || undefined,
           bedId: selectedBedId,
           joiningDate,
           expectedCheckout: null,

@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
+import { hashPassword } from '@/lib/auth';
 
 // POST to allocate a bed to a student (Admission)
 export async function POST(request: Request) {
@@ -8,10 +9,10 @@ export async function POST(request: Request) {
     const { user: currentUser, errorResponse } = await checkAuthAndPermission(request, 'students', 'edit');
     if (errorResponse) return errorResponse;
 
-    const { studentId, bedId, joiningDate, expectedCheckout, monthlyRent, securityDeposit } = await request.json();
+    const { studentId, studentDetails, bedId, joiningDate, expectedCheckout, monthlyRent, securityDeposit } = await request.json();
 
-    if (!studentId || !bedId || !joiningDate) {
-      return NextResponse.json({ error: 'Student ID, bed ID, and joining date are required' }, { status: 400 });
+    if ((!studentId && !studentDetails) || !bedId || !joiningDate) {
+      return NextResponse.json({ error: 'Student information, bed ID, and joining date are required' }, { status: 400 });
     }
 
     const admissionResult = await db.$transaction(async (tx) => {
@@ -36,9 +37,158 @@ export async function POST(request: Request) {
         throw new Error(`Bed "${bed.name}" is not available (Status: ${bed.status})`);
       }
 
-      // 2. Fetch Student
+      let activeStudentId = studentId;
+
+      // 2. If new student, generate custom Student ID and create student profile
+      if (studentDetails) {
+        const {
+          name,
+          phone,
+          email,
+          dob,
+          gender,
+          address,
+          emergencyContact,
+          guardianName,
+          guardianPhone,
+          collegeOrCompany,
+          courseOrDept,
+          idNumber,
+          idProofType
+        } = studentDetails;
+
+        if (!name || !phone || !dob || !gender || !address || !emergencyContact || !guardianName || !guardianPhone || !idNumber || !idProofType) {
+          throw new Error('Missing required student details');
+        }
+
+        // Check if student with phone already exists
+        const existingStudent = await tx.student.findUnique({
+          where: { phone }
+        });
+        if (existingStudent) {
+          throw new Error('Student with this phone number is already registered');
+        }
+
+        // Check if student with email already exists
+        if (email) {
+          const existingEmailStudent = await tx.student.findFirst({
+            where: { email }
+          });
+          if (existingEmailStudent) {
+            throw new Error('A student with this email address is already registered');
+          }
+
+          const existingEmailUser = await tx.user.findFirst({
+            where: { email }
+          });
+          if (existingEmailUser) {
+            throw new Error('A user with this email address is already registered');
+          }
+        }
+
+        // Check if user with phone already exists
+        const existingUser = await tx.user.findUnique({
+          where: { phone }
+        });
+        if (existingUser) {
+          throw new Error('A user with this phone number is already registered');
+        }
+
+        // Generate Custom Student ID based on building and room floor-wise beds sequence
+        const buildings = await tx.building.findMany({
+          orderBy: { name: 'asc' }
+        });
+        const buildingIndex = buildings.findIndex(b => b.id === bed.buildingId) + 1; // 1-based index
+
+        const allBedsInBuilding = await tx.bed.findMany({
+          where: { buildingId: bed.buildingId },
+          include: {
+            room: {
+              include: {
+                floor: true
+              }
+            }
+          }
+        });
+
+        // Sort beds floor-wise, then room-wise, then bed-wise
+        allBedsInBuilding.sort((a, b) => {
+          const floorA = a.room.floor.number;
+          const floorB = b.room.floor.number;
+          if (floorA !== floorB) return floorA - floorB;
+
+          const roomA = a.room.number;
+          const roomB = b.room.number;
+          const numA = parseInt(roomA);
+          const numB = parseInt(roomB);
+          if (!isNaN(numA) && !isNaN(numB)) {
+            if (numA !== numB) return numA - numB;
+          } else {
+            if (roomA !== roomB) return roomA.localeCompare(roomB);
+          }
+
+          return a.name.localeCompare(b.name);
+        });
+
+        const bedIdx = allBedsInBuilding.findIndex(b => b.id === bedId);
+        if (bedIdx === -1) {
+          throw new Error('Selected bed not found in building beds list');
+        }
+        const bedSequence = bedIdx + 1;
+        const bedSeqStr = String(bedSequence).padStart(3, '0');
+        const generatedStudentId = `STU${buildingIndex}${bedSeqStr}`;
+
+        activeStudentId = generatedStudentId;
+
+        // Create student login credentials in User table
+        const hashedPassword = await hashPassword(phone);
+        await tx.user.create({
+          data: {
+            name,
+            email: email || null,
+            phone,
+            password: hashedPassword,
+            role: 'STUDENT',
+            status: 'ACTIVE'
+          }
+        });
+
+        // Create student profile with custom ID
+        const rentVal = (monthlyRent !== undefined && monthlyRent !== null && monthlyRent !== '')
+          ? (parseFloat(monthlyRent) || 0)
+          : 0;
+        const depositVal = (securityDeposit !== undefined && securityDeposit !== null && securityDeposit !== '')
+          ? (parseFloat(securityDeposit) || 0)
+          : 0;
+
+        await tx.student.create({
+          data: {
+            id: generatedStudentId,
+            name,
+            phone,
+            email: email || null,
+            dob,
+            gender,
+            address,
+            emergencyContact,
+            guardianName,
+            guardianPhone,
+            collegeOrCompany,
+            courseOrDept,
+            idNumber,
+            idProofType,
+            monthlyRent: rentVal,
+            securityDeposit: depositVal,
+            expectedCheckout: expectedCheckout ? new Date(expectedCheckout) : null,
+            admissionDate: new Date(joiningDate),
+            status: 'ACTIVE'
+          }
+        });
+      }
+
+      // 3. Fetch Student (if it was an existing student or newly created)
       const student = await tx.student.findUnique({
-        where: { id: studentId },
+        where: { id: activeStudentId },
         include: { bed: true }
       });
 
@@ -46,7 +196,7 @@ export async function POST(request: Request) {
         throw new Error('Student not found');
       }
 
-      if (student.status === 'ACTIVE' || student.bed) {
+      if (!studentDetails && (student.status === 'ACTIVE' || student.bed)) {
         throw new Error(`Student is already active or allocated to Bed "${student.bed?.name || 'unknown'}"`);
       }
 
@@ -57,30 +207,34 @@ export async function POST(request: Request) {
         ? (parseFloat(securityDeposit) || 0)
         : student.securityDeposit;
 
-      // 3. Update Bed
+      // 4. Update Bed
       const updatedBed = await tx.bed.update({
         where: { id: bedId },
         data: {
           status: 'OCCUPIED',
-          studentId: studentId
+          studentId: activeStudentId
         }
       });
 
-      // 4. Update Student
-      const updatedStudent = await tx.student.update({
-        where: { id: studentId },
-        data: {
-          status: 'ACTIVE',
-          monthlyRent: rentAmount,
-          securityDeposit: depositAmount,
-          expectedCheckout: expectedCheckout ? new Date(expectedCheckout) : null
-        }
-      });
+      // 5. Update Student status if existing student
+      let updatedStudent = student;
+      if (!studentDetails) {
+        updatedStudent = await tx.student.update({
+          where: { id: activeStudentId },
+          data: {
+            status: 'ACTIVE',
+            monthlyRent: rentAmount,
+            securityDeposit: depositAmount,
+            expectedCheckout: expectedCheckout ? new Date(expectedCheckout) : null
+          },
+          include: { bed: true }
+        });
+      }
 
-      // 5. Create Admission record
+      // 6. Create Admission record
       const admission = await tx.admission.create({
         data: {
-          studentId,
+          studentId: activeStudentId,
           bedId,
           bedName: bed.name,
           roomNumber: bed.room.number,
@@ -92,7 +246,7 @@ export async function POST(request: Request) {
         }
       });
 
-      // 6. Update Room occupancy status
+      // 7. Update Room occupancy status
       const roomBeds = await tx.bed.findMany({
         where: { roomId: bed.roomId }
       });
@@ -109,7 +263,7 @@ export async function POST(request: Request) {
         data: { status: roomStatus }
       });
 
-      // 7. Generate Initial Rent Invoice
+      // 8. Generate Initial Rent Invoice
       const settings = await tx.hostelSettings.findUnique({
         where: { id: 'GLOBAL' }
       }) || { invoicePrefix: 'INV-', defaultDueDateDay: 5 };
@@ -119,12 +273,10 @@ export async function POST(request: Request) {
 
       const billingPeriodStart = new Date(joiningDate);
       const billingPeriodEnd = new Date(joiningDate);
-      // Next billing date is usually 1 month later or end of month
       billingPeriodEnd.setMonth(billingPeriodEnd.getMonth() + 1);
 
       const dueDate = calculateDueDateForMonth(joiningDate, today.getFullYear(), today.getMonth());
       if (dueDate < today) {
-        // If due date for this month is passed, set to next month's due date
         const nextMonth = today.getMonth() + 1;
         const targetYear = today.getFullYear() + (nextMonth > 11 ? 1 : 0);
         const targetMonth = nextMonth % 12;
@@ -135,7 +287,7 @@ export async function POST(request: Request) {
       // Check for any previous unpaid invoices (e.g. from registration fees or previous occupancy)
       const unpaidInvoices = await tx.invoice.findMany({
         where: {
-          studentId,
+          studentId: activeStudentId,
           status: { in: ['PENDING', 'PARTIALLY_PAID', 'OVERDUE'] },
           balance: { gt: 0 }
         }
@@ -146,7 +298,7 @@ export async function POST(request: Request) {
       await tx.invoice.create({
         data: {
           invoiceNumber,
-          studentId,
+          studentId: activeStudentId,
           studentName: student.name,
           roomNumber: bed.room.number,
           bedName: bed.name,
