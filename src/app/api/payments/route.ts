@@ -57,15 +57,23 @@ export async function POST(request: Request) {
     const { user: currentUser, errorResponse } = await checkAuthAndPermission(request, 'payments', 'create');
     if (errorResponse) return errorResponse;
 
-    const { invoiceId, amount, method, notes } = await request.json();
+    const { invoiceId, amount, method, notes, discount } = await request.json();
 
-    if (!invoiceId || !amount || !method) {
+    if (!invoiceId || amount === undefined || !method) {
       return NextResponse.json({ error: 'Invoice ID, payment amount, and payment method are required' }, { status: 400 });
     }
 
-    const paymentAmount = parseFloat(amount);
-    if (paymentAmount <= 0) {
-      return NextResponse.json({ error: 'Payment amount must be greater than zero' }, { status: 400 });
+    const paymentAmount = parseFloat(amount) || 0;
+    const paymentDiscount = parseFloat(discount) || 0;
+
+    if (paymentAmount < 0) {
+      return NextResponse.json({ error: 'Payment amount cannot be negative' }, { status: 400 });
+    }
+    if (paymentDiscount < 0) {
+      return NextResponse.json({ error: 'Discount amount cannot be negative' }, { status: 400 });
+    }
+    if (paymentAmount + paymentDiscount <= 0) {
+      return NextResponse.json({ error: 'Either payment amount or discount must be greater than zero' }, { status: 400 });
     }
 
     const result = await db.$transaction(async (tx) => {
@@ -82,9 +90,14 @@ export async function POST(request: Request) {
         throw new Error('This invoice is already fully paid');
       }
 
-      // Allow partial payments, but not overpaying more than balance
+      if (paymentAmount + paymentDiscount > invoice.balance) {
+        throw new Error(`The sum of payment and discount (₹${paymentAmount + paymentDiscount}) exceeds the remaining balance (₹${invoice.balance})`);
+      }
+
+      const newDiscount = invoice.discount + paymentDiscount;
+      const newTotal = invoice.total - paymentDiscount;
       const newPaidAmount = invoice.paidAmount + paymentAmount;
-      const newBalance = Math.max(0, invoice.total - newPaidAmount);
+      const newBalance = Math.max(0, newTotal - newPaidAmount);
 
       let invoiceStatus = 'PARTIALLY_PAID';
       if (newBalance <= 0) {
@@ -95,6 +108,8 @@ export async function POST(request: Request) {
       const updatedInvoice = await tx.invoice.update({
         where: { id: invoiceId },
         data: {
+          discount: newDiscount,
+          total: newTotal,
           paidAmount: newPaidAmount,
           balance: newBalance,
           status: invoiceStatus

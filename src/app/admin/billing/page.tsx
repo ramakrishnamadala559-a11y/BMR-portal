@@ -42,6 +42,7 @@ export default function BillingPage() {
 
   // Collect Payment Form states
   const [payAmount, setPayAmount] = useState('');
+  const [payDiscount, setPayDiscount] = useState('');
   const [payMethod, setPayMethod] = useState('UPI');
   const [payNotes, setPayNotes] = useState('');
   const [paySubmitting, setPaySubmitting] = useState(false);
@@ -87,6 +88,7 @@ export default function BillingPage() {
   const handlePayClick = (invoice: any) => {
     setSelectedInvoice(invoice);
     setPayAmount(String(invoice.balance));
+    setPayDiscount('');
     setPayMethod('UPI');
     setPayNotes('Rent collection');
     setPaymentModalOpen(true);
@@ -94,7 +96,7 @@ export default function BillingPage() {
 
   const handlePaySubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedInvoice || !payAmount) return;
+    if (!selectedInvoice || (payAmount === '' && payDiscount === '')) return;
 
     setPaySubmitting(true);
     try {
@@ -103,15 +105,20 @@ export default function BillingPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           invoiceId: selectedInvoice.id,
-          amount: payAmount,
+          amount: payAmount || '0',
+          discount: payDiscount || '0',
           method: payMethod,
           notes: payNotes
         })
       });
 
       if (res.ok) {
-        setToast({ message: `Successfully recorded payment of ₹${payAmount}!`, type: 'success' });
+        const amtMsg = payAmount ? `₹${payAmount} payment` : '';
+        const discMsg = payDiscount ? `₹${payDiscount} discount` : '';
+        const jointMsg = [amtMsg, discMsg].filter(Boolean).join(' and ');
+        setToast({ message: `Successfully recorded ${jointMsg}!`, type: 'success' });
         setPaymentModalOpen(false);
+        setPayDiscount('');
         fetchBillingData();
       } else {
         const errData = await res.json();
@@ -400,16 +407,29 @@ export default function BillingPage() {
             </div>
 
             <form onSubmit={handlePaySubmit} className="space-y-4 text-xs">
-              <div>
-                <label className="block text-slate-350 font-semibold mb-2">Payment Amount (₹)</label>
-                <input
-                  type="number"
-                  max={selectedInvoice.balance}
-                  value={payAmount}
-                  onChange={(e) => setPayAmount(e.target.value)}
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 font-bold focus:outline-none"
-                  required
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-350 font-semibold mb-2">Payment Amount (₹)</label>
+                  <input
+                    type="number"
+                    max={selectedInvoice.balance}
+                    value={payAmount}
+                    onChange={(e) => setPayAmount(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 font-bold focus:outline-none"
+                    placeholder="0"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-350 font-semibold mb-2">Discount (₹) (Optional)</label>
+                  <input
+                    type="number"
+                    max={selectedInvoice.balance}
+                    value={payDiscount}
+                    onChange={(e) => setPayDiscount(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-emerald-500/80 rounded-xl py-2.5 px-4 text-sm text-emerald-400 font-bold focus:outline-none"
+                    placeholder="0"
+                  />
+                </div>
               </div>
 
               <div>
