@@ -109,6 +109,11 @@ export default function AdmissionsPage() {
 
   const handleRegisterInlineStudent = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (selectedStudentId) {
+      setStep(2);
+      return;
+    }
+
     if (!newStudentName.trim() || !newStudentPhone.trim() || !newStudentAddress.trim()) {
       setToast({ message: 'Please fill in all required fields for student registration', type: 'error' });
       return;
@@ -301,6 +306,49 @@ export default function AdmissionsPage() {
 
             {/* Inline Registration Form */}
             <form onSubmit={handleRegisterInlineStudent} className="space-y-4">
+              {inactiveStudents.length > 0 && (
+                <div className="pb-4 border-b border-slate-800/40">
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Select Existing Student Profile (Optional)</label>
+                  <select
+                    value={selectedStudentId}
+                    onChange={(e) => {
+                      const val = e.target.value;
+                      setSelectedStudentId(val);
+                      if (val) {
+                        const student = inactiveStudents.find(s => s.id === val);
+                        if (student) {
+                          setNewStudentName(student.name);
+                          setNewStudentPhone(student.phone);
+                          setNewStudentEmail(student.email || '');
+                          setNewStudentGender(student.gender);
+                          setNewStudentAddress(student.address);
+                          setNewStudentIdNo(student.idNumber);
+                          setNewStudentGuardian(student.guardianName || '');
+                          setNewStudentGuardianPhone(student.guardianPhone || '');
+                        }
+                      } else {
+                        setNewStudentName('');
+                        setNewStudentPhone('');
+                        setNewStudentEmail('');
+                        setNewStudentGender('MALE');
+                        setNewStudentAddress('');
+                        setNewStudentIdNo('');
+                        setNewStudentGuardian('');
+                        setNewStudentGuardianPhone('');
+                      }
+                    }}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 focus:outline-none"
+                  >
+                    <option value="">-- Create New Student Profile --</option>
+                    {inactiveStudents.map((student) => (
+                      <option key={student.id} value={student.id}>
+                        {student.name} ({student.phone})
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-350 text-xs font-semibold mb-2">Full Name *</label>
@@ -309,8 +357,9 @@ export default function AdmissionsPage() {
                     value={newStudentName}
                     onChange={(e) => setNewStudentName(e.target.value)}
                     placeholder="Kabir Malhotra"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
                     required
+                    disabled={!!selectedStudentId}
                   />
                 </div>
                 <div>
@@ -320,8 +369,9 @@ export default function AdmissionsPage() {
                     value={newStudentPhone}
                     onChange={(e) => setNewStudentPhone(e.target.value)}
                     placeholder="9000000002"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
                     required
+                    disabled={!!selectedStudentId}
                   />
                 </div>
               </div>
@@ -332,7 +382,8 @@ export default function AdmissionsPage() {
                   <select
                     value={newStudentGender}
                     onChange={(e) => setNewStudentGender(e.target.value)}
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 focus:outline-none disabled:opacity-50"
+                    disabled={!!selectedStudentId}
                   >
                     <option value="MALE">Male</option>
                     <option value="FEMALE">Female</option>
@@ -359,7 +410,8 @@ export default function AdmissionsPage() {
                     value={newStudentIdNo}
                     onChange={(e) => setNewStudentIdNo(e.target.value)}
                     placeholder="AADH1002"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                    disabled={!!selectedStudentId}
                   />
                 </div>
                 <div>
@@ -369,7 +421,8 @@ export default function AdmissionsPage() {
                     value={newStudentEmail}
                     onChange={(e) => setNewStudentEmail(e.target.value)}
                     placeholder="kabir@gmail.com"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                    disabled={!!selectedStudentId}
                   />
                 </div>
               </div>
@@ -382,7 +435,8 @@ export default function AdmissionsPage() {
                     value={newStudentGuardian}
                     onChange={(e) => setNewStudentGuardian(e.target.value)}
                     placeholder="Guardian Name"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                    disabled={!!selectedStudentId}
                   />
                 </div>
                 <div>
@@ -392,7 +446,8 @@ export default function AdmissionsPage() {
                     value={newStudentGuardianPhone}
                     onChange={(e) => setNewStudentGuardianPhone(e.target.value)}
                     placeholder="9900990098"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
+                    disabled={!!selectedStudentId}
                   />
                 </div>
               </div>
@@ -404,8 +459,9 @@ export default function AdmissionsPage() {
                   value={newStudentAddress}
                   onChange={(e) => setNewStudentAddress(e.target.value)}
                   placeholder="Permanent Address details"
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none"
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
                   required
+                  disabled={!!selectedStudentId}
                 />
               </div>
 
@@ -413,7 +469,7 @@ export default function AdmissionsPage() {
                 type="submit"
                 className="w-full py-3 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer flex items-center justify-center gap-2"
               >
-                Create Profile & Choose Bed Room
+                {selectedStudentId ? 'Use Selected Profile & Choose Bed Room' : 'Create Profile & Choose Bed Room'}
                 <ArrowRight className="h-4.5 w-4.5" />
               </button>
             </form>
