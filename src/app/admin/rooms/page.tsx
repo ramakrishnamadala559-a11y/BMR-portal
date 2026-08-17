@@ -315,6 +315,7 @@ export default function RoomsPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           id: editingRoom.id,
+          number: editRoomNumber,
           type: editRoomType,
           rent: editRoomRent,
           status: editRoomStatus,
@@ -661,7 +662,7 @@ export default function RoomsPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-lg font-bold text-white tracking-wide">Room {room.number}</h3>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
                           {hasPermission('rooms', 'edit') && (
                             <button
                               onClick={() => handleEditRoomClick(room)}
@@ -1115,7 +1116,18 @@ export default function RoomsPage() {
             </button>
             <h3 className="text-base font-bold text-white mb-4">Edit Room {editingRoom.number}</h3>
             <form onSubmit={handleEditRoomSubmit} className="space-y-4">
-              <div className="grid grid-cols-2 gap-4">
+              <div className="grid grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Room Number</label>
+                  <input
+                    type="text"
+                    value={editRoomNumber}
+                    onChange={(e) => setEditRoomNumber(e.target.value)}
+                    placeholder="103"
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
                 <div>
                   <label className="block text-slate-350 text-xs font-semibold mb-2">Room Type</label>
                   <select

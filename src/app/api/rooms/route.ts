@@ -123,7 +123,7 @@ export async function PUT(request: Request) {
     const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'edit');
     if (errorResponse) return errorResponse;
 
-    const { id, type, rent, status, facilities, capacity } = await request.json();
+    const { id, number, type, rent, status, facilities, capacity } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'Room ID is required' }, { status: 400 });
@@ -139,6 +139,20 @@ export async function PUT(request: Request) {
     }
 
     const updatedRoom = await db.$transaction(async (tx) => {
+      // If room number is changed, check if it already exists in this building
+      if (number && number !== currentRoom.number) {
+        const existing = await tx.room.findFirst({
+          where: {
+            buildingId: currentRoom.buildingId,
+            number
+          }
+        });
+
+        if (existing) {
+          throw new Error(`Room "${number}" already exists in this building`);
+        }
+      }
+
       // If capacity is changed, check if we need to add or remove beds
       if (capacity && parseInt(capacity) !== currentRoom.capacity) {
         const newCapacity = parseInt(capacity);
@@ -179,6 +193,7 @@ export async function PUT(request: Request) {
       return tx.room.update({
         where: { id },
         data: {
+          number: number !== undefined ? number : undefined,
           type: type !== undefined ? type : undefined,
           rent: rent !== undefined ? parseFloat(rent) : undefined,
           status: status !== undefined ? status : undefined,
