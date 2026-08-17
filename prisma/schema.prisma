@@ -64,14 +64,16 @@ model Student {
 }
 
 model Building {
-  id        String   @id @default(uuid())
-  name      String   @unique
-  wardenId  String?
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-  floors    Floor[]
-  rooms     Room[]
-  beds      Bed[]
+  id          String   @id @default(uuid())
+  name        String   @unique
+  gender      String   @default("COLIVING") // MALE, FEMALE, COLIVING
+  description String?
+  wardenId    String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  floors      Floor[]
+  rooms       Room[]
+  beds        Bed[]
 }
 
 model Floor {

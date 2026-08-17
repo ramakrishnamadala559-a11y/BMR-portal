@@ -53,7 +53,7 @@ export async function POST(request: Request) {
     const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'create');
     if (errorResponse) return errorResponse;
 
-    const { name, floorsCount } = await request.json();
+    const { name, gender, description, floorsCount } = await request.json();
 
     if (!name) {
       return NextResponse.json({ error: 'Building name is required' }, { status: 400 });
@@ -72,7 +72,11 @@ export async function POST(request: Request) {
       }
 
       const newBuilding = await tx.building.create({
-        data: { name }
+        data: {
+          name,
+          gender: gender || 'COLIVING',
+          description: description || ''
+        }
       });
 
       // Create floors
@@ -112,7 +116,7 @@ export async function PUT(request: Request) {
     const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'edit');
     if (errorResponse) return errorResponse;
 
-    const { id, name, wardenId } = await request.json();
+    const { id, name, gender, description, wardenId } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'Building ID is required' }, { status: 400 });
@@ -129,6 +133,8 @@ export async function PUT(request: Request) {
     // Prepare update data
     const updateData: any = {};
     if (name !== undefined) updateData.name = name;
+    if (gender !== undefined) updateData.gender = gender;
+    if (description !== undefined) updateData.description = description;
     if (wardenId !== undefined) updateData.wardenId = wardenId || null;
 
     const updatedBuilding = await db.building.update({

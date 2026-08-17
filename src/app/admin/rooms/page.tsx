@@ -52,6 +52,11 @@ export default function RoomsPage() {
   // Form states
   const [newBuildingName, setNewBuildingName] = useState('');
   const [newBuildingFloors, setNewBuildingFloors] = useState('3');
+  const [newBuildingGender, setNewBuildingGender] = useState('COLIVING');
+  const [newBuildingDescription, setNewBuildingDescription] = useState('');
+  const [editBuildingGender, setEditBuildingGender] = useState('COLIVING');
+  const [editBuildingDescription, setEditBuildingDescription] = useState('');
+
 
   const [newRoomNumber, setNewRoomNumber] = useState('');
   const [newRoomType, setNewRoomType] = useState('Non-AC');
@@ -113,13 +118,20 @@ export default function RoomsPage() {
       const res = await fetch('/api/buildings', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: newBuildingName, floorsCount: newBuildingFloors })
+        body: JSON.stringify({ 
+          name: newBuildingName, 
+          gender: newBuildingGender,
+          description: newBuildingDescription,
+          floorsCount: newBuildingFloors 
+        })
       });
 
       if (res.ok) {
         const newB = await res.json();
         setToast({ message: `Successfully created ${newB.name}!`, type: 'success' });
         setNewBuildingName('');
+        setNewBuildingGender('COLIVING');
+        setNewBuildingDescription('');
         setBuildingModalOpen(false);
         // Refresh
         const updatedRes = await fetch('/api/buildings');
@@ -144,13 +156,20 @@ export default function RoomsPage() {
       const res = await fetch('/api/buildings', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: selectedBuildingId, name: newBuildingName })
+        body: JSON.stringify({ 
+          id: selectedBuildingId, 
+          name: newBuildingName,
+          gender: editBuildingGender,
+          description: editBuildingDescription
+        })
       });
 
       if (res.ok) {
-        setToast({ message: 'Successfully renamed building!', type: 'success' });
+        setToast({ message: 'Successfully updated building!', type: 'success' });
         setEditBuildingModalOpen(false);
         setNewBuildingName('');
+        setEditBuildingGender('COLIVING');
+        setEditBuildingDescription('');
         fetchData();
       } else {
         const errData = await res.json();
@@ -464,7 +483,7 @@ export default function RoomsPage() {
                 className="flex items-center gap-2 px-4 py-2.5 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-200 transition-colors cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
-                Add Wing / Block
+                Add Building
               </button>
               <button
                 onClick={() => setRoomModalOpen(true)}
@@ -505,29 +524,43 @@ export default function RoomsPage() {
       {activeBuilding && (
         <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/50">
           <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Wing:</span>
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Building:</span>
             <span className="text-sm font-bold text-white bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
               <Building2 className="h-4 w-4 text-violet-400" />
               {activeBuilding.name}
             </span>
+            <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${
+              activeBuilding.gender === 'MALE' ? 'bg-blue-950/40 border-blue-900/40 text-blue-400' :
+              activeBuilding.gender === 'FEMALE' ? 'bg-pink-950/40 border-pink-800/40 text-pink-400' :
+              'bg-emerald-950/40 border-emerald-800/40 text-emerald-400'
+            }`}>
+              {activeBuilding.gender || 'COLIVING'}
+            </span>
+            {activeBuilding.description && (
+              <span className="text-xs text-slate-400 italic max-w-xs truncate" title={activeBuilding.description}>
+                {activeBuilding.description}
+              </span>
+            )}
             {hasPermission('rooms', 'edit') && (
               <button
                 onClick={() => {
                   setNewBuildingName(activeBuilding.name);
+                  setEditBuildingGender(activeBuilding.gender || 'COLIVING');
+                  setEditBuildingDescription(activeBuilding.description || '');
                   setEditBuildingModalOpen(true);
                 }}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-800 border border-slate-700 rounded-lg text-slate-350 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
-                title="Rename Wing Name"
+                title="Edit Building Details"
               >
                 <Edit className="h-3.5 w-3.5" />
-                Rename
+                Edit
               </button>
             )}
             {hasPermission('rooms', 'delete') && (
               <button
                 onClick={() => handleDeleteBuilding(activeBuilding.id, activeBuilding.name)}
                 className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-rose-950/20 border border-rose-900/35 rounded-lg text-rose-455 hover:bg-rose-900/30 hover:text-rose-300 transition-colors cursor-pointer"
-                title="Delete Wing"
+                title="Delete Building"
               >
                 <Trash2 className="h-3.5 w-3.5" />
                 Delete
@@ -748,17 +781,40 @@ export default function RoomsPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-base font-bold text-white mb-4">Add Wing / Block</h3>
+            <h3 className="text-base font-bold text-white mb-4">Add Building</h3>
             <form onSubmit={handleAddBuildingSubmit} className="space-y-4">
               <div>
-                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Wing Name</label>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Name</label>
                 <input
                   type="text"
                   value={newBuildingName}
                   onChange={(e) => setNewBuildingName(e.target.value)}
-                  placeholder="Block C (New Wing)"
+                  placeholder="e.g. Building A"
                   className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Target Gender Type</label>
+                <select
+                  value={newBuildingGender}
+                  onChange={(e) => setNewBuildingGender(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  required
+                >
+                  <option value="COLIVING" className="bg-slate-900">Coliving</option>
+                  <option value="MALE" className="bg-slate-900">Male Only</option>
+                  <option value="FEMALE" className="bg-slate-900">Female Only</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Description</label>
+                <textarea
+                  value={newBuildingDescription}
+                  onChange={(e) => setNewBuildingDescription(e.target.value)}
+                  placeholder="e.g. Premium block for students, includes dining area"
+                  rows={2}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-650 focus:outline-none resize-none"
                 />
               </div>
               <div>
@@ -777,7 +833,7 @@ export default function RoomsPage() {
                 type="submit"
                 className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
               >
-                Create Wing
+                Create Building
               </button>
             </form>
           </div>
@@ -951,7 +1007,7 @@ export default function RoomsPage() {
       )}
 
       {/* MODAL: RENAME BUILDING */}
-      {editBuildingModalOpen && (
+       {editBuildingModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
             <button
@@ -960,24 +1016,47 @@ export default function RoomsPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-base font-bold text-white mb-4">Rename Wing / Block</h3>
+            <h3 className="text-base font-bold text-white mb-4">Edit Building</h3>
             <form onSubmit={handleEditBuildingSubmit} className="space-y-4">
               <div>
-                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Wing Name</label>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Name</label>
                 <input
                   type="text"
                   value={newBuildingName}
                   onChange={(e) => setNewBuildingName(e.target.value)}
-                  placeholder="Block C (New Wing)"
+                  placeholder="e.g. Building A"
                   className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
                   required
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Target Gender Type</label>
+                <select
+                  value={editBuildingGender}
+                  onChange={(e) => setEditBuildingGender(e.target.value)}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  required
+                >
+                  <option value="COLIVING" className="bg-slate-900">Coliving</option>
+                  <option value="MALE" className="bg-slate-900">Male Only</option>
+                  <option value="FEMALE" className="bg-slate-900">Female Only</option>
+                </select>
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Description</label>
+                <textarea
+                  value={editBuildingDescription}
+                  onChange={(e) => setEditBuildingDescription(e.target.value)}
+                  placeholder="e.g. Premium block for students, includes dining area"
+                  rows={2}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-650 focus:outline-none resize-none"
                 />
               </div>
               <button
                 type="submit"
                 className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
               >
-                Rename Wing
+                Save Changes
               </button>
             </form>
           </div>
