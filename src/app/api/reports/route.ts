@@ -84,16 +84,30 @@ export async function GET(request: Request) {
       .filter(e => new Date(e.date) >= firstDayOfMonth)
       .reduce((sum, e) => sum + e.amount, 0);
 
-    // 3. Compile Monthly Trends (last 6 months)
+    // 3. Compile Monthly Trends (start from when students were added)
+    const oldestStudent = await db.student.findFirst({
+      orderBy: { createdAt: 'asc' }
+    });
+
+    const startYearMonth = oldestStudent ? new Date(oldestStudent.createdAt) : new Date();
+    startYearMonth.setDate(1);
+    startYearMonth.setHours(0, 0, 0, 0);
+
     const monthlyTrendMap: { [key: string]: { month: string; revenue: number; expenses: number } } = {};
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
-    for (let i = 5; i >= 0; i--) {
-      const d = new Date();
-      d.setMonth(today.getMonth() - i);
-      const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`;
-      const label = `${monthNames[d.getMonth()]} ${d.getFullYear().toString().slice(-2)}`;
+    let currentIter = new Date(startYearMonth);
+    const tempToday = new Date(today.getFullYear(), today.getMonth(), 1);
+
+    if (currentIter > tempToday) {
+      currentIter = new Date(tempToday);
+    }
+
+    while (currentIter <= tempToday) {
+      const key = `${currentIter.getFullYear()}-${String(currentIter.getMonth() + 1).padStart(2, '0')}`;
+      const label = `${monthNames[currentIter.getMonth()]} ${currentIter.getFullYear().toString().slice(-2)}`;
       monthlyTrendMap[key] = { month: label, revenue: 0, expenses: 0 };
+      currentIter.setMonth(currentIter.getMonth() + 1);
     }
 
     // Populate revenue from generated invoices
