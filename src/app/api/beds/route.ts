@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
 
-// GET beds (can be filtered by status or roomId)
+// GET beds (can be filtered by status or roomId, or query generated student ID)
 export async function GET(request: Request) {
   try {
     const { errorResponse } = await checkAuthAndPermission(request, 'rooms', 'view');
@@ -11,6 +11,76 @@ export async function GET(request: Request) {
     const { searchParams } = new URL(request.url);
     const roomId = searchParams.get('roomId') || undefined;
     const status = searchParams.get('status') || undefined;
+    const action = searchParams.get('action');
+
+    if (action === 'generateStudentId') {
+      const bedId = searchParams.get('bedId');
+      if (!bedId) {
+        return NextResponse.json({ error: 'Bed ID is required' }, { status: 400 });
+      }
+
+      const bed = await db.bed.findUnique({
+        where: { id: bedId },
+        include: {
+          room: {
+            include: {
+              building: true,
+              floor: true
+            }
+          }
+        }
+      });
+
+      if (!bed) {
+        return NextResponse.json({ error: 'Bed not found' }, { status: 404 });
+      }
+
+      // Generate Custom Student ID based on building and room floor-wise beds sequence
+      const buildings = await db.building.findMany({
+        orderBy: { name: 'asc' }
+      });
+      const buildingIndex = buildings.findIndex(b => b.id === bed.buildingId) + 1; // 1-based index
+
+      const allBedsInBuilding = await db.bed.findMany({
+        where: { buildingId: bed.buildingId },
+        include: {
+          room: {
+            include: {
+              floor: true
+            }
+          }
+        }
+      });
+
+      // Sort beds floor-wise, then room-wise, then bed-wise
+      allBedsInBuilding.sort((a, b) => {
+        const floorA = a.room.floor.number;
+        const floorB = b.room.floor.number;
+        if (floorA !== floorB) return floorA - floorB;
+
+        const roomA = a.room.number;
+        const roomB = b.room.number;
+        const numA = parseInt(roomA);
+        const numB = parseInt(roomB);
+        if (!isNaN(numA) && !isNaN(numB)) {
+          if (numA !== numB) return numA - numB;
+        } else {
+          if (roomA !== roomB) return roomA.localeCompare(roomB);
+        }
+
+        return a.name.localeCompare(b.name);
+      });
+
+      const bedIdx = allBedsInBuilding.findIndex(b => b.id === bedId);
+      if (bedIdx === -1) {
+        return NextResponse.json({ error: 'Selected bed not found in building beds list' }, { status: 404 });
+      }
+      const bedSequence = bedIdx + 1;
+      const bedSeqStr = String(bedSequence).padStart(3, '0');
+      const generatedStudentId = `STU${buildingIndex}${bedSeqStr}`;
+
+      return NextResponse.json({ studentId: generatedStudentId });
+    }
 
     const beds = await db.bed.findMany({
       where: {
