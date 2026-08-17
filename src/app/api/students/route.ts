@@ -279,6 +279,7 @@ export async function PUT(request: Request) {
       if (otherFields.courseOrDept !== undefined) parsedFields.courseOrDept = otherFields.courseOrDept;
       if (otherFields.idNumber !== undefined) parsedFields.idNumber = otherFields.idNumber;
       if (otherFields.idProofType !== undefined) parsedFields.idProofType = otherFields.idProofType;
+      if (otherFields.status !== undefined) parsedFields.status = otherFields.status;
 
       return tx.student.update({
         where: { id },

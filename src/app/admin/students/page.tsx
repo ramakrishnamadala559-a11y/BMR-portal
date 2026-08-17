@@ -16,7 +16,9 @@ import {
   X,
   ShieldAlert,
   User as UserIcon,
-  BookOpen
+  BookOpen,
+  Pause,
+  Play
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 import Link from 'next/link';
@@ -194,10 +196,42 @@ export default function StudentsPage() {
     }
   };
 
+  const handleStatusToggle = async (student: any, newStatus: string) => {
+    const actionWord = newStatus === 'PAUSED' ? 'pause' : 'resume';
+    if (!window.confirm(`Are you sure you want to ${actionWord} the student record for ${student.name}?`)) {
+      return;
+    }
+
+    try {
+      const res = await fetch('/api/students', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: student.id,
+          name: student.name,
+          phone: student.phone,
+          status: newStatus
+        })
+      });
+
+      if (res.ok) {
+        setToast({ message: `Successfully ${newStatus === 'PAUSED' ? 'paused' : 'resumed'} student profile!`, type: 'success' });
+        fetchStudents();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || `Failed to ${actionWord} student`, type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'ACTIVE':
         return 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20';
+      case 'PAUSED':
+        return 'bg-rose-500/10 text-rose-400 border-rose-500/20';
       case 'CHECKED_OUT':
         return 'bg-slate-500/10 text-slate-400 border-slate-500/20';
       case 'INACTIVE':
@@ -251,7 +285,9 @@ export default function StudentsPage() {
           >
             <option value="">All Statuses</option>
             <option value="ACTIVE">Active (In Room)</option>
+            <option value="PAUSED">Paused</option>
             <option value="INACTIVE">Inactive (Registered Only)</option>
+            <option value="CHECKED_OUT">Checked Out</option>
           </select>
         </div>
 
@@ -333,9 +369,28 @@ export default function StudentsPage() {
                           <Eye className="h-4 w-4" />
                         </button>
                         {hasPermission('students', 'edit') && (
+                          student.status === 'PAUSED' ? (
+                            <button
+                              onClick={() => handleStatusToggle(student, 'ACTIVE')}
+                              className="p-1.5 hover:bg-slate-850 text-slate-400 hover:text-emerald-450 rounded-lg transition-colors cursor-pointer"
+                              title="Resume Student"
+                            >
+                              <Play className="h-4 w-4" />
+                            </button>
+                          ) : student.status === 'ACTIVE' ? (
+                            <button
+                              onClick={() => handleStatusToggle(student, 'PAUSED')}
+                              className="p-1.5 hover:bg-slate-850 text-slate-400 hover:text-rose-455 rounded-lg transition-colors cursor-pointer"
+                              title="Pause Student"
+                            >
+                              <Pause className="h-4 w-4" />
+                            </button>
+                          ) : null
+                        )}
+                        {hasPermission('students', 'edit') && (
                           <button
                             onClick={() => handleEditClick(student)}
-                            className="p-1.5 hover:bg-slate-850 text-slate-450 hover:text-violet-400 rounded-lg transition-colors cursor-pointer"
+                            className="p-1.5 hover:bg-slate-855 text-slate-455 hover:text-violet-400 rounded-lg transition-colors cursor-pointer"
                             title="Edit"
                           >
                             <Edit2 className="h-4 w-4" />
