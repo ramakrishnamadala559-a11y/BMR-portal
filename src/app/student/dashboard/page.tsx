@@ -293,7 +293,7 @@ export default function StudentDashboardPage() {
             <h3 className="font-bold text-white uppercase tracking-wider text-xs">My Registered Profile Info</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 text-xs text-slate-400">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-xs text-slate-400">
             {/* Column 1: Personal Details */}
             <div className="space-y-3">
               <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Personal Details</h4>
@@ -355,6 +355,34 @@ export default function StudentDashboardPage() {
                 <div className="flex justify-between py-1">
                   <span>Admission Date</span>
                   <span className="text-slate-250 font-semibold">{new Date(studentProfile.admissionDate).toLocaleDateString()}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Column 4: Financial Status */}
+            <div className="space-y-3">
+              <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Financial Status</h4>
+              <div className="space-y-2">
+                <div className="flex justify-between py-1 border-b border-slate-850/30">
+                  <span>Outstanding Due</span>
+                  <span className={`font-bold ${pendingRentSum > 0 ? 'text-amber-400' : 'text-emerald-400'}`}>
+                    ₹{pendingRentSum.toLocaleString('en-IN')}
+                  </span>
+                </div>
+                <div className="py-1">
+                  <span className="text-[10px] text-slate-500 block mb-1">Unpaid Dues</span>
+                  {invoices.length === 0 ? (
+                    <span className="text-slate-450 italic text-[11px]">No active dues</span>
+                  ) : (
+                    <div className="space-y-1 max-h-24 overflow-y-auto pr-1">
+                      {invoices.map((inv) => (
+                        <div key={inv.id} className="flex justify-between text-[10px] bg-slate-950/40 p-1 rounded border border-slate-850/60">
+                          <span className="font-mono text-slate-400">{inv.invoiceNumber}</span>
+                          <span className="text-amber-400 font-bold">₹{inv.balance.toLocaleString('en-IN')}</span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

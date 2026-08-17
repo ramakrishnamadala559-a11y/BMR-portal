@@ -136,7 +136,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       </aside>
 
       {/* Main Container */}
-      <div className="flex flex-col flex-1 min-w-0 overflow-x-hidden relative">
+      <div className="flex flex-col flex-1 min-w-0 overflow-x-hidden relative pb-16 lg:pb-0">
         {/* Top Navbar */}
         <header className="h-16 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-6 z-30">
           {/* Mobile hamburger menu */}
@@ -273,6 +273,46 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </button>
         </div>
       </aside>
+
+      {/* Bottom Navigation for Mobile Devices */}
+      <nav className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-4 z-40 lg:hidden">
+        <Link
+          href="/admin/dashboard"
+          className={`flex flex-col items-center gap-1 transition-all ${
+            pathname === '/admin/dashboard' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          <LayoutDashboard className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Dashboard</span>
+        </Link>
+        <Link
+          href="/admin/students"
+          className={`flex flex-col items-center gap-1 transition-all ${
+            pathname === '/admin/students' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          <Users className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Students</span>
+        </Link>
+        <Link
+          href="/admin/admissions"
+          className={`flex flex-col items-center gap-1 transition-all ${
+            pathname === '/admin/admissions' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          <UserPlus className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Admit</span>
+        </Link>
+        <Link
+          href="/admin/settings"
+          className={`flex flex-col items-center gap-1 transition-all ${
+            pathname === '/admin/settings' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
+          }`}
+        >
+          <Settings className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Settings</span>
+        </Link>
+      </nav>
     </div>
   );
 }

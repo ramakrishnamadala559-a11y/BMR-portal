@@ -17,7 +17,10 @@ import {
   ExternalLink,
   Info,
   Calendar,
-  X
+  X,
+  Edit,
+  Trash2,
+  Settings
 } from 'lucide-react';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
@@ -38,6 +41,14 @@ export default function RoomsPage() {
   const [roomModalOpen, setRoomModalOpen] = useState(false);
   const [studentModalOpen, setStudentModalOpen] = useState(false);
 
+  // New Modals/Edit states
+  const [editBuildingModalOpen, setEditBuildingModalOpen] = useState(false);
+  const [floorModalOpen, setFloorModalOpen] = useState(false);
+  const [floorModalMode, setFloorModalMode] = useState<'add' | 'edit'>('add');
+  const [floorNumberInput, setFloorNumberInput] = useState('');
+  const [editRoomModalOpen, setEditRoomModalOpen] = useState(false);
+  const [editingRoom, setEditingRoom] = useState<any>(null);
+
   // Form states
   const [newBuildingName, setNewBuildingName] = useState('');
   const [newBuildingFloors, setNewBuildingFloors] = useState('3');
@@ -47,6 +58,14 @@ export default function RoomsPage() {
   const [newRoomCapacity, setNewRoomCapacity] = useState('2');
   const [newRoomRent, setNewRoomRent] = useState('6000');
   const [newRoomFacilities, setNewRoomFacilities] = useState('Wifi, Wardrobe');
+
+  // Room edit form states
+  const [editRoomNumber, setEditRoomNumber] = useState('');
+  const [editRoomType, setEditRoomType] = useState('Non-AC');
+  const [editRoomCapacity, setEditRoomCapacity] = useState('2');
+  const [editRoomRent, setEditRoomRent] = useState('6000');
+  const [editRoomFacilities, setEditRoomFacilities] = useState('Wifi, Wardrobe');
+  const [editRoomStatus, setEditRoomStatus] = useState('AVAILABLE');
 
   // Selected student occupant info for checkout modal
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -111,6 +130,208 @@ export default function RoomsPage() {
       } else {
         const errData = await res.json();
         setToast({ message: errData.error || 'Failed to create building', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleEditBuildingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newBuildingName.trim() || !selectedBuildingId) return;
+
+    try {
+      const res = await fetch('/api/buildings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: selectedBuildingId, name: newBuildingName })
+      });
+
+      if (res.ok) {
+        setToast({ message: 'Successfully renamed building!', type: 'success' });
+        setEditBuildingModalOpen(false);
+        setNewBuildingName('');
+        fetchData();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to update building', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleDeleteBuilding = async (buildingId: string, name: string) => {
+    if (!window.confirm(`Are you sure you want to delete building "${name}"? This will delete all floors, rooms, and beds inside it.`)) return;
+
+    try {
+      const res = await fetch(`/api/buildings?id=${buildingId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setToast({ message: `Successfully deleted building "${name}"!`, type: 'success' });
+        const updatedRes = await fetch('/api/buildings');
+        const updatedData = await updatedRes.json();
+        setBuildings(updatedData);
+        if (updatedData.length > 0) {
+          setSelectedBuildingId(updatedData[0].id);
+          if (updatedData[0].floors.length > 0) {
+            setSelectedFloorNumber(updatedData[0].floors[0].number);
+          }
+        } else {
+          setSelectedBuildingId('');
+        }
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to delete building', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleFloorSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedBuildingId) return;
+
+    try {
+      if (floorModalMode === 'add') {
+        const res = await fetch('/api/floors', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            buildingId: selectedBuildingId,
+            number: floorNumberInput ? parseInt(floorNumberInput) : undefined
+          })
+        });
+
+        if (res.ok) {
+          const newFloor = await res.json();
+          setToast({ message: `Successfully added Floor ${newFloor.number}!`, type: 'success' });
+          setFloorModalOpen(false);
+          setFloorNumberInput('');
+          const updatedRes = await fetch('/api/buildings');
+          const updatedData = await updatedRes.json();
+          setBuildings(updatedData);
+          setSelectedFloorNumber(newFloor.number);
+        } else {
+          const errData = await res.json();
+          setToast({ message: errData.error || 'Failed to add floor', type: 'error' });
+        }
+      } else {
+        if (!activeFloor) return;
+        const res = await fetch('/api/floors', {
+          method: 'PUT',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            id: activeFloor.id,
+            number: parseInt(floorNumberInput)
+          })
+        });
+
+        if (res.ok) {
+          const updatedFloor = await res.json();
+          setToast({ message: `Successfully updated Floor to ${updatedFloor.number}!`, type: 'success' });
+          setFloorModalOpen(false);
+          setFloorNumberInput('');
+          const updatedRes = await fetch('/api/buildings');
+          const updatedData = await updatedRes.json();
+          setBuildings(updatedData);
+          setSelectedFloorNumber(updatedFloor.number);
+        } else {
+          const errData = await res.json();
+          setToast({ message: errData.error || 'Failed to update floor', type: 'error' });
+        }
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleDeleteFloor = async (floorId: string, floorNo: number) => {
+    if (!window.confirm(`Are you sure you want to delete Floor ${floorNo}? This will delete all rooms and beds inside it.`)) return;
+
+    try {
+      const res = await fetch(`/api/floors?id=${floorId}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setToast({ message: `Successfully deleted Floor ${floorNo}!`, type: 'success' });
+        const updatedRes = await fetch('/api/buildings');
+        const updatedData = await updatedRes.json();
+        setBuildings(updatedData);
+        const building = updatedData.find((b: any) => b.id === selectedBuildingId);
+        if (building && building.floors.length > 0) {
+          setSelectedFloorNumber(building.floors[0].number);
+        }
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to delete floor', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleEditRoomClick = (room: any) => {
+    setEditingRoom(room);
+    setEditRoomNumber(room.number);
+    setEditRoomType(room.type);
+    setEditRoomCapacity(room.capacity.toString());
+    setEditRoomRent(room.rent.toString());
+    setEditRoomFacilities(room.facilities || '');
+    setEditRoomStatus(room.status);
+    setEditRoomModalOpen(true);
+  };
+
+  const handleEditRoomSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!editingRoom) return;
+
+    try {
+      const res = await fetch('/api/rooms', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          id: editingRoom.id,
+          type: editRoomType,
+          rent: editRoomRent,
+          status: editRoomStatus,
+          facilities: editRoomFacilities,
+          capacity: editRoomCapacity
+        })
+      });
+
+      if (res.ok) {
+        setToast({ message: 'Successfully updated room details!', type: 'success' });
+        setEditRoomModalOpen(false);
+        setEditingRoom(null);
+        fetchData();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to update room', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    }
+  };
+
+  const handleDeleteRoomClick = async (room: any) => {
+    if (!window.confirm(`Are you sure you want to delete Room ${room.number}?`)) return;
+
+    try {
+      const res = await fetch(`/api/rooms?id=${room.id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setToast({ message: `Room ${room.number} deleted successfully!`, type: 'success' });
+        fetchData();
+      } else {
+        const errData = await res.json();
+        setToast({ message: errData.error || 'Failed to delete room', type: 'error' });
       }
     } catch (err) {
       setToast({ message: 'Network error. Please try again.', type: 'error' });
@@ -280,22 +501,100 @@ export default function RoomsPage() {
         ))}
       </div>
 
-      {/* Floor navigation tabs */}
-      {activeBuilding && activeBuilding.floors.length > 0 && (
-        <div className="flex gap-2 p-1 bg-slate-900 border border-slate-800/60 rounded-xl w-fit">
-          {activeBuilding.floors.map((f: any) => (
-            <button
-              key={f.id}
-              onClick={() => setSelectedFloorNumber(f.number)}
-              className={`px-5 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                selectedFloorNumber === f.number
-                  ? 'bg-slate-950 text-white border border-slate-800/80'
-                  : 'text-slate-400 hover:text-slate-200'
-              }`}
-            >
-              Floor {f.number}
-            </button>
-          ))}
+      {/* Active Building Management & Floor Tabs */}
+      {activeBuilding && (
+        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/50">
+          <div className="flex flex-wrap items-center gap-3">
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Wing:</span>
+            <span className="text-sm font-bold text-white bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
+              <Building2 className="h-4 w-4 text-violet-400" />
+              {activeBuilding.name}
+            </span>
+            {hasPermission('rooms', 'edit') && (
+              <button
+                onClick={() => {
+                  setNewBuildingName(activeBuilding.name);
+                  setEditBuildingModalOpen(true);
+                }}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-800 border border-slate-700 rounded-lg text-slate-350 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
+                title="Rename Wing Name"
+              >
+                <Edit className="h-3.5 w-3.5" />
+                Rename
+              </button>
+            )}
+            {hasPermission('rooms', 'delete') && (
+              <button
+                onClick={() => handleDeleteBuilding(activeBuilding.id, activeBuilding.name)}
+                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-rose-950/20 border border-rose-900/35 rounded-lg text-rose-455 hover:bg-rose-900/30 hover:text-rose-300 transition-colors cursor-pointer"
+                title="Delete Wing"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+                Delete
+              </button>
+            )}
+          </div>
+
+          <div className="flex flex-wrap items-center gap-3">
+            {/* Floor Navigation & Controls */}
+            {activeBuilding.floors.length > 0 ? (
+              <div className="flex gap-1.5 p-1 bg-slate-950/40 border border-slate-800/60 rounded-xl w-fit">
+                {activeBuilding.floors.map((f: any) => (
+                  <button
+                    key={f.id}
+                    onClick={() => setSelectedFloorNumber(f.number)}
+                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                      selectedFloorNumber === f.number
+                        ? 'bg-slate-900 text-white border border-slate-800/80 shadow'
+                        : 'text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    Floor {f.number}
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <span className="text-xs text-slate-550 italic">No floors created</span>
+            )}
+
+            <div className="flex gap-1.5">
+              {hasPermission('rooms', 'create') && (
+                <button
+                  onClick={() => {
+                    setFloorModalMode('add');
+                    setFloorNumberInput('');
+                    setFloorModalOpen(true);
+                  }}
+                  className="p-2 bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  title="Add Floor"
+                >
+                  <Plus className="h-4 w-4" />
+                </button>
+              )}
+              {activeFloor && hasPermission('rooms', 'edit') && (
+                <button
+                  onClick={() => {
+                    setFloorModalMode('edit');
+                    setFloorNumberInput(activeFloor.number.toString());
+                    setFloorModalOpen(true);
+                  }}
+                  className="p-2 bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-355 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  title="Rename Current Floor"
+                >
+                  <Edit className="h-4 w-4" />
+                </button>
+              )}
+              {activeFloor && hasPermission('rooms', 'delete') && (
+                <button
+                  onClick={() => handleDeleteFloor(activeFloor.id, activeFloor.number)}
+                  className="p-2 bg-rose-955/20 border border-rose-900/35 text-rose-455 hover:bg-rose-900/30 hover:text-rose-350 rounded-lg transition-colors cursor-pointer"
+                  title="Delete Current Floor"
+                >
+                  <Trash2 className="h-4 w-4" />
+                </button>
+              )}
+            </div>
+          </div>
         </div>
       )}
 
@@ -321,13 +620,35 @@ export default function RoomsPage() {
             return (
               <div
                 key={room.id}
-                className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden"
+                className="group bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden"
               >
                 {/* Room Header */}
                 <div className="p-6 border-b border-slate-800/60 bg-slate-950/20">
                   <div className="flex justify-between items-start mb-3">
                     <div>
-                      <h3 className="text-lg font-bold text-white tracking-wide">Room {room.number}</h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="text-lg font-bold text-white tracking-wide">Room {room.number}</h3>
+                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                          {hasPermission('rooms', 'edit') && (
+                            <button
+                              onClick={() => handleEditRoomClick(room)}
+                              className="p-1 text-slate-400 hover:text-violet-400 rounded transition-colors cursor-pointer"
+                              title="Edit Room"
+                            >
+                              <Edit className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                          {hasPermission('rooms', 'delete') && (
+                            <button
+                              onClick={() => handleDeleteRoomClick(room)}
+                              className="p-1 text-slate-400 hover:text-rose-400 rounded transition-colors cursor-pointer"
+                              title="Delete Room"
+                            >
+                              <Trash2 className="h-3.5 w-3.5" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                       <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{room.type}</span>
                     </div>
                     <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${getStatusColor(room.status)}`}>
@@ -625,6 +946,161 @@ export default function RoomsPage() {
                 </button>
               </form>
             )}
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: RENAME BUILDING */}
+      {editBuildingModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setEditBuildingModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-base font-bold text-white mb-4">Rename Wing / Block</h3>
+            <form onSubmit={handleEditBuildingSubmit} className="space-y-4">
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Building Wing Name</label>
+                <input
+                  type="text"
+                  value={newBuildingName}
+                  onChange={(e) => setNewBuildingName(e.target.value)}
+                  placeholder="Block C (New Wing)"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                Rename Wing
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: ADD / EDIT FLOOR */}
+      {floorModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setFloorModalOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-base font-bold text-white mb-4">
+              {floorModalMode === 'add' ? 'Add Floor' : `Rename Floor ${activeFloor?.number}`}
+            </h3>
+            <form onSubmit={handleFloorSubmit} className="space-y-4">
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Floor Number</label>
+                <input
+                  type="number"
+                  min="1"
+                  max="100"
+                  value={floorNumberInput}
+                  onChange={(e) => setFloorNumberInput(e.target.value)}
+                  placeholder={floorModalMode === 'add' ? 'Leave empty for next sequential floor' : 'e.g. 4'}
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-650 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                {floorModalMode === 'add' ? 'Add Floor' : 'Rename Floor'}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* MODAL: EDIT ROOM */}
+      {editRoomModalOpen && editingRoom && (
+        <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => {
+                setEditRoomModalOpen(false);
+                setEditingRoom(null);
+              }}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            <h3 className="text-base font-bold text-white mb-4">Edit Room {editingRoom.number}</h3>
+            <form onSubmit={handleEditRoomSubmit} className="space-y-4">
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Room Type</label>
+                  <select
+                    value={editRoomType}
+                    onChange={(e) => setEditRoomType(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  >
+                    <option>AC</option>
+                    <option>Non-AC</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Room Status</label>
+                  <select
+                    value={editRoomStatus}
+                    onChange={(e) => setEditRoomStatus(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  >
+                    <option value="AVAILABLE">Available</option>
+                    <option value="MAINTENANCE">Maintenance</option>
+                  </select>
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Beds Capacity</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={editRoomCapacity}
+                    onChange={(e) => setEditRoomCapacity(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Monthly Rent (₹)</label>
+                  <input
+                    type="number"
+                    value={editRoomRent}
+                    onChange={(e) => setEditRoomRent(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+              <div>
+                <label className="block text-slate-350 text-xs font-semibold mb-2">Room Facilities (comma-separated)</label>
+                <input
+                  type="text"
+                  value={editRoomFacilities}
+                  onChange={(e) => setEditRoomFacilities(e.target.value)}
+                  placeholder="Wifi, Geyser, Wardrobe"
+                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
+              >
+                Save Room Details
+              </button>
+            </form>
           </div>
         </div>
       )}

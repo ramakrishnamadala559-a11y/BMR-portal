@@ -70,22 +70,6 @@ export default function LoginPage() {
     }
   };
 
-  const handleFillDemo = (role: 'owner' | 'warden' | 'student') => {
-    if (role === 'owner') {
-      setActiveTab('admin');
-      setIdentifier('owner@pinewood.com');
-      setPassword('owner123');
-    } else if (role === 'warden') {
-      setActiveTab('admin');
-      setIdentifier('warden@pinewood.com');
-      setPassword('warden123');
-    } else if (role === 'student') {
-      setActiveTab('student');
-      setIdentifier('9000000001');
-      setPassword('student123');
-    }
-  };
-
   if (loading) {
     return (
       <div className="min-h-screen bg-slate-955 flex flex-col items-center justify-center">
@@ -215,7 +199,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     className="text-xs text-violet-400 hover:text-violet-355 transition-colors font-bold cursor-pointer"
-                    onClick={() => setToast({ message: 'Click any of the Quick Demo Presets below to fill login details.', type: 'info' as any })}
+                    onClick={() => setToast({ message: 'Please contact the hostel administrator to reset your credentials.', type: 'info' as any })}
                   >
                     Forgot?
                   </button>
@@ -261,36 +245,7 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {/* Quick RBAC Presets Panel */}
-            <div className="mt-8 pt-5 border-t border-slate-850/50">
-              <div className="flex items-center gap-2 mb-3.5 text-slate-450">
-                <ShieldCheck className="h-4 w-4 text-violet-400" />
-                <span className="text-[10px] font-bold uppercase tracking-wider">Quick Demo Login Presets</span>
-              </div>
-              <div className="grid grid-cols-3 gap-2">
-                <button
-                  onClick={() => handleFillDemo('owner')}
-                  className="py-2.5 px-2 bg-slate-950/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-[10px] text-slate-200 font-bold rounded-xl transition-all cursor-pointer text-center hover:scale-[1.03] active:scale-[0.98] flex flex-col items-center justify-center gap-1 shadow-sm"
-                >
-                  <span className="text-sm">👑</span>
-                  Owner
-                </button>
-                <button
-                  onClick={() => handleFillDemo('warden')}
-                  className="py-2.5 px-2 bg-slate-950/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-[10px] text-slate-200 font-bold rounded-xl transition-all cursor-pointer text-center hover:scale-[1.03] active:scale-[0.98] flex flex-col items-center justify-center gap-1 shadow-sm"
-                >
-                  <span className="text-sm">🛡️</span>
-                  Warden
-                </button>
-                <button
-                  onClick={() => handleFillDemo('student')}
-                  className="py-2.5 px-2 bg-slate-950/60 hover:bg-slate-900 border border-slate-850 hover:border-slate-800 text-[10px] text-slate-200 font-bold rounded-xl transition-all cursor-pointer text-center hover:scale-[1.03] active:scale-[0.98] flex flex-col items-center justify-center gap-1 shadow-sm"
-                >
-                  <span className="text-sm">🎓</span>
-                  Student
-                </button>
-              </div>
-            </div>
+
 
           </div>
         </div>

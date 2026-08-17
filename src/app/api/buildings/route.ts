@@ -161,3 +161,55 @@ export async function PUT(request: Request) {
   }
 }
 
+// DELETE a building
+export async function DELETE(request: Request) {
+  try {
+    const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'delete');
+    if (errorResponse) return errorResponse;
+
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
+
+    if (!id) {
+      return NextResponse.json({ error: 'Building ID is required' }, { status: 400 });
+    }
+
+    const building = await db.building.findUnique({
+      where: { id },
+      include: {
+        beds: true
+      }
+    });
+
+    if (!building) {
+      return NextResponse.json({ error: 'Building not found' }, { status: 404 });
+    }
+
+    // Check if any beds in this building are occupied, reserved, or in maintenance
+    const occupied = building.beds.some(b => b.status !== 'AVAILABLE');
+    if (occupied) {
+      return NextResponse.json({
+        error: 'Cannot delete building because it contains occupied, reserved, or maintenance beds'
+      }, { status: 400 });
+    }
+
+    await db.building.delete({
+      where: { id }
+    });
+
+    await logActivity(
+      user!.userId,
+      user!.name,
+      'DELETE_BUILDING',
+      'ROOMS',
+      `Deleted building "${building.name}"`
+    );
+
+    return NextResponse.json({ message: 'Building deleted successfully' });
+  } catch (error: any) {
+    console.error('DELETE building error:', error);
+    return NextResponse.json({ error: error.message || 'Internal Server Error' }, { status: 500 });
+  }
+}
+
+

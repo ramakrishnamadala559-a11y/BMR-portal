@@ -6,7 +6,15 @@ export async function GET(request: Request) {
   try {
     const session = await getUserFromRequest(request);
     if (!session) {
-      return NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      const response = NextResponse.json({ error: 'Not authenticated' }, { status: 401 });
+      response.cookies.set('token', '', {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        maxAge: 0,
+        path: '/'
+      });
+      return response;
     }
 
     const user = await db.user.findUnique({

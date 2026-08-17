@@ -40,6 +40,10 @@ export default function StudentsPage() {
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
   const [paymentHistory, setPaymentHistory] = useState<any[]>([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
+  const [modalTab, setModalTab] = useState<'pending' | 'payments'>('pending');
+
+  const modalPendingInvoices = selectedStudent?.invoices || [];
+  const modalTotalDue = modalPendingInvoices.reduce((sum: number, inv: any) => sum + inv.balance, 0);
 
   // Edit form states
   const [editName, setEditName] = useState('');
@@ -98,6 +102,7 @@ export default function StudentsPage() {
   const handleViewProfile = async (student: any) => {
     setSelectedStudent(student);
     setProfileModalOpen(true);
+    setModalTab('pending');
     setLoadingHistory(true);
     setPaymentHistory([]);
     try {
@@ -286,7 +291,6 @@ export default function StudentsPage() {
                   <th className="py-4 px-6">Stu ID</th>
                   <th className="py-4 px-6">Name</th>
                   <th className="py-4 px-6">Phone</th>
-                  <th className="py-4 px-6">Room / Bed</th>
                   <th className="py-4 px-6">Registered Date</th>
                   <th className="py-4 px-6">Status</th>
                   <th className="py-4 px-6 text-right">Actions</th>
@@ -311,15 +315,6 @@ export default function StudentsPage() {
                           📞 +91 {student.phone}
                         </a>
                       </td>
-                    <td className="py-4 px-6 text-slate-350">
-                      {student.bed ? (
-                        <span className="text-violet-400 font-semibold">
-                          Room {student.bed.room.number} ({student.bed.name})
-                        </span>
-                      ) : (
-                        <span className="text-slate-500 italic">None</span>
-                      )}
-                    </td>
                     <td className="py-4 px-6 text-slate-400">
                       {student.admissionDate ? new Date(student.admissionDate).toLocaleDateString() : 'N/A'}
                     </td>
@@ -369,7 +364,7 @@ export default function StudentsPage() {
       {/* MODAL: PROFILE VIEWER */}
       {profileModalOpen && selectedStudent && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex justify-center items-start p-4 overflow-y-auto">
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-5 md:p-6 shadow-2xl animate-slide-in relative my-4 md:my-8">
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-2xl p-5 md:p-6 shadow-2xl animate-slide-in relative my-4 md:my-8">
             <button
               onClick={() => setProfileModalOpen(false)}
               className="absolute top-4 right-4 text-slate-400 hover:text-slate-100"
@@ -421,6 +416,12 @@ export default function StudentsPage() {
                 <span className="text-slate-200 font-semibold">{selectedStudent.idNumber || 'N/A'}</span>
               </div>
               <div>
+                <span className="text-slate-500 block mb-0.5">Total Outstanding Due</span>
+                <span className={`font-bold ${modalTotalDue > 0 ? 'text-amber-500' : 'text-emerald-450'}`}>
+                  ₹{modalTotalDue.toLocaleString('en-IN')}
+                </span>
+              </div>
+              <div>
                 <span className="text-slate-500 block mb-0.5">Room & Bed Details</span>
                 {selectedStudent.bed && selectedStudent.bed.room ? (
                   <span className="text-violet-400 font-bold">
@@ -467,11 +468,73 @@ export default function StudentsPage() {
             </div>
 
             <div className="text-xs pt-4 border-t border-slate-800/60 space-y-3">
-              <h4 className="font-bold text-white uppercase tracking-wider text-[10px] mb-2 flex items-center gap-2">
-                <span>💳 Payment & Transaction History</span>
-              </h4>
+              <div className="flex justify-between items-center mb-2 pb-1 border-b border-slate-800/40">
+                <h4 className="font-bold text-white uppercase tracking-wider text-[10px] flex items-center gap-2">
+                  {modalTab === 'pending' ? (
+                    <>
+                      <span>⏳ Outstanding Invoices / Dues</span>
+                      <span className="px-2 py-0.5 bg-amber-500/10 border border-amber-500/20 text-amber-500 rounded-full text-[9px] font-bold">
+                        ₹{modalTotalDue.toLocaleString('en-IN')}
+                      </span>
+                    </>
+                  ) : (
+                    <span>💳 Payment & Transaction History</span>
+                  )}
+                </h4>
+                <div className="flex bg-slate-950 p-0.5 rounded-lg border border-slate-850">
+                  <button
+                    type="button"
+                    onClick={() => setModalTab('pending')}
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition-all cursor-pointer ${
+                      modalTab === 'pending'
+                        ? 'bg-slate-800 text-white shadow'
+                        : 'text-slate-500 hover:text-slate-350'
+                    }`}
+                  >
+                    Dues
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setModalTab('payments')}
+                    className={`px-2.5 py-1 text-[9px] font-bold rounded-md transition-all cursor-pointer ${
+                      modalTab === 'payments'
+                        ? 'bg-slate-800 text-white shadow'
+                        : 'text-slate-500 hover:text-slate-355'
+                    }`}
+                  >
+                    Payments
+                  </button>
+                </div>
+              </div>
 
-              {loadingHistory ? (
+              {modalTab === 'pending' ? (
+                modalPendingInvoices.length === 0 ? (
+                  <p className="text-slate-500 italic py-4 text-center border border-dashed border-slate-800 rounded-xl">No active dues or outstanding balances.</p>
+                ) : (
+                  <div className="overflow-x-auto border border-slate-800 rounded-xl">
+                    <table className="w-full text-left border-collapse text-[11px]">
+                      <thead>
+                        <tr className="bg-slate-950 text-slate-400 font-bold uppercase text-[9px] border-b border-slate-800">
+                          <th className="py-2.5 px-4">Invoice No</th>
+                          <th className="py-2.5 px-4">Due Date</th>
+                          <th className="py-2.5 px-4">Total Amount</th>
+                          <th className="py-2.5 px-4 text-right">Balance Due</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-850 bg-slate-950/20">
+                        {modalPendingInvoices.map((inv: any) => (
+                          <tr key={inv.id} className="hover:bg-slate-855/10 transition-colors">
+                            <td className="py-2.5 px-4 font-mono text-slate-300 font-semibold">{inv.invoiceNumber}</td>
+                            <td className="py-2.5 px-4 text-slate-450">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                            <td className="py-2.5 px-4 text-slate-400">₹{inv.total.toLocaleString('en-IN')}</td>
+                            <td className="py-2.5 px-4 font-bold text-amber-500 text-right">₹{inv.balance.toLocaleString('en-IN')}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              ) : loadingHistory ? (
                 <div className="flex items-center justify-center py-6 text-slate-500 gap-2">
                   <Loader2 className="h-4 w-4 animate-spin text-violet-400" />
                   <span>Loading payment transactions...</span>

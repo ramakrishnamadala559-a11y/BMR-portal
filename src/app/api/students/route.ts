@@ -328,18 +328,26 @@ export async function DELETE(request: Request) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
 
-    if (student.status === 'ACTIVE' || (student.bed)) {
-      return NextResponse.json(
-        { error: 'Cannot delete an active student. Please check out and release their bed first.' },
-        { status: 400 }
-      );
-    }
-
     await db.$transaction(async (tx) => {
+      // Release allocated bed if any
+      if (student.bed) {
+        await tx.bed.update({
+          where: { id: student.bed.id },
+          data: {
+            status: 'AVAILABLE',
+            studentId: null
+          }
+        });
+      }
+
       // Delete user credentials
-      await tx.user.delete({
-        where: { phone: student.phone }
-      });
+      try {
+        await tx.user.delete({
+          where: { phone: student.phone }
+        });
+      } catch (err) {
+        console.warn(`User with phone ${student.phone} not found during student deletion:`, err);
+      }
 
       // Delete student
       await tx.student.delete({
