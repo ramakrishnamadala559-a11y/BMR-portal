@@ -290,9 +290,8 @@ export default function LoginPage() {
             </div>
           </div>
           <a
-            href={settings?.website ? `https://${settings.website}` : 'https://www.homestayhostel.com'}
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/app-debug.apk"
+            download="app-debug.apk"
             className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 hover:scale-[1.02] text-[10px] font-bold rounded-xl text-white shadow-md shadow-violet-600/10 transition-all cursor-pointer whitespace-nowrap"
           >
             Download App <ArrowUpRight className="h-3 w-3" />
