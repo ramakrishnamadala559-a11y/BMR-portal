@@ -891,44 +891,7 @@ export default function RoomsPage() {
               )}
             </div>
           </div>
-        </div>
-      )}
-
-             {/* View Switcher Tabs */}
-      {activeBuilding && activeRooms.length > 0 && (
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800/60 gap-3">
-          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider pl-2 hidden xs:inline">Display Layout:</span>
-            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850 w-full xs:w-auto">
-              <button
-                onClick={() => setViewMode('map')}
-                className={`flex-1 xs:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'map'
-                    ? 'bg-slate-900 text-violet-400 border border-slate-800/80 shadow'
-                    : 'text-slate-500 hover:text-slate-350'
-                }`}
-              >
-                🗺️ Room Map Plan
-              </button>
-              <button
-                onClick={() => setViewMode('cards')}
-                className={`flex-1 xs:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                  viewMode === 'cards'
-                    ? 'bg-slate-900 text-violet-400 border border-slate-800/80 shadow'
-                    : 'text-slate-500 hover:text-slate-350'
-                }`}
-              >
-                🎴 Inventory Cards
-              </button>
-            </div>
-          </div>
-          <div className="text-slate-500 text-xs hidden md:block">
-            Showing <strong className="text-slate-300">{activeRooms.length} rooms</strong> inside <strong className="text-slate-300">Floor {selectedFloorNumber}</strong>
-          </div>
-        </div>
-      )}
-
-      {/* Rooms visual grid */}
+        {/* Rooms visual grid */}
       <div className="space-y-6">
         {activeRooms.length === 0 ? (
           <div className="bg-slate-900/40 border border-slate-800/60 border-dashed rounded-2xl p-12 text-center">
@@ -950,7 +913,7 @@ export default function RoomsPage() {
               </button>
             )}
           </div>
-        ) : viewMode === 'map' ? (
+        ) : (
           <div className="space-y-6">
             {/* Legend */}
             <div className="flex flex-wrap items-center gap-4 bg-slate-905/30 p-4 rounded-xl border border-slate-850/60 text-[10px]">
@@ -988,7 +951,7 @@ export default function RoomsPage() {
                   {topRowRooms.map((room: any) => renderRoomBox(room))}
                   {topRowRooms.length < 3 && Array.from({ length: 3 - topRowRooms.length }).map((_, idx) => (
                     <div key={`empty-top-${idx}`} className="border border-slate-900/60 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-10">
-                      <span className="text-[10px] text-slate-600 italic font-semibold">Unallocated Wing Slot</span>
+                      <span className="text-[10px] text-slate-655 italic font-semibold">Unallocated Wing Slot</span>
                     </div>
                   ))}
                 </div>
@@ -1026,133 +989,8 @@ export default function RoomsPage() {
               </div>
             </div>
           </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {virtualRooms.map((room: any) => {
-              const occupiedCount = room.beds.filter((b: any) => b.status === 'OCCUPIED').length;
-              const cap = room.capacity;
-              return (
-                <div
-                  key={`${room.id}-${room.virtualNumber || room.number}`}
-                  className="group bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl flex flex-col justify-between overflow-hidden"
-                >
-                  {/* Room Header */}
-                  <div className="p-6 border-b border-slate-800/60 bg-slate-950/20">
-                    <div className="flex justify-between items-start mb-3">
-                      <div>
-                        <div className="flex items-center gap-2">
-                          <h3 className="text-lg font-bold text-white tracking-wide">Room {room.isVirtual ? room.virtualNumber : room.number}</h3>
-                          <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                            {hasPermission('rooms', 'edit') && (
-                              <button
-                                onClick={() => handleEditRoomClick(room)}
-                                className="p-1 text-slate-400 hover:text-violet-400 rounded transition-colors cursor-pointer"
-                                title="Edit Room"
-                              >
-                                <Edit className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                            {hasPermission('rooms', 'delete') && (
-                              <button
-                                onClick={() => handleDeleteRoomClick(room)}
-                                className="p-1 text-slate-400 hover:text-rose-400 rounded transition-colors cursor-pointer"
-                                title="Delete Room"
-                              >
-                                <Trash2 className="h-3.5 w-3.5" />
-                              </button>
-                            )}
-                          </div>
-                        </div>
-                        <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">{room.type}</span>
-                      </div>
-                      <span className={`px-2.5 py-1 rounded-full border text-[10px] font-bold ${getStatusColor(room.status)}`}>
-                        {room.status.replace('_', ' ')}
-                      </span>
-                    </div>
-
-                    <div className="flex justify-between items-center text-xs text-slate-400 pt-2">
-                      <span>Rent: <strong className="text-slate-200">₹{room.rent.toLocaleString('en-IN')}/mo</strong></span>
-                      <span>Beds: <strong className="text-slate-200">{occupiedCount}/{cap}</strong></span>
-                    </div>
-                  </div>
-
-                  {/* Beds visual layout */}
-                  <div className="p-6 space-y-4 flex-1">
-                    <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block">Beds Inventory</span>
-                    <div className="grid grid-cols-2 gap-3 max-h-[220px] overflow-y-auto pr-1">
-                      {room.beds.map((bed: any) => {
-                        const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
-                        return (
-                          <div
-                            key={bed.id}
-                            className={`p-3 border rounded-xl flex flex-col justify-between gap-3 bg-slate-955/40 relative ${
-                              isOverdue
-                                ? 'border-rose-500/30 bg-rose-500/5 hover:border-rose-500/50 hover:bg-rose-500/10 transition-all'
-                                : bed.status === 'AVAILABLE'
-                                ? 'border-emerald-500/10 hover:border-emerald-500/20 hover:bg-slate-900/20 transition-all'
-                                : bed.status === 'OCCUPIED'
-                                ? 'border-indigo-500/10 hover:border-indigo-500/20 hover:bg-slate-900/20 transition-all'
-                                : 'border-slate-850'
-                            }`}
-                          >
-                            <div className="flex justify-between items-start">
-                              <span className="text-xs font-bold text-slate-200">{bed.name}</span>
-                              {isOverdue ? (
-                                <AlertTriangle className="h-4 w-4 text-rose-555 animate-pulse" />
-                              ) : (
-                                getBedStatusIcon(bed.status)
-                              )}
-                            </div>
-
-                            {bed.status === 'OCCUPIED' && bed.student ? (
-                              <button
-                                onClick={() => handleOccupantClick(bed.student, bed.name, room.number)}
-                                className="text-left group cursor-pointer"
-                              >
-                                <span className={`text-[10px] font-bold hover:underline block truncate ${isOverdue ? 'text-rose-500' : 'text-slate-400'}`}>
-                                  {bed.student.name}
-                                </span>
-                                <span className="text-[9px] text-slate-550 block font-medium truncate mt-0.5 hover:underline hover:text-violet-400">
-                                  <a href={`tel:${bed.student.phone}`} onClick={(e) => e.stopPropagation()}>
-                                    {bed.student.phone}
-                                  </a>
-                                </span>
-                              </button>
-                            ) : bed.status === 'AVAILABLE' ? (
-                              hasPermission('students', 'edit') ? (
-                                <Link
-                                  href={`/admin/admissions?bedId=${bed.id}`}
-                                  className="text-[10px] text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-2 cursor-pointer"
-                                >
-                                  Allocate Bed
-                                  <ChevronRight className="h-3 w-3" />
-                                </Link>
-                              ) : (
-                                <span className="text-[10px] text-slate-500 font-medium">Unoccupied</span>
-                              )
-                            ) : (
-                              <span className="text-[10px] text-slate-500 font-medium italic capitalize">{bed.status.toLowerCase()}</span>
-                            )}
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-
-                  {/* Room Facilities footer */}
-                  {room.facilities && (
-                    <div className="px-6 py-3.5 bg-slate-955/30 border-t border-slate-805/40 text-[10px] text-slate-505 font-semibold truncate flex items-center gap-1.5">
-                      <Info className="h-3.5 w-3.5 text-slate-600 flex-shrink-0" />
-                      <span>{room.facilities}</span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
         )}
       </div>
-
       {/* MODAL: ADD BUILDING */}
       {buildingModalOpen && (
         <div className="fixed inset-0 z-50 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4">
