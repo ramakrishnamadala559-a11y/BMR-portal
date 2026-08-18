@@ -339,9 +339,13 @@ export default function SettingsPage() {
       {/* SECTION: Personal Profile Settings */}
       <form onSubmit={handleProfileSubmit} className="space-y-6 text-xs">
         <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
-            <User className="h-4.5 w-4.5 text-violet-400" />
-            <h3 className="font-bold text-white uppercase tracking-wider">Owner Account Profile</h3>
+          <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 text-slate-200">
+            <div className="flex items-center gap-2">
+              <User className="h-4.5 w-4.5 text-violet-400" />
+              <h3 className="font-bold text-white uppercase tracking-wider">Owner Account Profile</h3>
+            </div>
+            {/* Brand Logo Display */}
+            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-800 shadow object-cover" />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
