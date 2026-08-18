@@ -726,75 +726,86 @@ export default function RoomsPage() {
 
       {/* Active Building Management & Floor Tabs */}
       {activeBuilding && (
-        <div className="flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4 bg-slate-900/40 p-4 rounded-2xl border border-slate-800/50">
-          <div className="flex flex-wrap items-center gap-3">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Building:</span>
-            <span className="text-sm font-bold text-white bg-slate-900 border border-slate-800 px-3.5 py-1.5 rounded-xl flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-violet-400" />
-              {activeBuilding.name}
-            </span>
-            <span className={`text-[11px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${
-              activeBuilding.gender === 'MALE' ? 'bg-blue-950/40 border-blue-900/40 text-blue-400' :
-              activeBuilding.gender === 'FEMALE' ? 'bg-pink-950/40 border-pink-800/40 text-pink-400' :
-              'bg-emerald-950/40 border-emerald-800/40 text-emerald-400'
-            }`}>
-              {activeBuilding.gender || 'COLIVING'}
-            </span>
-            {activeBuilding.description && (
-              <span className="text-xs text-slate-400 italic max-w-xs truncate" title={activeBuilding.description}>
-                {activeBuilding.description}
+        <div className="bg-slate-900/40 p-5 rounded-2xl border border-slate-800/50 space-y-4">
+          {/* Top Row: Block Information & Editing */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 pb-3 border-b border-slate-800/40">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Active Block / Building:</span>
+              <span className="text-sm font-bold text-white bg-slate-950 border border-slate-850 px-3 py-1.5 rounded-xl flex items-center gap-2">
+                <Home className="h-4 w-4 text-violet-400" />
+                {activeBuilding.name}
               </span>
-            )}
-            {hasPermission('rooms', 'edit') && (
-              <button
-                onClick={() => {
-                  setNewBuildingName(activeBuilding.name);
-                  setEditBuildingGender(activeBuilding.gender || 'COLIVING');
-                  setEditBuildingDescription(activeBuilding.description || '');
-                  setEditBuildingModalOpen(true);
-                }}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-800 border border-slate-700 rounded-lg text-slate-350 hover:bg-slate-700 hover:text-white transition-colors cursor-pointer"
-                title="Edit Building Details"
-              >
-                <Edit className="h-3.5 w-3.5" />
-                Edit
-              </button>
-            )}
-            {hasPermission('rooms', 'delete') && (
-              <button
-                onClick={() => handleDeleteBuilding(activeBuilding.id, activeBuilding.name)}
-                className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-rose-950/20 border border-rose-900/35 rounded-lg text-rose-455 hover:bg-rose-900/30 hover:text-rose-300 transition-colors cursor-pointer"
-                title="Delete Building"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-                Delete
-              </button>
-            )}
+              <span className={`text-[10px] font-bold uppercase tracking-wider px-2.5 py-1 rounded-lg border ${
+                activeBuilding.gender === 'MALE' ? 'bg-blue-950/40 border-blue-900/40 text-blue-400' :
+                activeBuilding.gender === 'FEMALE' ? 'bg-pink-950/40 border-pink-800/40 text-pink-400' :
+                'bg-emerald-950/40 border-emerald-800/40 text-emerald-400'
+              }`}>
+                {activeBuilding.gender || 'COLIVING'}
+              </span>
+              {activeBuilding.description && (
+                <span className="text-xs text-slate-450 italic hidden sm:inline truncate max-w-xs" title={activeBuilding.description}>
+                  — {activeBuilding.description}
+                </span>
+              )}
+            </div>
+            
+            {/* Actions for block */}
+            <div className="flex items-center gap-2">
+              {hasPermission('rooms', 'edit') && (
+                <button
+                  onClick={() => {
+                    setNewBuildingName(activeBuilding.name);
+                    setEditBuildingGender(activeBuilding.gender || 'COLIVING');
+                    setEditBuildingDescription(activeBuilding.description || '');
+                    setEditBuildingModalOpen(true);
+                  }}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-805 hover:bg-slate-700 text-slate-300 hover:text-white border border-slate-800 rounded-lg transition-colors cursor-pointer"
+                  title="Edit Block details"
+                >
+                  <Edit className="h-3.5 w-3.5" />
+                  Edit Block
+                </button>
+              )}
+              {hasPermission('rooms', 'delete') && (
+                <button
+                  onClick={() => handleDeleteBuilding(activeBuilding.id, activeBuilding.name)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-rose-955/15 border border-rose-900/30 text-rose-400 hover:bg-rose-900/30 hover:text-rose-200 rounded-lg transition-colors cursor-pointer"
+                  title="Delete Block"
+                >
+                  <Trash2 className="h-3.5 w-3.5" />
+                  Delete Block
+                </button>
+              )}
+            </div>
           </div>
 
-          <div className="flex flex-wrap items-center gap-3">
-            {/* Floor Navigation & Controls */}
-            {activeBuilding.floors.length > 0 ? (
-              <div className="flex gap-1.5 p-1 bg-slate-950/40 border border-slate-800/60 rounded-xl w-fit">
-                {activeBuilding.floors.map((f: any) => (
-                  <button
-                    key={f.id}
-                    onClick={() => setSelectedFloorNumber(f.number)}
-                    className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
-                      selectedFloorNumber === f.number
-                        ? 'bg-slate-900 text-white border border-slate-800/80 shadow'
-                        : 'text-slate-400 hover:text-slate-200'
-                    }`}
-                  >
-                    Floor {f.number}
-                  </button>
-                ))}
-              </div>
-            ) : (
-              <span className="text-xs text-slate-550 italic">No floors created</span>
-            )}
+          {/* Bottom Row: Floor Navigation & Controls */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-2.5">
+              <span className="text-xs text-slate-400 font-bold uppercase tracking-wider">Floors:</span>
+              {activeBuilding.floors.length > 0 ? (
+                <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850 w-full xs:w-auto">
+                  {activeBuilding.floors.map((f: any) => (
+                    <button
+                      key={f.id}
+                      onClick={() => setSelectedFloorNumber(f.number)}
+                      className={`flex-1 xs:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                        selectedFloorNumber === f.number
+                          ? 'bg-slate-900 text-white border border-slate-800/80 shadow'
+                          : 'text-slate-500 hover:text-slate-350'
+                      }`}
+                    >
+                      Floor {f.number}
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <span className="text-xs text-slate-550 italic">No floors created</span>
+              )}
+            </div>
 
-            <div className="flex gap-1.5">
+            {/* Floor Action Controls */}
+            <div className="flex items-center gap-2 self-end sm:self-auto">
               {hasPermission('rooms', 'create') && (
                 <button
                   onClick={() => {
@@ -802,10 +813,11 @@ export default function RoomsPage() {
                     setFloorNumberInput('');
                     setFloorModalOpen(true);
                   }}
-                  className="p-2 bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-300 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-955 border border-slate-850 hover:bg-slate-900 text-slate-300 rounded-lg transition-colors cursor-pointer"
                   title="Add Floor"
                 >
-                  <Plus className="h-4 w-4" />
+                  <Plus className="h-3.5 w-3.5 text-violet-400" />
+                  Add Floor
                 </button>
               )}
               {activeFloor && hasPermission('rooms', 'edit') && (
@@ -815,19 +827,21 @@ export default function RoomsPage() {
                     setFloorNumberInput(activeFloor.number.toString());
                     setFloorModalOpen(true);
                   }}
-                  className="p-2 bg-slate-905 border border-slate-800 hover:bg-slate-800 text-slate-355 hover:text-white rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-955 border border-slate-850 hover:bg-slate-900 text-slate-350 rounded-lg transition-colors cursor-pointer"
                   title="Rename Current Floor"
                 >
-                  <Edit className="h-4 w-4" />
+                  <Edit className="h-3.5 w-3.5 text-indigo-400" />
+                  Rename Floor
                 </button>
               )}
               {activeFloor && hasPermission('rooms', 'delete') && (
                 <button
                   onClick={() => handleDeleteFloor(activeFloor.id, activeFloor.number)}
-                  className="p-2 bg-rose-955/20 border border-rose-900/35 text-rose-455 hover:bg-rose-900/30 hover:text-rose-350 rounded-lg transition-colors cursor-pointer"
+                  className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-bold bg-slate-955 border border-slate-850 hover:bg-rose-900/20 text-rose-455 rounded-lg transition-colors cursor-pointer"
                   title="Delete Current Floor"
                 >
-                  <Trash2 className="h-4 w-4" />
+                  <Trash2 className="h-3.5 w-3.5 text-rose-400" />
+                  Delete Floor
                 </button>
               )}
             </div>
@@ -1102,7 +1116,7 @@ export default function RoomsPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-base font-bold text-white mb-4">Add Building</h3>
+            <h3 className="text-base font-bold text-white mb-4">Add Block / Building</h3>
             <form onSubmit={handleAddBuildingSubmit} className="space-y-4">
               <div>
                 <label className="block text-slate-350 text-xs font-semibold mb-2">Building Name</label>
@@ -1364,7 +1378,7 @@ export default function RoomsPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-base font-bold text-white mb-4">Edit Building</h3>
+            <h3 className="text-base font-bold text-white mb-4">Edit Block / Building</h3>
             <form onSubmit={handleEditBuildingSubmit} className="space-y-4">
               <div>
                 <label className="block text-slate-350 text-xs font-semibold mb-2">Building Name</label>
