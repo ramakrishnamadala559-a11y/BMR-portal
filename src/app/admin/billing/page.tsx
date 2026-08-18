@@ -13,7 +13,8 @@ import {
   History,
   AlertCircle,
   TrendingUp,
-  Plus
+  Plus,
+  Home
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -500,7 +501,10 @@ export default function BillingPage() {
             <div className="bg-white text-slate-955 p-4 sm:p-8 rounded-xl border border-slate-200 print:border-0 print:p-0" id="printable-receipt">
               <div className="flex justify-between items-start pb-6 border-b border-slate-200">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
+                  <div className="flex items-center gap-2">
+                    <Home className="h-5 w-5 text-violet-600 print:text-slate-900" />
+                    <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
+                  </div>
                   <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
                   <p className="text-[10px] text-slate-400 mt-0.5">GSTIN: 29AAAAA1111A1Z1</p>
                 </div>

@@ -15,7 +15,8 @@ import {
   X,
   Building2,
   CheckCircle2,
-  MapPin
+  MapPin,
+  Home
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -235,7 +236,7 @@ export default function StudentDashboardPage() {
               </div>
             ) : (
               <div className="p-8 text-center text-slate-500">
-                <Building2 className="h-8 w-8 mx-auto mb-2 text-slate-700" />
+                <Home className="h-8 w-8 mx-auto mb-2 text-slate-700" />
                 <p className="text-xs">Your student profile has been registered. The owner is in the process of assigning your room and bed. Invoices will generate automatically once allocated.</p>
               </div>
             )}
@@ -568,7 +569,10 @@ export default function StudentDashboardPage() {
             <div className="bg-white text-slate-955 p-4 sm:p-8 rounded-xl border border-slate-200 print:border-0 print:p-0">
               <div className="flex justify-between items-start pb-6 border-b border-slate-200">
                 <div>
-                  <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
+                  <div className="flex items-center gap-2">
+                    <Home className="h-5 w-5 text-violet-600 print:text-slate-900" />
+                    <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
+                  </div>
                   <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
                 </div>
                 <div className="text-right">

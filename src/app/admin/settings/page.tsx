@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import {
   Settings,
-  Building,
+  Home,
   Mail,
   Phone,
   FileText,
@@ -185,7 +185,7 @@ export default function SettingsPage() {
         {/* Section 1: Hostel Profile */}
         <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
           <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
-            <Building className="h-4.5 w-4.5 text-violet-400" />
+            <Home className="h-4.5 w-4.5 text-violet-400" />
             <h3 className="font-bold text-white uppercase tracking-wider">PG Profile metadata</h3>
           </div>
 
