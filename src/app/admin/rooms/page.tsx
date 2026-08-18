@@ -486,7 +486,12 @@ export default function RoomsPage() {
       const bedsBySubRoom: { [key: string]: any[] } = {};
       const standardBeds: any[] = [];
 
-      room.beds.forEach((bed: any) => {
+      // Sort beds numerically by name first
+      const sortedBeds = [...room.beds].sort((a: any, b: any) =>
+        a.name.localeCompare(b.name, undefined, { numeric: true, sensitivity: 'base' })
+      );
+
+      sortedBeds.forEach((bed: any) => {
         if (bed.name.includes(' - ')) {
           const subRoomName = bed.name.split(' - ')[0].trim();
           if (!bedsBySubRoom[subRoomName]) {
@@ -498,7 +503,9 @@ export default function RoomsPage() {
         }
       });
 
-      const subRoomNames = Object.keys(bedsBySubRoom).sort();
+      const subRoomNames = Object.keys(bedsBySubRoom).sort((a, b) =>
+        a.localeCompare(b, undefined, { numeric: true, sensitivity: 'base' })
+      );
 
       if (subRoomNames.length > 0) {
         // Create virtual room for each sub-room
@@ -519,10 +526,19 @@ export default function RoomsPage() {
           });
         }
       } else {
-        list.push(room);
+        list.push({
+          ...room,
+          beds: sortedBeds
+        });
       }
     });
-    return list;
+
+    // Sort the final virtual rooms list in natural numeric order
+    return list.sort((a, b) => {
+      const aNum = a.isVirtual ? a.virtualNumber : a.number;
+      const bNum = b.isVirtual ? b.virtualNumber : b.number;
+      return aNum.localeCompare(bNum, undefined, { numeric: true, sensitivity: 'base' });
+    });
   };
 
   const renderRoomBox = (room: any) => {
