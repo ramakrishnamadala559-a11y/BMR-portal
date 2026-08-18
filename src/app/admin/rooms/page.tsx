@@ -891,7 +891,10 @@ export default function RoomsPage() {
               )}
             </div>
           </div>
-        {/* Rooms visual grid */}
+        </div>
+      )}
+
+      {/* Rooms visual grid */}
       <div className="space-y-6">
         {activeRooms.length === 0 ? (
           <div className="bg-slate-900/40 border border-slate-800/60 border-dashed rounded-2xl p-12 text-center">
