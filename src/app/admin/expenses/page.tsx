@@ -1,3 +1,4 @@
+
 'use client';
 
 import React, { useState, useEffect } from 'react';
@@ -19,7 +20,7 @@ import Toast from '@/components/Toast';
 
 export default function ExpensesPage() {
   const { hasPermission } = useAuth();
-  
+
   const [expenses, setExpenses] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
@@ -294,52 +295,52 @@ export default function ExpensesPage() {
             <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
-              <thead>
-                <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
-                  <th className="py-4 px-6">Date</th>
-                  <th className="py-4 px-6">Category</th>
-                  <th className="py-4 px-6">Description</th>
-                  <th className="py-4 px-6">Amount</th>
-                  <th className="py-4 px-6">Recorded By</th>
-                  <th className="py-4 px-6 text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-850/60 text-xs">
-                {expenses.map((exp) => (
-                  <tr key={exp.id} className="hover:bg-slate-855/20 transition-colors">
-                    <td className="py-4 px-6 text-slate-400">{new Date(exp.date).toLocaleDateString()}</td>
-                    <td className="py-4 px-6">
-                      <div className="flex flex-col gap-1">
-                        <span className={`w-fit px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getCategoryColor(exp.category)}`}>
-                          {exp.category.replace('_', ' ')}
-                        </span>
-                        {exp.buildingId && (
-                          <span className="text-[10px] text-violet-400 font-bold">
-                            Block: {buildings.find(b => b.id === exp.buildingId)?.name || 'Unknown'}
-                          </span>
-                        )}
-                      </div>
-                    </td>
-                    <td className="py-4 px-6 text-slate-200 font-semibold">{exp.description}</td>
-                    <td className="py-4 px-6 font-bold text-slate-100">₹{exp.amount.toLocaleString('en-IN')}</td>
-                    <td className="py-4 px-6 text-slate-450">{exp.addedBy}</td>
-                    <td className="py-4 px-6 text-right">
-                      {hasPermission('expenses', 'delete') && (
-                        <button
-                          onClick={() => handleDeleteExpense(exp.id, exp.amount, exp.category)}
-                          className="p-1.5 hover:bg-slate-850 text-slate-500 hover:text-rose-455 rounded-lg transition-colors cursor-pointer"
-                          title="Delete Expense Log"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
-                      )}
-                    </td>
+                <thead>
+                  <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
+                    <th className="py-4 px-6">Date</th>
+                    <th className="py-4 px-6">Category</th>
+                    <th className="py-4 px-6">Description</th>
+                    <th className="py-4 px-6">Amount</th>
+                    <th className="py-4 px-6">Recorded By</th>
+                    <th className="py-4 px-6 text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-850/60 text-xs">
+                  {expenses.map((exp) => (
+                    <tr key={exp.id} className="hover:bg-slate-855/20 transition-colors">
+                      <td className="py-4 px-6 text-slate-400">{new Date(exp.date).toLocaleDateString()}</td>
+                      <td className="py-4 px-6">
+                        <div className="flex flex-col gap-1">
+                          <span className={`w-fit px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getCategoryColor(exp.category)}`}>
+                            {exp.category.replace('_', ' ')}
+                          </span>
+                          {exp.buildingId && (
+                            <span className="text-[10px] text-violet-400 font-bold">
+                              Block: {buildings.find(b => b.id === exp.buildingId)?.name || 'Unknown'}
+                            </span>
+                          )}
+                        </div>
+                      </td>
+                      <td className="py-4 px-6 text-slate-200 font-semibold">{exp.description}</td>
+                      <td className="py-4 px-6 font-bold text-slate-100">₹{exp.amount.toLocaleString('en-IN')}</td>
+                      <td className="py-4 px-6 text-slate-450">{exp.addedBy}</td>
+                      <td className="py-4 px-6 text-right">
+                        {hasPermission('expenses', 'delete') && (
+                          <button
+                            onClick={() => handleDeleteExpense(exp.id, exp.amount, exp.category)}
+                            className="p-1.5 hover:bg-slate-850 text-slate-500 hover:text-rose-455 rounded-lg transition-colors cursor-pointer"
+                            title="Delete Expense Log"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        )}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
-        </div>
         )}
       </div>
 
@@ -353,7 +354,7 @@ export default function ExpensesPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            
+
             <div className="flex items-center gap-2.5 text-violet-400 font-bold text-[10px] uppercase tracking-wider mb-2">
               <CircleDollarSign className="h-4.5 w-4.5" />
               <span>Log Operating Expense</span>
@@ -386,11 +387,10 @@ export default function ExpensesPage() {
                         key={cat}
                         type="button"
                         onClick={() => setCategory(cat)}
-                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${
-                          isSelected
+                        className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${isSelected
                             ? 'bg-violet-600/20 border-violet-500/50 text-violet-300'
                             : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {getCategoryIcon(cat)}
                         {cat.replace('_', ' ')}
@@ -439,11 +439,10 @@ export default function ExpensesPage() {
                         key={b.id}
                         type="button"
                         onClick={() => setSelectedBuildingId(b.id)}
-                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${
-                          selectedBuildingId === b.id
+                        className={`px-3 py-1.5 rounded-lg border text-[10px] font-bold uppercase transition-all ${selectedBuildingId === b.id
                             ? 'bg-violet-600/20 border-violet-500/50 text-violet-300'
                             : 'bg-slate-950 border-slate-800 text-slate-500 hover:border-slate-700'
-                        }`}
+                          }`}
                       >
                         {b.name}
                       </button>

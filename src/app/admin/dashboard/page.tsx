@@ -359,6 +359,9 @@ export default function AdminDashboardPage() {
       {/* Monthly Profit & Loss Statement */}
       <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl">
         <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">Monthly Profit & Loss (P&L) Statement</h3>
+        <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-2 lg:hidden">
+          ↔ Swipe table horizontally to see all columns & margins
+        </span>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse text-xs">
             <thead>

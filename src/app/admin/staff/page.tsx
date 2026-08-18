@@ -506,6 +506,9 @@ export default function StaffPage() {
             <h3 className="text-base font-bold text-white mb-4">RBAC Permissions Matrix: {selectedStaff.name}</h3>
 
             <form onSubmit={handlePermissionsSubmit} className="space-y-6 text-xs">
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-1 lg:hidden">
+                ↔ Swipe table horizontally to see all actions
+              </span>
               <div className="overflow-x-auto border border-slate-800 rounded-xl bg-slate-950/20">
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>

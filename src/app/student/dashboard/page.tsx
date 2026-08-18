@@ -435,6 +435,11 @@ export default function StudentDashboardPage() {
 
         {billingTab === 'invoices' ? (
           <div>
+            {invoices.length > 0 && (
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-2 lg:hidden">
+                ↔ Swipe table horizontally to see all billing columns
+              </span>
+            )}
             {invoices.length === 0 ? (
               <p className="text-slate-500 text-xs py-8 text-center">No rent bills generated yet.</p>
             ) : (
@@ -487,6 +492,11 @@ export default function StudentDashboardPage() {
           </div>
         ) : (
           <div>
+            {paymentsList.length > 0 && (
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-2 lg:hidden">
+                ↔ Swipe table horizontally to see all transaction details
+              </span>
+            )}
             {paymentsList.length === 0 ? (
               <p className="text-slate-500 text-xs py-8 text-center">No payment transactions recorded yet.</p>
             ) : (
