@@ -27,7 +27,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 
 export default function LoginPage() {
   const { login, user, loading, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood Home Stay';
+  const brandName = settings?.hostelName || 'Home Stay Hostel';
   const brandTag = settings?.address || 'Premium Accommodation Stay';
   const router = useRouter();
   

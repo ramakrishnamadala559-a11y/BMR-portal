@@ -24,16 +24,16 @@ async function main() {
   const settings = await db.hostelSettings.create({
     data: {
       id: 'GLOBAL',
-      hostelName: 'Pinewood Premium PG',
+      hostelName: 'Home Stay Hostel',
       address: 'Plot 42, Tech Park Avenue, Block 3, Bengaluru, KA - 560103',
       phone: '+91 98765 43210',
-      email: 'care@pinewoodpg.com',
-      website: 'www.pinewoodpg.com',
+      email: 'care@homestayhostel.com',
+      website: 'www.homestayhostel.com',
       gstNumber: '29AAAAA1111A1Z1',
       defaultRent: 7500,
       defaultDueDateDay: 5,
       defaultLateFee: 250,
-      invoicePrefix: 'PIN-'
+      invoicePrefix: 'HST-'
     }
   });
 
@@ -49,7 +49,7 @@ async function main() {
   const owner = await db.user.create({
     data: {
       name: 'Aditya Vardhan',
-      email: 'owner@pinewood.com',
+      email: 'owner@homestayhostel.com',
       phone: '9988776655',
       password: ownerHash,
       role: 'OWNER',
@@ -61,7 +61,7 @@ async function main() {
   const warden = await db.user.create({
     data: {
       name: 'Ramesh Kumar',
-      email: 'warden@pinewood.com',
+      email: 'warden@homestayhostel.com',
       phone: '8877665544',
       password: wardenHash,
       role: 'WARDEN',
@@ -81,7 +81,7 @@ async function main() {
   const manager = await db.user.create({
     data: {
       name: 'Sneha Reddy',
-      email: 'manager@pinewood.com',
+      email: 'manager@homestayhostel.com',
       phone: '7766554433',
       password: managerHash,
       role: 'MANAGER',
@@ -103,7 +103,7 @@ async function main() {
   const receptionist = await db.user.create({
     data: {
       name: 'Pooja Sharma',
-      email: 'recep@pinewood.com',
+      email: 'recep@homestayhostel.com',
       phone: '6655443322',
       password: recepHash,
       role: 'RECEPTIONIST',
@@ -523,12 +523,12 @@ async function main() {
   console.log('Seeding activity logs...');
   const logsList = [
     { userName: 'Aditya Vardhan', action: 'LOGIN', module: 'AUTH', description: 'Logged in successfully as owner' },
-    { userName: 'Aditya Vardhan', action: 'UPDATE_SETTINGS', module: 'SETTINGS', description: 'Updated PG name to Pinewood Premium PG' },
+    { userName: 'Aditya Vardhan', action: 'UPDATE_SETTINGS', module: 'SETTINGS', description: 'Updated PG name to Home Stay Hostel' },
     { userName: 'Aditya Vardhan', action: 'CREATE_STAFF', module: 'STAFF', description: 'Created staff account for Manager Sneha Reddy' },
     { userName: 'Sneha Reddy', action: 'REGISTER_STUDENT', module: 'STUDENTS', description: 'Registered student Aarav Mehta' },
     { userName: 'Sneha Reddy', action: 'ALLOCATE_BED', module: 'STUDENTS', description: 'Allocated Bed A in Room 101 to student Aarav Mehta' },
     { userName: 'Ramesh Kumar', action: 'UPDATE_BED_STATUS', module: 'ROOMS', description: 'Marked Bed B in Room G201 as under maintenance' },
-    { userName: 'Sneha Reddy', action: 'RECORD_PAYMENT', module: 'PAYMENTS', description: 'Recorded payment of 10000 for invoice PIN-202607-0011' }
+    { userName: 'Sneha Reddy', action: 'RECORD_PAYMENT', module: 'PAYMENTS', description: 'Recorded payment of 10000 for invoice HST-202607-0011' }
   ];
 
   for (const l of logsList) {

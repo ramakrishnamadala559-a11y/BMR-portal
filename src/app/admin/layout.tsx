@@ -27,7 +27,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, hasPermission, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood Home Stay';
+  const brandName = settings?.hostelName || 'Home Stay Hostel';
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);

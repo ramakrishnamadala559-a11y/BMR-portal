@@ -18,7 +18,7 @@ import ThemeToggle from '@/components/ThemeToggle';
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood Home Stay';
+  const brandName = settings?.hostelName || 'Home Stay Hostel';
   const router = useRouter();
   const pathname = usePathname();
 

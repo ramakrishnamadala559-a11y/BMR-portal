@@ -169,7 +169,7 @@ export async function POST(request: Request) {
         where: { id: 'GLOBAL' }
       });
       const hostelPhone = settings?.phone || '+91 98765 43210';
-      const hostelName = settings?.hostelName || 'Pinewood Home Stay';
+      const hostelName = settings?.hostelName || 'Home Stay Hostel';
 
       // Create WhatsApp notification record in Notification table
       await tx.notification.create({
