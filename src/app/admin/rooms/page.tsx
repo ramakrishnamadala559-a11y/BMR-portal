@@ -563,130 +563,167 @@ export default function RoomsPage() {
 
   const renderRoomBox = (room: any) => {
     const occupiedCount = room.beds.filter((b: any) => b.status === 'OCCUPIED').length;
-    const isMaintenance = room.status === 'MAINTENANCE';
+    const isMaintenance = room.status === 'UNDER_MAINTENANCE' || room.status === 'OVERDUE';
+    
+    // Determine bed arrangement grid based on capacity
+    const cap = room.capacity;
+    let bedLayoutClass = "grid grid-cols-2 gap-2.5";
+    if (cap === 1) {
+      bedLayoutClass = "flex justify-center items-center h-full";
+    } else if (cap === 3) {
+      bedLayoutClass = "grid grid-cols-3 gap-2";
+    } else if (cap >= 4) {
+      bedLayoutClass = "grid grid-cols-2 gap-2";
+    }
 
     return (
-      <div key={`${room.id}-${room.virtualNumber || room.number}`} className="group p-4 pt-5 border rounded-2xl flex flex-col justify-between h-40 transition-all bg-slate-900/60 border-slate-800/80 hover:border-violet-500/40 hover:bg-slate-855/20 hover:shadow-lg hover:shadow-violet-950/15 relative overflow-hidden">
-        {/* Color-coded Status Top Bar */}
-        <div className={`absolute top-0 left-0 right-0 h-1.5 ${
-          isMaintenance ? 'bg-rose-500 animate-pulse' :
-          occupiedCount === room.capacity ? 'bg-indigo-500/85' :
-          occupiedCount === 0 ? 'bg-emerald-500/85' : 'bg-amber-500/85'
-        }`} />
-        {/* Room Info */}
-        <div className="flex justify-between items-start">
-          <div>
-            <div className="flex items-center gap-1.5">
-              <span className="text-xs font-bold text-white block">Room {room.isVirtual ? room.virtualNumber : room.number}</span>
-              <span className={`text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${
-                isMaintenance ? 'bg-rose-500/15 text-rose-455 border border-rose-500/25' :
-                occupiedCount === room.capacity ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25' :
-                occupiedCount === 0 ? 'bg-emerald-500/15 text-emerald-450 border border-emerald-500/25' : 
-                'bg-amber-500/15 text-amber-400 border border-amber-500/25'
-              }`}>
-                {isMaintenance ? 'Maint' :
-                 occupiedCount === room.capacity ? 'Full' :
-                 occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
-              </span>
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                {hasPermission('rooms', 'edit') && (
+      <div 
+        key={`${room.id}-${room.isVirtual ? room.virtualNumber : room.number}`}
+        className="group relative bg-slate-900/60 backdrop-blur-sm border-2 border-slate-800/80 hover:border-violet-500/80 rounded-2xl p-4 shadow-xl flex flex-col justify-between overflow-hidden transition-all duration-300 min-h-[165px] cursor-default"
+      >
+        {/* Wall Demarcation lines (Architectural Blueprint effect) */}
+        <div className="absolute inset-0.5 border border-dashed border-slate-800/30 rounded-xl pointer-events-none" />
+        
+        {/* Room Entrance Door Arc (Bottom Center) */}
+        <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-8 h-4 border-t-2 border-dashed border-slate-700/60 rounded-t-full bg-slate-950/40 flex items-center justify-center pointer-events-none">
+          <span className="text-[5px] text-slate-550 font-extrabold tracking-widest uppercase">DOOR</span>
+        </div>
+
+        {/* Color-coded Status LED Indicator */}
+        <div className="absolute top-3.5 right-3.5 flex items-center gap-1.5">
+          <span className="text-[9px] text-slate-500 block font-bold">{occupiedCount}/{room.capacity}</span>
+          <span className={`h-2 w-2 rounded-full shadow-md animate-pulse ${
+            isMaintenance ? 'bg-rose-500 shadow-rose-500/40' :
+            occupiedCount === room.capacity ? 'bg-indigo-500 shadow-indigo-500/40' :
+            occupiedCount === 0 ? 'bg-emerald-500 shadow-emerald-500/40' : 
+            'bg-amber-500 shadow-amber-500/40'
+          }`} />
+        </div>
+
+        {/* Room Header Info */}
+        <div className="mb-2">
+          <div className="flex items-center gap-1.5">
+            <span className="text-xs font-black text-white tracking-wide">
+              {room.isVirtual ? `Room ${room.virtualNumber}` : `Room ${room.number}`}
+            </span>
+            <span className={`text-[8px] font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
+              isMaintenance ? 'bg-rose-500/10 text-rose-455 border border-rose-500/20' :
+              occupiedCount === room.capacity ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+              occupiedCount === 0 ? 'bg-emerald-500/10 text-emerald-450 border border-emerald-500/20' : 
+              'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+            }`}>
+              {isMaintenance ? 'Maint' :
+               occupiedCount === room.capacity ? 'Full' :
+               occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
+            </span>
+          </div>
+          <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">{room.type}</span>
+        </div>
+
+        {/* Beds layout inside the Room Blueprint */}
+        <div className={`mt-2 flex-1 flex flex-col justify-center ${cap === 1 ? 'items-center' : ''}`}>
+          <div className={`${bedLayoutClass} w-full`}>
+            {room.beds.map((bed: any) => {
+              const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
+              const isOccupied = bed.status === 'OCCUPIED';
+              const isReserved = bed.status === 'RESERVED';
+              
+              return (
+                <div key={bed.id} className="relative group/bed">
+                  {/* Visual 2D Bed Blueprint Box */}
                   <button
-                    onClick={() => handleEditRoomClick(room)}
-                    className="p-0.5 text-slate-400 hover:text-violet-400 rounded transition-colors cursor-pointer"
-                    title="Edit Room"
+                    onClick={() => {
+                      if (isOccupied && bed.student) {
+                        handleOccupantClick(bed.student, bed.name, room.number);
+                      }
+                    }}
+                    className={`w-full p-2 rounded-lg border flex flex-col justify-between text-left transition-all cursor-pointer hover:scale-[1.05] ${
+                      isOverdue
+                        ? 'bg-rose-950/20 border-rose-500/30 text-rose-400 hover:bg-rose-950/40'
+                        : isOccupied
+                        ? 'bg-indigo-950/20 border-indigo-500/30 text-indigo-400 hover:bg-indigo-955/40'
+                        : isReserved
+                        ? 'bg-amber-950/20 border-amber-500/30 text-amber-400 hover:bg-amber-955/40'
+                        : 'bg-emerald-950/15 border-emerald-500/20 text-emerald-450 hover:bg-emerald-950/30'
+                    }`}
                   >
-                    <Edit className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            </div>
-            <span className="text-[9px] text-slate-555 font-bold uppercase tracking-wider mt-0.5 inline-block">{room.type}</span>
-          </div>
-          <div className="text-right">
-            <span className="text-[10px] font-bold text-slate-200">₹{room.rent.toLocaleString('en-IN')}</span>
-            <span className="text-[9px] text-slate-500 block mt-0.5">{occupiedCount}/{room.capacity} Beds</span>
-          </div>
-        </div>
-
-        {/* Beds list in the room box */}
-        <div className="flex flex-wrap gap-2 mt-2 justify-center items-center overflow-y-auto max-h-[75px] pr-0.5">
-          {room.beds.map((bed: any) => {
-            const isOverdue = bed.status === 'OCCUPIED' && bed.student?.invoices && bed.student.invoices.some((inv: any) => inv.status === 'OVERDUE');
-            return (
-              <div key={bed.id} className="relative group/bed">
-                {/* Bed Icon Button */}
-                <button
-                  onClick={() => {
-                    if (bed.status === 'OCCUPIED' && bed.student) {
-                      handleOccupantClick(bed.student, bed.name, room.number);
-                    }
-                  }}
-                  className={`px-3 py-1.5 border rounded-xl flex items-center gap-1.5 transition-all text-[10px] font-bold cursor-pointer hover:scale-[1.03] ${
-                    isOverdue
-                      ? 'bg-rose-500/20 border-rose-500/40 text-rose-455 hover:bg-rose-500/30'
-                      : bed.status === 'AVAILABLE'
-                      ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-450 hover:bg-emerald-500/20'
-                      : bed.status === 'OCCUPIED'
-                      ? 'bg-indigo-500/10 border-indigo-500/20 text-indigo-400 hover:bg-indigo-500/20'
-                      : bed.status === 'RESERVED'
-                      ? 'bg-amber-500/10 border-amber-500/20 text-amber-400 hover:bg-amber-500/20'
-                      : 'bg-rose-500/10 border-rose-500/20 text-rose-455'
-                  }`}
-                  title={`${bed.name}: ${bed.status.toLowerCase()}${bed.student ? ` - ${bed.student.name}` : ''}`}
-                >
-                  <Bed className="h-3.5 w-3.5 flex-shrink-0" />
-                  <span>
-                    {bed.name.replace('Bed ', '')}
-                    {bed.student && (
-                      <span className="opacity-75 font-normal ml-1">
-                        ({bed.student.name.split(' ')[0]})
-                      </span>
-                    )}
-                  </span>
-                </button>
-
-                {/* Tooltip on Hover */}
-                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-slate-955 border border-slate-850 rounded-xl p-2.5 shadow-2xl opacity-0 scale-95 group-hover/bed:opacity-100 group-hover/bed:scale-100 transition-all pointer-events-none group-hover/bed:pointer-events-auto z-50 text-left text-[10px] space-y-1">
-                  <div className="flex justify-between items-center pb-1 border-b border-slate-850">
-                    <span className="font-bold text-slate-200">{bed.name}</span>
-                    <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
-                      bed.status === 'AVAILABLE' ? 'bg-emerald-500/15 text-emerald-455' : 'bg-indigo-500/15 text-indigo-455'
-                    }`}>{bed.status}</span>
-                  </div>
-                  {bed.student ? (
-                    <div className="pt-1">
-                      <p className="text-slate-200 font-bold truncate">👤 {bed.student.name}</p>
-                      <p className="text-slate-400 mt-0.5">📞 +91 {bed.student.phone}</p>
-                      {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
+                    {/* Bed Pillow & Sheets design */}
+                    <div className="flex items-center justify-between w-full mb-1">
+                      <div className="flex items-center gap-1">
+                        {/* Pillow */}
+                        <div className={`w-2.5 h-1.5 rounded-sm ${
+                          isOverdue ? 'bg-rose-500/50' :
+                          isOccupied ? 'bg-indigo-500/50' :
+                          isReserved ? 'bg-amber-500/50' : 'bg-emerald-500/30'
+                        }`} />
+                        <span className="text-[9px] font-bold tracking-tight">B-{bed.name.replace('Bed ', '')}</span>
+                      </div>
+                      <Bed className="h-3 w-3 opacity-60 flex-shrink-0" />
                     </div>
-                  ) : bed.status === 'AVAILABLE' ? (
-                    hasPermission('students', 'edit') ? (
-                      <Link
-                        href={`/admin/admissions?bedId=${bed.id}`}
-                        className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
-                      >
-                        ⚡ Allocate Bed
-                        <ChevronRight className="h-3 w-3" />
-                      </Link>
+
+                    {/* Occupant Name or Allocation trigger */}
+                    {isOccupied && bed.student ? (
+                      <span className="text-[8px] font-bold truncate block w-full max-w-[80px]">
+                        {bed.student.name.split(' ')[0]}
+                      </span>
+                    ) : bed.status === 'AVAILABLE' ? (
+                      hasPermission('students', 'edit') ? (
+                        <Link
+                          href={`/admin/admissions?bedId=${bed.id}`}
+                          className="text-[8px] text-emerald-400 hover:text-emerald-300 font-extrabold flex items-center gap-0.5 mt-0.5 cursor-pointer pointer-events-auto"
+                        >
+                          + ADMIT
+                        </Link>
+                      ) : (
+                        <span className="text-[8px] text-slate-600 block italic">Empty</span>
+                      )
                     ) : (
-                      <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
-                    )
-                  ) : (
-                    <p className="text-slate-500 mt-1 italic font-medium">Not available</p>
-                  )}
+                      <span className="text-[8px] text-slate-500 block italic capitalize">{bed.status.toLowerCase()}</span>
+                    )}
+                  </button>
+
+                  {/* Tooltip on Hover */}
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 w-48 bg-slate-955 border border-slate-850 rounded-xl p-2.5 shadow-2xl opacity-0 scale-95 group-hover/bed:opacity-100 group-hover/bed:scale-100 transition-all pointer-events-none group-hover/bed:pointer-events-auto z-50 text-left text-[10px] space-y-1">
+                    <div className="flex justify-between items-center pb-1 border-b border-slate-850">
+                      <span className="font-bold text-slate-200">{bed.name}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                        bed.status === 'AVAILABLE' ? 'bg-emerald-500/15 text-emerald-455' : 'bg-indigo-500/15 text-indigo-455'
+                      }`}>{bed.status}</span>
+                    </div>
+                    {bed.student ? (
+                      <div className="pt-1">
+                        <p className="text-slate-200 font-bold truncate">👤 {bed.student.name}</p>
+                        <p className="text-slate-400 mt-0.5">📞 +91 {bed.student.phone}</p>
+                        {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
+                      </div>
+                    ) : bed.status === 'AVAILABLE' ? (
+                      hasPermission('students', 'edit') ? (
+                        <Link
+                          href={`/admin/admissions?bedId=${bed.id}`}
+                          className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
+                        >
+                          ⚡ Allocate Bed
+                          <ChevronRight className="h-3 w-3" />
+                        </Link>
+                      ) : (
+                        <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
+                      )
+                    ) : (
+                      <p className="text-slate-500 mt-1 italic font-medium">Not available</p>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })}
+          </div>
         </div>
 
-        {/* Footer facilities summary */}
-        {room.facilities ? (
-          <span className="text-[8px] text-slate-500 block text-center truncate mt-2">
-            ⚙️ {room.facilities}
-          </span>
-        ) : (
-          <div className="h-2"></div>
+        {/* Facilities footer summary */}
+        {room.facilities && (
+          <div className="mt-2 pt-1 border-t border-slate-800/40 flex items-center justify-between text-[8px] text-slate-550 font-medium">
+            <span className="truncate max-w-[120px]">🛠️ {room.facilities}</span>
+            <span className="font-bold text-slate-400">₹{room.rent}/mo</span>
+          </div>
         )}
       </div>
     );
