@@ -162,7 +162,7 @@ export async function PUT(request: Request) {
     const { user, errorResponse } = await checkAuthAndPermission(request, 'rooms', 'edit');
     if (errorResponse) return errorResponse;
 
-    const { id, number, type, rent, status, facilities, capacity } = await request.json();
+    const { id, number, type, rent, status, facilities, capacity, floorId } = await request.json();
 
     if (!id) {
       return NextResponse.json({ error: 'Room ID is required' }, { status: 400 });
@@ -237,7 +237,8 @@ export async function PUT(request: Request) {
           rent: rent !== undefined ? parseFloat(rent) : undefined,
           status: status !== undefined ? status : undefined,
           facilities: facilities !== undefined ? facilities : undefined,
-          capacity: capacity !== undefined ? parseInt(capacity) : undefined
+          capacity: capacity !== undefined ? parseInt(capacity) : undefined,
+          floorId: floorId !== undefined ? floorId : undefined
         },
         include: { beds: true }
       });

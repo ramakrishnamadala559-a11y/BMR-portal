@@ -73,6 +73,8 @@ export default function RoomsPage() {
   const [editRoomRent, setEditRoomRent] = useState('6000');
   const [editRoomFacilities, setEditRoomFacilities] = useState('Wifi, Wardrobe');
   const [editRoomStatus, setEditRoomStatus] = useState('AVAILABLE');
+  const [newRoomFloorId, setNewRoomFloorId] = useState('');
+  const [editRoomFloorId, setEditRoomFloorId] = useState('');
 
   // Selected student occupant info for checkout modal
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -304,6 +306,7 @@ export default function RoomsPage() {
     setEditRoomRent(room.rent.toString());
     setEditRoomFacilities(room.facilities || '');
     setEditRoomStatus(room.status);
+    setEditRoomFloorId(room.floorId);
     setEditRoomModalOpen(true);
   };
 
@@ -322,7 +325,8 @@ export default function RoomsPage() {
           rent: editRoomRent,
           status: editRoomStatus,
           facilities: editRoomFacilities,
-          capacity: editRoomCapacity
+          capacity: editRoomCapacity,
+          floorId: editRoomFloorId
         })
       });
 
@@ -330,6 +334,7 @@ export default function RoomsPage() {
         setToast({ message: 'Successfully updated room details!', type: 'success' });
         setEditRoomModalOpen(false);
         setEditingRoom(null);
+        setEditRoomFloorId('');
         fetchData();
       } else {
         const errData = await res.json();
@@ -374,7 +379,7 @@ export default function RoomsPage() {
           capacity: newRoomCapacity,
           rent: newRoomRent,
           facilities: newRoomFacilities,
-          floorId: activeFloor.id,
+          floorId: newRoomFloorId || activeFloor.id,
           buildingId: selectedBuildingId,
           subRoomsConfig: newRoomSubRooms
         })
@@ -384,6 +389,7 @@ export default function RoomsPage() {
         setToast({ message: `Room ${newRoomNumber} added successfully!`, type: 'success' });
         setNewRoomNumber('');
         setNewRoomSubRooms('');
+        setNewRoomFloorId('');
         setRoomModalOpen(false);
         fetchData();
       } else {
@@ -648,7 +654,12 @@ export default function RoomsPage() {
                 Add Building
               </button>
               <button
-                onClick={() => setRoomModalOpen(true)}
+                onClick={() => {
+                  if (activeFloor) {
+                    setNewRoomFloorId(activeFloor.id);
+                  }
+                  setRoomModalOpen(true);
+                }}
                 className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
               >
                 <Plus className="h-4 w-4" />
@@ -661,25 +672,38 @@ export default function RoomsPage() {
 
       {/* Buildings tabs */}
       <div className="flex flex-wrap gap-3 border-b border-slate-800/60 pb-5">
-        {buildings.map((b) => (
-          <button
-            key={b.id}
-            onClick={() => {
-              setSelectedBuildingId(b.id);
-              if (b.floors.length > 0) {
-                setSelectedFloorNumber(b.floors[0].number);
-              }
-            }}
-            className={`flex items-center gap-2.5 px-5 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
-              selectedBuildingId === b.id
-                ? 'bg-violet-600 text-white border-violet-500/30 shadow-lg shadow-violet-600/10'
-                : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-855 hover:text-slate-200'
-            }`}
-          >
-            <Building2 className="h-4 w-4" />
-            {b.name}
-          </button>
-        ))}
+        {buildings.map((b) => {
+          const totalRooms = b.floors.reduce((acc: number, f: any) => acc + f.rooms.length, 0);
+          const totalBeds = b.floors.reduce((acc: number, f: any) => acc + f.rooms.reduce((rAcc: number, r: any) => rAcc + r.beds.length, 0), 0);
+          const occupiedBeds = b.floors.reduce((acc: number, f: any) => acc + f.rooms.reduce((rAcc: number, r: any) => rAcc + r.beds.filter((bd: any) => bd.status === 'OCCUPIED').length, 0), 0);
+          
+          return (
+            <button
+              key={b.id}
+              onClick={() => {
+                setSelectedBuildingId(b.id);
+                if (b.floors.length > 0) {
+                  setSelectedFloorNumber(b.floors[0].number);
+                }
+              }}
+              className={`flex items-center gap-3 px-5 py-3 rounded-xl border text-sm font-semibold transition-all cursor-pointer ${
+                selectedBuildingId === b.id
+                  ? 'bg-violet-600 text-white border-violet-500/30 shadow-lg shadow-violet-600/10'
+                  : 'bg-slate-900 text-slate-400 border-slate-800 hover:bg-slate-855 hover:text-slate-200'
+              }`}
+            >
+              <Home className="h-4.5 w-4.5 shrink-0" />
+              <div className="text-left">
+                <span className="block">{b.name}</span>
+                <span className={`text-[9px] uppercase tracking-wider font-bold block mt-0.5 ${
+                  selectedBuildingId === b.id ? 'text-violet-200' : 'text-slate-500'
+                }`}>
+                  {b.gender || 'COLIVING'} • {b.floors.length} Flrs • {totalRooms} Rms • {occupiedBeds}/{totalBeds} Beds
+                </span>
+              </div>
+            </button>
+          );
+        })}
       </div>
 
       {/* Active Building Management & Floor Tabs */}
@@ -835,7 +859,12 @@ export default function RoomsPage() {
             <p className="text-slate-400 text-sm font-semibold">No rooms added to Floor {selectedFloorNumber} yet.</p>
             {hasPermission('rooms', 'create') && (
               <button
-                onClick={() => setRoomModalOpen(true)}
+                onClick={() => {
+                  if (activeFloor) {
+                    setNewRoomFloorId(activeFloor.id);
+                  }
+                  setRoomModalOpen(true);
+                }}
                 className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-200 transition-colors cursor-pointer"
               >
                 Add First Room
@@ -1112,8 +1141,24 @@ export default function RoomsPage() {
             >
               <X className="h-5 w-5" />
             </button>
-            <h3 className="text-base font-bold text-white mb-4">Add Room to Floor {selectedFloorNumber}</h3>
+            <h3 className="text-base font-bold text-white mb-4">Add Room</h3>
             <form onSubmit={handleAddRoomSubmit} className="space-y-4">
+              {activeBuilding && activeBuilding.floors.length > 0 && (
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Assign Floor Location</label>
+                  <select
+                    value={newRoomFloorId || (activeFloor ? activeFloor.id : '')}
+                    onChange={(e) => setNewRoomFloorId(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  >
+                    {activeBuilding.floors.map((f: any) => (
+                      <option key={f.id} value={f.id} className="bg-slate-900">
+                        Floor {f.number}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-350 text-xs font-semibold mb-2">Room Number</label>
@@ -1388,6 +1433,22 @@ export default function RoomsPage() {
             </button>
             <h3 className="text-base font-bold text-white mb-4">Edit Room {editingRoom.number}</h3>
             <form onSubmit={handleEditRoomSubmit} className="space-y-4">
+              {activeBuilding && activeBuilding.floors.length > 0 && (
+                <div>
+                  <label className="block text-slate-350 text-xs font-semibold mb-2">Move Room to Floor</label>
+                  <select
+                    value={editRoomFloorId}
+                    onChange={(e) => setEditRoomFloorId(e.target.value)}
+                    className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
+                  >
+                    {activeBuilding.floors.map((f: any) => (
+                      <option key={f.id} value={f.id} className="bg-slate-900">
+                        Floor {f.number}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              )}
               <div className="grid grid-cols-3 gap-4">
                 <div>
                   <label className="block text-slate-350 text-xs font-semibold mb-2">Room Number</label>
