@@ -121,12 +121,15 @@ export default function AdminDashboardPage() {
           <p className="text-slate-400 text-sm mt-1">Live occupancy metrics and financial logs for {brandName}.</p>
         </div>
         <div className="w-full sm:w-60">
+          <label className="block text-[10px] text-slate-500 font-bold uppercase tracking-wider mb-1.5 sm:hidden">
+            Filter by Block & Building
+          </label>
           <select
             value={selectedBuildingId}
             onChange={(e) => setSelectedBuildingId(e.target.value)}
             className="w-full bg-slate-900 border border-slate-800/80 rounded-xl py-2.5 px-4 text-xs font-semibold text-slate-350 focus:outline-none focus:border-violet-500/80 cursor-pointer"
           >
-            <option value="">All Buildings (Blocks)</option>
+            <option value="">All Blocks & Buildings</option>
             {buildings.map((b) => (
               <option key={b.id} value={b.id}>
                 {b.name}
@@ -137,7 +140,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-5 gap-3.5">
         {/* Occupied Beds */}
         <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 lg:p-5 shadow-xl flex flex-col justify-between h-full min-w-0">
           <div className="flex items-center justify-between gap-1.5 mb-2.5">
@@ -219,7 +222,7 @@ export default function AdminDashboardPage() {
         </div>
 
         {/* Monthly Expenses */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 lg:p-5 shadow-xl flex flex-col justify-between h-full min-w-0">
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-4 lg:p-5 shadow-xl flex flex-col justify-between h-full min-w-0 col-span-2 md:col-span-1">
           <div className="flex items-center justify-between gap-1.5 mb-2.5">
             <span className="text-slate-400 text-[10px] md:text-[9px] lg:text-[10px] xl:text-xs font-bold uppercase tracking-wider truncate">
               Monthly Expenses
