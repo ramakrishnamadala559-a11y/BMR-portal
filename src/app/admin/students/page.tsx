@@ -320,8 +320,10 @@ export default function StudentsPage() {
             <p className="text-slate-400 text-sm">No student records found</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full text-left border-collapse">
+          <div>
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
                   <th className="py-4 px-6">Stu ID</th>
@@ -413,6 +415,7 @@ export default function StudentsPage() {
               </tbody>
             </table>
           </div>
+        </div>
         )}
       </div>
 

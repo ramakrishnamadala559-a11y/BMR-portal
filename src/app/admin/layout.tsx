@@ -312,6 +312,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <Settings className="h-5 w-5" />
           <span className="text-[9px] font-bold uppercase tracking-wider">Settings</span>
         </Link>
+        <button
+          onClick={() => setMobileOpen(!mobileOpen)}
+          className="flex flex-col items-center gap-1 transition-all text-slate-450 hover:text-slate-200 cursor-pointer"
+        >
+          <Menu className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">More Menu</span>
+        </button>
       </nav>
     </div>
   );
