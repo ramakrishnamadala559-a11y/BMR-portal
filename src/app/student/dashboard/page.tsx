@@ -566,7 +566,7 @@ export default function StudentDashboardPage() {
             </div>
 
             {/* Printable Area */}
-            <div className="bg-white text-slate-955 p-4 sm:p-8 rounded-xl border border-slate-200 print:border-0 print:p-0">
+            <div className="bg-white text-slate-955 p-4 sm:p-8 rounded-xl border border-slate-200 print:border-0 print:p-0" id="printable-receipt">
               <div className="flex justify-between items-start pb-6 border-b border-slate-200">
                 <div>
                   <div className="flex items-center gap-2.5">

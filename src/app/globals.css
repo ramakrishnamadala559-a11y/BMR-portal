@@ -107,12 +107,21 @@ body {
 
 /* Print CSS Styles */
 @media print {
-  body {
-    background: white !important;
-    color: black !important;
+  body * {
+    visibility: hidden;
   }
-  .print\:hidden {
-    display: none !important;
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
+  }
+  #printable-receipt {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
   }
 }
 
