@@ -20,7 +20,8 @@ import {
   X,
   Edit,
   Trash2,
-  Settings
+  Settings,
+  Home
 } from 'lucide-react';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
