@@ -46,3 +46,11 @@ yarn-error.log*
 next-env.d.ts
 
 .vercel
+/jdk/
+/jdk21/
+/jdk21.zip
+/jdk.zip
+/gradle-*.zip
+/cmdline-tools.zip
+/android-sdk/
+/app-debug.apk
