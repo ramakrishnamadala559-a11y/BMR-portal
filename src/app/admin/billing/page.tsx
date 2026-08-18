@@ -506,6 +506,16 @@ export default function BillingPage() {
                     <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
+                  {settings?.website && (
+                    <a
+                      href={`https://${settings.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-violet-600 font-bold block mt-0.5 hover:underline"
+                    >
+                      🌐 {settings.website}
+                    </a>
+                  )}
                   <p className="text-[10px] text-slate-400 mt-0.5">GSTIN: 29AAAAA1111A1Z1</p>
                 </div>
                 <div className="text-right">

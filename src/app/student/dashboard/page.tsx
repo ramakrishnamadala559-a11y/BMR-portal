@@ -574,6 +574,16 @@ export default function StudentDashboardPage() {
                     <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
+                  {settings?.website && (
+                    <a
+                      href={`https://${settings.website}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[10px] text-violet-600 font-bold block mt-0.5 hover:underline"
+                    >
+                      🌐 {settings.website}
+                    </a>
+                  )}
                 </div>
                 <div className="text-right">
                   <span className="text-[9px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">

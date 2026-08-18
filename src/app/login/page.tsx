@@ -93,9 +93,7 @@ export default function LoginPage() {
       <header className="w-full border-b border-slate-900/60 bg-slate-955/65 backdrop-blur-md sticky top-0 z-50">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className="bg-gradient-to-tr from-violet-600 to-rose-500 p-2 rounded-xl shadow-md flex items-center justify-center border border-white/5">
-              <Home className="h-5 w-5 text-white" />
-            </div>
+            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
             <div>
               <span className="text-base font-bold text-white tracking-tight">{brandName}</span>
               <span className="text-[8px] block text-violet-400 font-bold uppercase tracking-wider">{brandTag}</span>
@@ -281,6 +279,25 @@ export default function LoginPage() {
             </div>
           </div>
         )}
+
+        {/* App Download Promo Card */}
+        <div className="w-full max-w-md bg-gradient-to-r from-violet-950/20 via-slate-900/40 to-indigo-950/20 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between gap-4 shadow-lg relative overflow-hidden">
+          <div className="flex items-center gap-3">
+            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-10 w-10 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
+            <div>
+              <p className="text-xs font-bold text-white">Home Stay Hostel Mobile App</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">Install the web app on your device for instant updates.</p>
+            </div>
+          </div>
+          <a
+            href={settings?.website ? `https://${settings.website}` : 'https://www.homestayhostel.com'}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 hover:scale-[1.02] text-[10px] font-bold rounded-xl text-white shadow-md shadow-violet-600/10 transition-all cursor-pointer whitespace-nowrap"
+          >
+            Download App <ArrowUpRight className="h-3 w-3" />
+          </a>
+        </div>
 
         {/* SECTION 2: MARKETING HERO & FEATURES GRID (STACKED BELOW LOGIN) */}
         <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
