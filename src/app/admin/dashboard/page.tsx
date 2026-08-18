@@ -23,7 +23,7 @@ import { AreaChart, Area, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContai
 
 export default function AdminDashboardPage() {
   const { hasPermission, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood PG';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   
   const [data, setData] = useState<any>(null);
   const [logs, setLogs] = useState<any[]>([]);

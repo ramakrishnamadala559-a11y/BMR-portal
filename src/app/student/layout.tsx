@@ -10,14 +10,15 @@ import {
   LayoutDashboard,
   Receipt,
   User,
-  Bell
+  Bell,
+  Home
 } from 'lucide-react';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function StudentLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood PG';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   const router = useRouter();
   const pathname = usePathname();
 
@@ -46,7 +47,7 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       <header className="h-16 bg-slate-900 border-b border-slate-800/80 flex items-center justify-between px-6 z-30 flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="p-1.5 bg-violet-500/10 rounded-lg border border-violet-500/20">
-            <Building2 className="h-4.5 w-4.5 text-violet-400" />
+            <Home className="h-4.5 w-4.5 text-violet-400" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-white tracking-wide">Student Portal</h2>

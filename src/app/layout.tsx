@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Pinewood PG | Premium Hostel Management",
+  title: "Pinewood Home Stay | Premium Hostel Management",
   description: "Premium Single-Tenant Property and PG Management Platform",
 };
 

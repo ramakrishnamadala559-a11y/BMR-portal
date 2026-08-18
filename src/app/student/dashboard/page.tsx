@@ -21,7 +21,7 @@ import Toast from '@/components/Toast';
 
 export default function StudentDashboardPage() {
   const { user, studentProfile, refreshAuth, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood PG';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   
   const [invoices, setInvoices] = useState<any[]>([]);
   const [roommates, setRoommates] = useState<any[]>([]);

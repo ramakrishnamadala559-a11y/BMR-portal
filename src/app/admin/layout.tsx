@@ -19,14 +19,15 @@ import {
   Bell,
   User as UserIcon,
   ChevronRight,
-  Loader2
+  Loader2,
+  Home
 } from 'lucide-react';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, hasPermission, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood PG';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   const router = useRouter();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -85,7 +86,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="hidden lg:flex flex-col w-64 bg-slate-900 border-r border-slate-800/80 flex-shrink-0">
         <div className="p-6 border-b border-slate-800/60 flex items-center gap-3">
           <div className="p-2 bg-violet-500/10 rounded-lg border border-violet-500/20">
-            <Building2 className="h-5 w-5 text-violet-400" />
+            <Home className="h-5 w-5 text-violet-400" />
           </div>
           <div>
             <h2 className="text-sm font-bold text-white tracking-wide">{brandName}</h2>
@@ -223,7 +224,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       >
         <div className="p-6 border-b border-slate-800/60 flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <Building2 className="h-5 w-5 text-violet-400" />
+            <Home className="h-5 w-5 text-violet-400" />
             <h2 className="text-sm font-bold text-white tracking-wide">{brandName}</h2>
           </div>
           <button

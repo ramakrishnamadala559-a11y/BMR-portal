@@ -19,14 +19,15 @@ import {
   Receipt,
   Users,
   Compass,
-  ArrowUpRight
+  ArrowUpRight,
+  Home
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 import ThemeToggle from '@/components/ThemeToggle';
 
 export default function LoginPage() {
   const { login, user, loading, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Premium Stay Hostel';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   const brandTag = settings?.address || 'Premium Accommodation Stay';
   const router = useRouter();
   
@@ -93,7 +94,7 @@ export default function LoginPage() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <div className="bg-gradient-to-tr from-violet-600 to-rose-500 p-2 rounded-xl shadow-md flex items-center justify-center border border-white/5">
-              <Building2 className="h-5 w-5 text-white" />
+              <Home className="h-5 w-5 text-white" />
             </div>
             <div>
               <span className="text-base font-bold text-white tracking-tight">{brandName}</span>
@@ -343,7 +344,7 @@ export default function LoginPage() {
 
           <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-500 font-medium pt-2">
             <div className="flex items-center gap-2">
-              <Building2 className="h-4 w-4 text-violet-500/70" />
+              <Home className="h-4 w-4 text-violet-500/70" />
               <span>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</span>
             </div>
             <div className="flex items-center gap-4">

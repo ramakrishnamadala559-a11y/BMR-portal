@@ -19,7 +19,7 @@ import Toast from '@/components/Toast';
 
 export default function BillingPage() {
   const { hasPermission, settings } = useAuth();
-  const brandName = settings?.hostelName || 'Pinewood PG';
+  const brandName = settings?.hostelName || 'Pinewood Home Stay';
   
   const [invoices, setInvoices] = useState<any[]>([]);
   const [payments, setPayments] = useState<any[]>([]);
