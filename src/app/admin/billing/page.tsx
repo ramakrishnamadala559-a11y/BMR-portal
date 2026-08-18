@@ -501,8 +501,8 @@ export default function BillingPage() {
             <div className="bg-white text-slate-955 p-4 sm:p-8 rounded-xl border border-slate-200 print:border-0 print:p-0" id="printable-receipt">
               <div className="flex justify-between items-start pb-6 border-b border-slate-200">
                 <div>
-                  <div className="flex items-center gap-2">
-                    <Home className="h-5 w-5 text-violet-600 print:text-slate-900" />
+                  <div className="flex items-center gap-2.5">
+                    <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-200 shadow-sm object-cover" />
                     <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
                   </div>
                   <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
