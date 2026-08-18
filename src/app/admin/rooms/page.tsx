@@ -529,12 +529,28 @@ export default function RoomsPage() {
     const isMaintenance = room.status === 'MAINTENANCE';
 
     return (
-      <div key={`${room.id}-${room.virtualNumber || room.number}`} className="group p-4 border rounded-2xl flex flex-col justify-between h-40 transition-all bg-slate-900 border-slate-800 hover:border-slate-700/80 hover:bg-slate-855/40 relative">
+      <div key={`${room.id}-${room.virtualNumber || room.number}`} className="group p-4 pt-5 border rounded-2xl flex flex-col justify-between h-40 transition-all bg-slate-900/60 border-slate-800/80 hover:border-violet-500/40 hover:bg-slate-855/20 hover:shadow-lg hover:shadow-violet-950/15 relative overflow-hidden">
+        {/* Color-coded Status Top Bar */}
+        <div className={`absolute top-0 left-0 right-0 h-1.5 ${
+          isMaintenance ? 'bg-rose-500 animate-pulse' :
+          occupiedCount === room.capacity ? 'bg-indigo-500/85' :
+          occupiedCount === 0 ? 'bg-emerald-500/85' : 'bg-amber-500/85'
+        }`} />
         {/* Room Info */}
         <div className="flex justify-between items-start">
           <div>
             <div className="flex items-center gap-1.5">
               <span className="text-xs font-bold text-white block">Room {room.isVirtual ? room.virtualNumber : room.number}</span>
+              <span className={`text-[8px] font-extrabold uppercase tracking-wider px-1.5 py-0.5 rounded ${
+                isMaintenance ? 'bg-rose-500/15 text-rose-455 border border-rose-500/25' :
+                occupiedCount === room.capacity ? 'bg-indigo-500/15 text-indigo-400 border border-indigo-500/25' :
+                occupiedCount === 0 ? 'bg-emerald-500/15 text-emerald-450 border border-emerald-500/25' : 
+                'bg-amber-500/15 text-amber-400 border border-amber-500/25'
+              }`}>
+                {isMaintenance ? 'Maint' :
+                 occupiedCount === room.capacity ? 'Full' :
+                 occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
+              </span>
               <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                 {hasPermission('rooms', 'edit') && (
                   <button
@@ -632,8 +648,9 @@ export default function RoomsPage() {
   };
 
   const virtualRooms = getVirtualRooms(activeRooms);
-  const topRowRooms = virtualRooms.filter((_: any, idx: number) => idx % 2 === 0);
-  const bottomRowRooms = virtualRooms.filter((_: any, idx: number) => idx % 2 !== 0);
+  const halfRoomsCount = Math.ceil(virtualRooms.length / 2);
+  const topRowRooms = virtualRooms.slice(0, halfRoomsCount);
+  const bottomRowRooms = virtualRooms.slice(halfRoomsCount);
 
   return (
     <div className="space-y-8 animate-slide-in">
@@ -897,38 +914,46 @@ export default function RoomsPage() {
             {/* Floor Map Layout */}
             <div className="bg-slate-950 border border-slate-850 p-6 md:p-8 rounded-3xl overflow-x-auto relative">
               <div className="min-w-[800px] space-y-4">
-                {/* Top Row of Rooms */}
-                <div className="grid grid-cols-4 gap-4">
+                {/* Top Row (North Wing) of Rooms */}
+                <div 
+                  className="grid gap-4"
+                  style={{ gridTemplateColumns: `repeat(${Math.max(3, topRowRooms.length)}, minmax(0, 1fr))` }}
+                >
                   {topRowRooms.map((room: any) => renderRoomBox(room))}
-                  {topRowRooms.length < 4 && Array.from({ length: 4 - topRowRooms.length }).map((_, idx) => (
-                    <div key={`empty-top-${idx}`} className="border border-slate-900 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-20">
-                      <span className="text-[10px] text-slate-600 italic">Empty Slot</span>
+                  {topRowRooms.length < 3 && Array.from({ length: 3 - topRowRooms.length }).map((_, idx) => (
+                    <div key={`empty-top-${idx}`} className="border border-slate-900/60 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-10">
+                      <span className="text-[10px] text-slate-600 italic font-semibold">Unallocated Wing Slot</span>
                     </div>
                   ))}
                 </div>
 
                 {/* Central Corridor Walkway */}
-                <div className="h-14 bg-slate-900/80 border-y border-slate-800/80 rounded-xl flex items-center justify-between px-6 relative overflow-hidden shadow-inner">
+                <div className="h-14 bg-slate-900/80 border-y border-slate-850/80 rounded-xl flex items-center justify-between px-6 relative overflow-hidden shadow-inner">
                   <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/10 to-transparent pointer-events-none"></div>
                   <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-wider z-10">
-                    <span>⬅ EXIT</span>
+                    <span>⬅ EXIT LOBBY</span>
                   </div>
                   <div className="flex-1 flex justify-center gap-8 text-[9px] text-slate-500 font-extrabold uppercase tracking-widest pointer-events-none z-0">
+                    <span>N O R T H   W I N G</span>
+                    <span>•</span>
                     <span>C O R R I D O R</span>
                     <span>•</span>
-                    <span>W A L K W A Y</span>
+                    <span>S O U T H   W I N G</span>
                   </div>
                   <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-wider z-10">
-                    <span>WASHROOM ➡</span>
+                    <span>LIFT / STAIRS ➡</span>
                   </div>
                 </div>
 
-                {/* Bottom Row of Rooms */}
-                <div className="grid grid-cols-4 gap-4">
+                {/* Bottom Row (South Wing) of Rooms */}
+                <div 
+                  className="grid gap-4"
+                  style={{ gridTemplateColumns: `repeat(${Math.max(3, topRowRooms.length)}, minmax(0, 1fr))` }}
+                >
                   {bottomRowRooms.map((room: any) => renderRoomBox(room))}
-                  {bottomRowRooms.length < 4 && Array.from({ length: 4 - bottomRowRooms.length }).map((_, idx) => (
-                    <div key={`empty-bottom-${idx}`} className="border border-slate-900 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-20">
-                      <span className="text-[10px] text-slate-600 italic">Empty Slot</span>
+                  {bottomRowRooms.length < topRowRooms.length && Array.from({ length: topRowRooms.length - bottomRowRooms.length }).map((_, idx) => (
+                    <div key={`empty-bottom-${idx}`} className="border border-slate-900/60 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-10">
+                      <span className="text-[10px] text-slate-650 italic font-semibold">Unallocated Wing Slot</span>
                     </div>
                   ))}
                 </div>
