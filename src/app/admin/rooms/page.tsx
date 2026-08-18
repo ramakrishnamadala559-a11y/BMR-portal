@@ -620,7 +620,7 @@ export default function RoomsPage() {
                       handleOccupantClick(bed.student, bed.name, room.number);
                     }
                   }}
-                  className={`p-2 border rounded-xl flex items-center justify-center transition-all ${
+                  className={`px-3 py-1.5 border rounded-xl flex items-center gap-1.5 transition-all text-[10px] font-bold cursor-pointer hover:scale-[1.03] ${
                     isOverdue
                       ? 'bg-rose-500/20 border-rose-500/40 text-rose-455 hover:bg-rose-500/30'
                       : bed.status === 'AVAILABLE'
@@ -633,7 +633,15 @@ export default function RoomsPage() {
                   }`}
                   title={`${bed.name}: ${bed.status.toLowerCase()}${bed.student ? ` - ${bed.student.name}` : ''}`}
                 >
-                  <Bed className="h-4.5 w-4.5" />
+                  <Bed className="h-3.5 w-3.5 flex-shrink-0" />
+                  <span>
+                    {bed.name.replace('Bed ', '')}
+                    {bed.student && (
+                      <span className="opacity-75 font-normal ml-1">
+                        ({bed.student.name.split(' ')[0]})
+                      </span>
+                    )}
+                  </span>
                 </button>
 
                 {/* Tooltip on Hover */}
