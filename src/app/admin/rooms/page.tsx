@@ -76,6 +76,8 @@ export default function RoomsPage() {
   const [editRoomStatus, setEditRoomStatus] = useState('AVAILABLE');
   const [newRoomFloorId, setNewRoomFloorId] = useState('');
   const [editRoomFloorId, setEditRoomFloorId] = useState('');
+  const [isSubRoomsEnabled, setIsSubRoomsEnabled] = useState(false);
+  const [subRoomsRows, setSubRoomsRows] = useState<{ name: string; beds: string }[]>([]);
 
   // Selected student occupant info for checkout modal
   const [selectedStudent, setSelectedStudent] = useState<any>(null);
@@ -370,6 +372,21 @@ export default function RoomsPage() {
     e.preventDefault();
     if (!newRoomNumber.trim() || !activeFloor) return;
 
+    let subRoomsString = '';
+    if (isSubRoomsEnabled) {
+      const validRows = subRoomsRows.filter(r => r.name.trim() && r.beds);
+      if (validRows.length === 0) {
+        setToast({ message: 'Please define at least one sub-room or disable sub-rooms option.', type: 'error' });
+        return;
+      }
+      const totalBeds = validRows.reduce((acc, r) => acc + parseInt(r.beds || '0'), 0);
+      if (totalBeds !== parseInt(newRoomCapacity)) {
+        setToast({ message: `Total sub-room beds (${totalBeds}) must equal the room beds capacity (${newRoomCapacity}).`, type: 'error' });
+        return;
+      }
+      subRoomsString = validRows.map(r => `${r.name.trim()}:${r.beds.trim()}`).join(',');
+    }
+
     try {
       const res = await fetch('/api/rooms', {
         method: 'POST',
@@ -382,7 +399,7 @@ export default function RoomsPage() {
           facilities: newRoomFacilities,
           floorId: newRoomFloorId || activeFloor.id,
           buildingId: selectedBuildingId,
-          subRoomsConfig: newRoomSubRooms
+          subRoomsConfig: subRoomsString
         })
       });
 
@@ -391,6 +408,8 @@ export default function RoomsPage() {
         setNewRoomNumber('');
         setNewRoomSubRooms('');
         setNewRoomFloorId('');
+        setIsSubRoomsEnabled(false);
+        setSubRoomsRows([{ name: '', beds: '' }]);
         setRoomModalOpen(false);
         fetchData();
       } else {
@@ -692,6 +711,8 @@ export default function RoomsPage() {
                   if (activeFloor) {
                     setNewRoomFloorId(activeFloor.id);
                   }
+                  setIsSubRoomsEnabled(false);
+                  setSubRoomsRows([{ name: '', beds: '' }]);
                   setRoomModalOpen(true);
                 }}
                 className="flex items-center gap-2 px-4 py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
@@ -911,6 +932,8 @@ export default function RoomsPage() {
                   if (activeFloor) {
                     setNewRoomFloorId(activeFloor.id);
                   }
+                  setIsSubRoomsEnabled(false);
+                  setSubRoomsRows([{ name: '', beds: '' }]);
                   setRoomModalOpen(true);
                 }}
                 className="mt-4 inline-flex items-center gap-2 px-4 py-2 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-200 transition-colors cursor-pointer"
@@ -1277,16 +1300,76 @@ export default function RoomsPage() {
                   className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
                 />
               </div>
-              <div>
-                <label className="block text-slate-350 text-xs font-semibold mb-2">Sub-Rooms Allocation (Optional)</label>
-                <input
-                  type="text"
-                  value={newRoomSubRooms}
-                  onChange={(e) => setNewRoomSubRooms(e.target.value)}
-                  placeholder="e.g. 10A:5,10B:5 (Must sum to Beds Capacity)"
-                  className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 placeholder-slate-600 focus:outline-none"
-                />
-                <span className="text-[10px] text-slate-500 block mt-1">Split room capacity into sub-rooms. E.g. room "10" is split into sub-rooms "10A" (5 beds) and "10B" (5 beds).</span>
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <input
+                    type="checkbox"
+                    id="enableSubRooms"
+                    checked={isSubRoomsEnabled}
+                    onChange={(e) => setIsSubRoomsEnabled(e.target.checked)}
+                    className="h-4 w-4 bg-slate-950 border border-slate-800 rounded focus:ring-violet-500 text-violet-600 cursor-pointer"
+                  />
+                  <label htmlFor="enableSubRooms" className="text-slate-300 text-xs font-semibold cursor-pointer select-none">
+                    Split this room into Sub-Rooms (e.g. 10A, 10B)
+                  </label>
+                </div>
+
+                {isSubRoomsEnabled && (
+                  <div className="space-y-2.5 p-3.5 bg-slate-955/40 border border-slate-805/60 rounded-xl">
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider block">Define Sub-Rooms</span>
+                      <span className="text-[9px] text-slate-500">Must sum to {newRoomCapacity} beds</span>
+                    </div>
+                    
+                    {subRoomsRows.map((row, idx) => (
+                      <div key={idx} className="flex items-center gap-2 animate-slide-in">
+                        <input
+                          type="text"
+                          value={row.name}
+                          onChange={(e) => {
+                            const newRows = [...subRoomsRows];
+                            newRows[idx].name = e.target.value;
+                            setSubRoomsRows(newRows);
+                          }}
+                          placeholder="e.g. 10A"
+                          className="flex-1 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-violet-500/50"
+                          required
+                        />
+                        <input
+                          type="number"
+                          min="1"
+                          max={newRoomCapacity}
+                          value={row.beds}
+                          onChange={(e) => {
+                            const newRows = [...subRoomsRows];
+                            newRows[idx].beds = e.target.value;
+                            setSubRoomsRows(newRows);
+                          }}
+                          placeholder="Beds"
+                          className="w-20 bg-slate-900 border border-slate-800 rounded-lg py-1.5 px-3 text-xs text-white focus:outline-none focus:border-violet-500/50"
+                          required
+                        />
+                        {subRoomsRows.length > 1 && (
+                          <button
+                            type="button"
+                            onClick={() => setSubRoomsRows(subRoomsRows.filter((_, i) => i !== idx))}
+                            className="p-1.5 text-rose-500 hover:bg-rose-950/20 rounded-md transition-colors cursor-pointer"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        )}
+                      </div>
+                    ))}
+                    
+                    <button
+                      type="button"
+                      onClick={() => setSubRoomsRows([...subRoomsRows, { name: '', beds: '' }])}
+                      className="mt-1 flex items-center gap-1 text-[10px] font-bold text-violet-400 hover:text-violet-300 transition-colors cursor-pointer"
+                    >
+                      <Plus className="h-3 w-3" /> Add Sub-room Row
+                    </button>
+                  </div>
+                )}
               </div>
               <button
                 type="submit"
