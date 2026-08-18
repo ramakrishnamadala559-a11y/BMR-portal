@@ -21,7 +21,8 @@ import {
   Edit,
   Trash2,
   Settings,
-  Home
+  Home,
+  Map
 } from 'lucide-react';
 import Link from 'next/link';
 import Toast from '@/components/Toast';
@@ -701,8 +702,11 @@ export default function RoomsPage() {
       {/* Title */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-white tracking-tight">Rooms & Beds Manager</h1>
-          <p className="text-slate-400 text-sm mt-1">Manage hostel properties, rooms inventory, and bed status mappings.</p>
+          <h1 className="text-2xl font-bold text-white tracking-tight flex items-center gap-2">
+            <Map className="h-6 w-6 text-violet-400" />
+            Rooms Map
+          </h1>
+          <p className="text-slate-400 text-sm mt-1">Manage hostel properties, rooms map corridors, and bed status mappings.</p>
         </div>
         <div className="flex gap-3">
           {hasPermission('rooms', 'create') && (
@@ -898,7 +902,7 @@ export default function RoomsPage() {
       <div className="space-y-6">
         {activeRooms.length === 0 ? (
           <div className="bg-slate-900/40 border border-slate-800/60 border-dashed rounded-2xl p-12 text-center">
-            <Compass className="h-10 w-10 text-slate-600 mx-auto mb-3" />
+            <Map className="h-10 w-10 text-slate-650 mx-auto mb-3 animate-pulse" />
             <p className="text-slate-400 text-sm font-semibold">No rooms added to Floor {selectedFloorNumber} yet.</p>
             {hasPermission('rooms', 'create') && (
               <button

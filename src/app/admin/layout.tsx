@@ -20,7 +20,8 @@ import {
   User as UserIcon,
   ChevronRight,
   Loader2,
-  Home
+  Home,
+  Map as MapIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -57,7 +58,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard, permission: { m: '', a: '' } },
     { name: 'Students', href: '/admin/students', icon: Users, permission: { m: 'students', a: 'view' } },
     { name: 'Admissions', href: '/admin/admissions', icon: UserPlus, permission: { m: 'students', a: 'edit' } },
-    { name: 'Rooms & Beds', href: '/admin/rooms', icon: Building2, permission: { m: 'rooms', a: 'view' } },
+    { name: 'Rooms Map', href: '/admin/rooms', icon: MapIcon, permission: { m: 'rooms', a: 'view' } },
     { name: 'Billing & Invoices', href: '/admin/billing', icon: Receipt, permission: { m: 'invoices', a: 'view' } },
     { name: 'PG Expenses', href: '/admin/expenses', icon: PiggyBank, permission: { m: 'expenses', a: 'view' } },
     { name: 'Staff Management', href: '/admin/staff', icon: ShieldCheck, permission: { m: 'settings', a: 'view' } },
