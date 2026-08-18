@@ -363,15 +363,15 @@ export default function AdminDashboardPage() {
           ↔ Swipe table horizontally to see all columns & margins
         </span>
         <div className="overflow-x-auto">
-          <table className="w-full text-left border-collapse text-xs">
+          <table className="w-full text-left border-collapse text-[11px] md:text-xs">
             <thead>
               <tr className="bg-slate-955 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
-                <th className="py-3 px-4">Billing Month</th>
-                <th className="py-3 px-4">Total Generated Bills (Revenue)</th>
-                <th className="py-3 px-4">Operating Expenses</th>
-                <th className="py-3 px-4">Net Profit / Loss</th>
-                <th className="py-3 px-4">Profit Margin</th>
-                <th className="py-3 px-4">Status</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Billing Month</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Total Generated Bills (Revenue)</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Operating Expenses</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Net Profit / Loss</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Profit Margin</th>
+                <th className="py-2 px-2.5 md:py-3 md:px-4">Status</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-850/60">
@@ -381,16 +381,16 @@ export default function AdminDashboardPage() {
                 const isLoss = profit < 0;
                 return (
                   <tr key={trend.month} className="hover:bg-slate-950/20 transition-colors">
-                    <td className="py-3 px-4 font-bold text-slate-200">{trend.month}</td>
-                    <td className="py-3 px-4 text-emerald-450 font-semibold">₹{trend.revenue.toLocaleString('en-IN')}</td>
-                    <td className="py-3 px-4 text-rose-455 font-semibold">₹{trend.expenses.toLocaleString('en-IN')}</td>
-                    <td className={`py-3 px-4 font-extrabold ${isLoss ? 'text-rose-500' : 'text-emerald-450'}`}>
+                    <td className="py-2 px-2.5 md:py-3 md:px-4 font-bold text-slate-200">{trend.month}</td>
+                    <td className="py-2 px-2.5 md:py-3 md:px-4 text-emerald-450 font-semibold">₹{trend.revenue.toLocaleString('en-IN')}</td>
+                    <td className="py-2 px-2.5 md:py-3 md:px-4 text-rose-455 font-semibold">₹{trend.expenses.toLocaleString('en-IN')}</td>
+                    <td className={`py-2 px-2.5 md:py-3 md:px-4 font-extrabold ${isLoss ? 'text-rose-500' : 'text-emerald-450'}`}>
                       {isLoss ? '-' : '+'}₹{Math.abs(profit).toLocaleString('en-IN')}
                     </td>
-                    <td className="py-3 px-4 font-semibold text-slate-350">
+                    <td className="py-2 px-2.5 md:py-3 md:px-4 font-semibold text-slate-350">
                       {profitMargin}%
                     </td>
-                    <td className="py-3 px-4">
+                    <td className="py-2 px-2.5 md:py-3 md:px-4">
                       <span className={`px-2.5 py-0.5 rounded border text-[9px] font-bold uppercase ${
                         isLoss
                           ? 'bg-rose-500/10 text-rose-400 border-rose-500/20'

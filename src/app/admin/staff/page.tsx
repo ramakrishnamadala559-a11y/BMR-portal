@@ -513,20 +513,20 @@ export default function StaffPage() {
                 <table className="w-full border-collapse text-left text-xs">
                   <thead>
                     <tr className="bg-slate-950 border-b border-slate-800 text-slate-400 text-[10px] uppercase font-bold tracking-wider">
-                      <th className="py-3 px-4">Module Name</th>
+                      <th className="py-2 px-2 md:py-3.5 md:px-4">Module Name</th>
                       {actionsList.map(action => (
-                        <th key={action} className="py-3 px-4 text-center">{action}</th>
+                        <th key={action} className="py-2 px-2 md:py-3.5 md:px-4 text-center">{action}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-850">
                     {modulesList.map(module => (
                       <tr key={module} className="hover:bg-slate-900/10">
-                        <td className="py-3.5 px-4 font-bold text-slate-200 capitalize">{module}</td>
+                        <td className="py-2 px-2 md:py-3.5 md:px-4 font-bold text-slate-200 capitalize">{module}</td>
                         {actionsList.map(action => {
                           const isChecked = matrix[module]?.[action] || false;
                           return (
-                            <td key={action} className="py-3.5 px-4 text-center">
+                            <td key={action} className="py-2 px-2 md:py-3.5 md:px-4 text-center">
                               <button
                                 type="button"
                                 onClick={() => handleCellToggle(module, action)}
