@@ -115,3 +115,17 @@ body {
     display: none !important;
   }
 }
+
+/* Light Theme Contrast Overrides for text-white elements */
+html:not(.dark) .text-white:not([class*="bg-violet"]):not([class*="bg-rose"]):not([class*="bg-emerald"]):not([class*="bg-indigo"]):not([class*="bg-gradient"]) {
+  color: var(--foreground) !important;
+}
+
+/* Retain white text for solid-color buttons, badges, and gradients */
+html:not(.dark) [class*="bg-violet"] .text-white,
+html:not(.dark) [class*="bg-rose"] .text-white,
+html:not(.dark) [class*="bg-emerald"] .text-white,
+html:not(.dark) [class*="bg-indigo"] .text-white,
+html:not(.dark) [class*="bg-gradient"] .text-white {
+  color: #ffffff !important;
+}
