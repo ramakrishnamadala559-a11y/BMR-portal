@@ -837,29 +837,29 @@ export default function RoomsPage() {
 
              {/* View Switcher Tabs */}
       {activeBuilding && activeRooms.length > 0 && (
-        <div className="flex justify-between items-center bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800/60">
-          <div className="flex items-center gap-2">
-            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider pl-2">Display Layout:</span>
-            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900/60 p-2.5 rounded-2xl border border-slate-800/60 gap-3">
+          <div className="flex flex-wrap items-center gap-2 w-full sm:w-auto">
+            <span className="text-xs text-slate-400 font-bold uppercase tracking-wider pl-2 hidden xs:inline">Display Layout:</span>
+            <div className="flex bg-slate-950 p-1 rounded-xl border border-slate-850 w-full xs:w-auto">
               <button
                 onClick={() => setViewMode('map')}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`flex-1 xs:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   viewMode === 'map'
                     ? 'bg-slate-900 text-violet-400 border border-slate-800/80 shadow'
                     : 'text-slate-500 hover:text-slate-350'
                 }`}
               >
-                🗺️ Visual Room Map Plan
+                🗺️ Room Map Plan
               </button>
               <button
                 onClick={() => setViewMode('cards')}
-                className={`px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+                className={`flex-1 xs:flex-none px-4 py-2 text-xs font-bold rounded-lg transition-all cursor-pointer ${
                   viewMode === 'cards'
                     ? 'bg-slate-900 text-violet-400 border border-slate-800/80 shadow'
                     : 'text-slate-500 hover:text-slate-350'
                 }`}
               >
-                🎴 Inventory Cards Grid
+                🎴 Inventory Cards
               </button>
             </div>
           </div>
@@ -911,6 +911,10 @@ export default function RoomsPage() {
                 <span className="text-slate-300">Maintenance / Overdue</span>
               </div>
             </div>
+
+            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-2 lg:hidden">
+              ↔ Swipe map plan horizontally to view all wings
+            </span>
 
             {/* Floor Map Layout */}
             <div className="bg-slate-950 border border-slate-850 p-6 md:p-8 rounded-3xl overflow-x-auto relative">
