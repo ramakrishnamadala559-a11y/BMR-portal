@@ -81,15 +81,6 @@ export default function AdmissionsPage() {
     }
   };
 
-  // Automatically fetch student ID when selectedBedId changes
-  useEffect(() => {
-    if (selectedBedId) {
-      fetchAllocatedStudentId(selectedBedId);
-    } else {
-      setAllocatedStudentId('');
-    }
-  }, [selectedBedId]);
-
   const fetchInitialData = async () => {
     try {
       const studRes = await fetch('/api/students?status=INACTIVE');
@@ -124,13 +115,16 @@ export default function AdmissionsPage() {
     fetchInitialData();
   }, [preSelectedBedId]);
 
-  // When selected bed changes, update rent default
+  // When selected bed changes, update rent default and fetch student ID
   useEffect(() => {
     if (selectedBedId) {
       const bed = availableBeds.find(b => b.id === selectedBedId);
       if (bed) {
         setMonthlyRent(String(bed.room.rent));
       }
+      fetchAllocatedStudentId(selectedBedId);
+    } else {
+      setAllocatedStudentId('');
     }
   }, [selectedBedId, availableBeds]);
 
@@ -288,12 +282,12 @@ export default function AdmissionsPage() {
         <ChevronRight className="h-4 w-4 text-slate-600" />
         <div className="flex items-center gap-3">
           <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 2 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>2</div>
-          <span className={`text-xs font-bold ${step >= 2 ? 'text-white' : 'text-slate-450'}`}>Allocation</span>
+          <span className={`text-xs font-bold ${step >= 2 ? 'text-white' : 'text-slate-450'}`}>Allocation & ID</span>
         </div>
         <ChevronRight className="h-4 w-4 text-slate-600" />
         <div className="flex items-center gap-3">
-          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 4 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>3</div>
-          <span className={`text-xs font-bold ${step >= 4 ? 'text-white' : 'text-slate-450'}`}>Terms & Review</span>
+          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 3 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>3</div>
+          <span className={`text-xs font-bold ${step >= 3 ? 'text-white' : 'text-slate-450'}`}>Terms & Review</span>
         </div>
       </div>
 
@@ -547,32 +541,33 @@ export default function AdmissionsPage() {
               </div>
             </div>
 
-            {selectedBedId && (
-              <div className="p-4 bg-slate-955 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
-                <div>
-                  <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Generated Student ID</span>
-                  {loadingStudentId ? (
-                    <div className="flex items-center gap-2">
-                      <Loader2 className="h-4.5 w-4.5 text-violet-500 animate-spin" />
-                      <span className="text-xs text-slate-450">Generating sequential ID...</span>
-                    </div>
-                  ) : (
-                    <span className="text-lg font-mono font-bold text-violet-400 uppercase tracking-wider">
-                      {allocatedStudentId || 'N/A'}
-                    </span>
-                  )}
-                </div>
-                <div className="text-right">
-                  <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Allocation Rule</span>
-                  <span className="text-[10px] text-slate-400">Prefix `STU` + Block Code + bed sequence</span>
-                </div>
-              </div>
-            )}
-
             {availableBeds.length === 0 && (
               <div className="p-4 bg-slate-955 rounded-xl border border-slate-800 text-center">
                 <Bed className="h-5 w-5 text-slate-500 mx-auto mb-2" />
                 <p className="text-xs text-slate-400">All beds are occupied! There are no available beds right now.</p>
+              </div>
+            )}
+
+            {selectedBedId && (
+              <div className="pt-4 border-t border-slate-800/60">
+                {loadingStudentId ? (
+                  <div className="flex items-center gap-2 text-xs text-slate-400 py-2">
+                    <Loader2 className="h-4 w-4 text-violet-500 animate-spin" />
+                    <span>Calculating sequential Student ID...</span>
+                  </div>
+                ) : (
+                  <div className="p-4 bg-slate-955 border border-slate-800 rounded-xl flex items-center justify-between">
+                    <div>
+                      <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Generated Student ID</span>
+                      <span className="text-lg font-mono font-bold text-violet-400 uppercase tracking-wider">
+                        {allocatedStudentId || 'Generating...'}
+                      </span>
+                    </div>
+                    <div className="text-[11px] text-slate-400 max-w-xs leading-normal">
+                      ID generated automatically based on Block, Floor, Room, and Bed sequence.
+                    </div>
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -591,19 +586,19 @@ export default function AdmissionsPage() {
                   setToast({ message: 'Please select a bed to allocate', type: 'error' });
                   return;
                 }
-                setStep(4);
+                setStep(3);
               }}
               className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
             >
-              Continue to Terms
+              Continue to Set Terms
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
         </div>
       )}
 
-      {/* STEP 4: FINANCIAL TERMS & REVIEW */}
-      {step === 4 && (
+      {/* STEP 3: FINANCIAL TERMS & REVIEW */}
+      {step === 3 && (
         <div className="space-y-6">
           <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">Admission Financial Terms</h3>
