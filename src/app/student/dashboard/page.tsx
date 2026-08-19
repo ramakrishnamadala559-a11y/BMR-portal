@@ -393,18 +393,14 @@ export default function StudentDashboardPage() {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400 pt-2">
-            <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl">
-              <span className="text-slate-500 block mb-1">Affiliation / Organization</span>
-              <p className="font-semibold text-slate-200">{studentProfile.collegeOrCompany} ({studentProfile.courseOrDept})</p>
-            </div>
-            {studentProfile.expectedCheckout && (
-              <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl">
+          {studentProfile.expectedCheckout && (
+            <div className="pt-2 text-xs text-slate-400">
+              <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl max-w-sm">
                 <span className="text-slate-500 block mb-1">Expected Checkout / Term End</span>
                 <p className="font-semibold text-slate-200">{studentProfile.expectedCheckout ? new Date(studentProfile.expectedCheckout).toLocaleDateString() : 'N/A'}</p>
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
       )}
 
