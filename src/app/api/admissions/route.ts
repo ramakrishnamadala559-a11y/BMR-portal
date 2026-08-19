@@ -15,6 +15,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Student information, bed ID, and joining date are required' }, { status: 400 });
     }
 
+    const hashedPassword = studentDetails && studentDetails.phone ? await hashPassword(studentDetails.phone) : '';
+
     const admissionResult = await db.$transaction(async (tx) => {
       // 1. Fetch Bed & Room
       const bed = await tx.bed.findUnique({
@@ -141,7 +143,6 @@ export async function POST(request: Request) {
         activeStudentId = generatedStudentId;
 
         // Create student login credentials in User table
-        const hashedPassword = await hashPassword(phone);
         await tx.user.create({
           data: {
             name,
