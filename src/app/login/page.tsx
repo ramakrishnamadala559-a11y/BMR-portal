@@ -49,7 +49,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && user) {
       if (user.role === 'STUDENT') {
-        router.push('/student/payments');
+        router.push('/student/home');
       } else {
         router.push('/admin/dashboard');
       }
