@@ -84,15 +84,15 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
             pathname === '/student/dashboard' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
           }`}
         >
-          <LayoutDashboard className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">My PG Room</span>
+          <Receipt className="h-5 w-5" />
+          <span className="text-[9px] font-bold uppercase tracking-wider">Payment Module</span>
         </Link>
         <button
-          onClick={() => alert('No active PG Announcements at the moment.')}
-          className="flex flex-col items-center gap-1 text-slate-450 hover:text-slate-200"
+          onClick={() => alert(`For support, please contact the hostel admin at +91 ${settings?.phone || ''} or email ${settings?.email || ''}`)}
+          className="flex flex-col items-center gap-1 text-slate-450 hover:text-slate-200 cursor-pointer"
         >
           <Bell className="h-5 w-5" />
-          <span className="text-[9px] font-bold uppercase tracking-wider">Announce</span>
+          <span className="text-[9px] font-bold uppercase tracking-wider">Support</span>
         </button>
       </nav>
     </div>
