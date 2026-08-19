@@ -174,47 +174,47 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-3 sm:gap-6">
         {/* Outstanding Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Outstanding Due</span>
-            <h3 className="text-2xl font-extrabold text-white mt-2">
+            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Outstanding Due</span>
+            <h3 className="text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{pendingRentSum.toLocaleString('en-IN')}
             </h3>
-            <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+            <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Total outstanding balance
             </p>
           </div>
-          <div className="bg-gradient-to-tr from-amber-500/10 to-amber-500/5 border border-amber-500/25 p-3.5 rounded-2xl text-amber-400 shadow-sm">
+          <div className="hidden sm:flex bg-gradient-to-tr from-amber-500/10 to-amber-500/5 border border-amber-500/25 p-3.5 rounded-2xl text-amber-400 shadow-sm">
             <CircleDollarSign className="h-6 w-6" />
           </div>
         </div>
 
         {/* Monthly Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Monthly Rent Rate</span>
-            <h3 className="text-2xl font-extrabold text-white mt-2">
+            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Monthly Rent Rate</span>
+            <h3 className="text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{studentProfile?.monthlyRent ? studentProfile.monthlyRent.toLocaleString('en-IN') : '0'}/mo
             </h3>
-            <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+            <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Base PG room charges
             </p>
           </div>
-          <div className="bg-gradient-to-tr from-violet-500/10 to-violet-500/5 border border-violet-500/25 p-3.5 rounded-2xl text-violet-400 shadow-sm">
+          <div className="hidden sm:flex bg-gradient-to-tr from-violet-500/10 to-violet-500/5 border border-violet-500/25 p-3.5 rounded-2xl text-violet-400 shadow-sm">
             <BedDouble className="h-6 w-6" />
           </div>
         </div>
 
         {/* Next Due Date */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Security Deposit Paid</span>
-            <h3 className="text-2xl font-extrabold text-emerald-400 mt-2">
+            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Deposit Paid</span>
+            <h3 className="text-sm sm:text-2xl font-extrabold text-emerald-400 mt-1 sm:mt-2">
               ₹{studentProfile?.securityDeposit ? studentProfile.securityDeposit.toLocaleString('en-IN') : '0'}
             </h3>
-            <p className="text-[10px] text-slate-500 mt-1 font-semibold">
+            <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Refundable deposit receipted
             </p>
           </div>
