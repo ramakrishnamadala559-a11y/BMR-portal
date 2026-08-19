@@ -80,7 +80,7 @@ export default function LoginPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-slate-955 flex flex-col items-center justify-center">
+      <div className="min-h-screen bg-[#080b11] flex flex-col items-center justify-center">
         <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
         <p className="text-slate-400 text-sm font-medium">Checking session...</p>
       </div>
@@ -88,17 +88,17 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-955 flex flex-col relative overflow-x-hidden text-slate-100 font-sans selection:bg-violet-650 selection:text-white">
-      {/* Dynamic Colorful Fluid Mesh Gradients (Floating Animations) */}
-      <div className="absolute top-[-10%] left-[-15%] w-[600px] h-[600px] bg-gradient-to-tr from-rose-500/20 via-violet-650/25 to-indigo-650/15 rounded-full blur-[140px] pointer-events-none animate-float-slow" />
-      <div className="absolute bottom-[-10%] right-[-15%] w-[600px] h-[600px] bg-gradient-to-bl from-cyan-500/15 via-blue-650/20 to-violet-600/15 rounded-full blur-[140px] pointer-events-none animate-float-medium" />
+    <div className="min-h-screen bg-[#080b11] flex flex-col relative overflow-x-hidden text-slate-100 font-sans selection:bg-violet-650 selection:text-white">
+      {/* Softer, more comfortable dynamic fluid gradients */}
+      <div className="absolute top-[-10%] left-[-15%] w-[550px] h-[550px] bg-gradient-to-tr from-violet-600/10 via-indigo-600/10 to-violet-850/5 rounded-full blur-[160px] pointer-events-none animate-float-slow" />
+      <div className="absolute bottom-[-10%] right-[-15%] w-[550px] h-[550px] bg-gradient-to-bl from-indigo-700/10 via-slate-800/10 to-violet-750/5 rounded-full blur-[160px] pointer-events-none animate-float-medium" />
       
-      {/* Grid pattern background overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
+      {/* Finer, less distracting grid pattern overlay */}
+      <div className="absolute inset-0 bg-[linear-gradient(to_right,#131924_1px,transparent_1px),linear-gradient(to_bottom,#131924_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-35 pointer-events-none" />
 
       {/* TOP FLOATING NAVBAR */}
       {!isMobileApp && (
-        <header className="w-full border-b border-slate-900/60 bg-slate-955/65 backdrop-blur-md sticky top-0 z-50">
+        <header className="w-full border-b border-slate-900/60 bg-[#080b11]/70 backdrop-blur-md sticky top-0 z-50">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
@@ -140,12 +140,12 @@ export default function LoginPage() {
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex flex-col items-center gap-12 relative z-10">
         
         {/* SECTION 1: LOGIN CARD (POSITIONED IN MIDDLE TOP) */}
-        <div id="console" className="w-full max-w-md p-[1px] bg-gradient-to-b from-slate-700/80 via-slate-800/40 to-slate-950 rounded-3xl relative shadow-2xl transition-transform duration-300 hover:scale-[1.01]">
+        <div id="console" className="w-full max-w-md p-[1px] bg-gradient-to-b from-slate-800 via-slate-900/60 to-[#080b11] rounded-3xl relative shadow-2xl transition-transform duration-300 hover:scale-[1.01]">
           {/* Glowing border outline */}
-          <div className="absolute inset-0 bg-gradient-to-r from-rose-500/25 via-violet-500/25 to-cyan-500/25 rounded-3xl opacity-50 blur-[2px] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 via-violet-500/15 to-cyan-500/10 rounded-3xl opacity-50 blur-[2px] pointer-events-none" />
 
           {/* Inner Card Container */}
-          <div className="bg-slate-900/85 rounded-[23px] p-6 sm:p-8 backdrop-blur-3xl relative z-10 border border-slate-850/50">
+          <div className="bg-[#0b0f17]/90 rounded-[23px] p-6 sm:p-8 backdrop-blur-3xl relative z-10 border border-slate-850/50">
             
             {/* Logo / Brand Header */}
             <div className="flex flex-col items-center mb-6">
@@ -163,7 +163,7 @@ export default function LoginPage() {
             </div>
 
             {/* RBAC Tab Selection */}
-            <div className="flex bg-slate-950/80 p-1.5 rounded-2xl mb-6 border border-slate-850/60">
+            <div className="flex bg-[#05070a]/90 p-1.5 rounded-2xl mb-6 border border-slate-850/60">
               <button
                 onClick={() => {
                   setActiveTab('admin');
@@ -172,7 +172,7 @@ export default function LoginPage() {
                 }}
                 className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   activeTab === 'admin'
-                    ? 'bg-slate-900 text-white shadow border border-slate-800/40'
+                    ? 'bg-[#0f1420] text-white shadow border border-slate-850/40'
                     : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
@@ -186,8 +186,8 @@ export default function LoginPage() {
                 }}
                 className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
                   activeTab === 'student'
-                    ? 'bg-slate-900 text-white shadow border border-slate-800/40'
-                    : 'text-slate-400 hover:text-slate-255'
+                    ? 'bg-[#0f1420] text-white shadow border border-slate-855/40'
+                    : 'text-slate-400 hover:text-slate-200'
                 }`}
               >
                 Student Portal
@@ -209,7 +209,7 @@ export default function LoginPage() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder={activeTab === 'admin' ? 'owner@antigravity.com' : '9000000001'}
-                    className="w-full bg-slate-950/60 border border-slate-855 hover:border-slate-750 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-4 text-xs text-slate-100 placeholder-slate-650 focus:outline-none transition-colors"
+                    className="w-full bg-[#05070a]/60 border border-slate-800 hover:border-slate-700 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-650 focus:outline-none transition-colors"
                     required
                   />
                 </div>
@@ -235,7 +235,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-slate-955 border border-slate-855 hover:border-slate-750 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-11 text-xs text-slate-100 placeholder-slate-655 focus:outline-none transition-colors"
+                    className="w-full bg-[#05070a]/60 border border-slate-800 hover:border-slate-700 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-100 placeholder-slate-655 focus:outline-none transition-colors"
                     required
                   />
                   <button
