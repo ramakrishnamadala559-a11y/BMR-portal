@@ -97,27 +97,27 @@ export default function LoginPage() {
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#1e293b_1px,transparent_1px),linear-gradient(to_bottom,#1e293b_1px,transparent_1px)] bg-[size:4rem_4rem] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_50%,#000_70%,transparent_100%)] opacity-20 pointer-events-none" />
 
       {/* TOP FLOATING NAVBAR */}
-      <header className="w-full border-b border-slate-900/60 bg-slate-955/65 backdrop-blur-md sticky top-0 z-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
-            <div>
-              <span className="text-base font-bold text-white tracking-tight">{brandName}</span>
-              <span className="text-[8px] block text-violet-400 font-bold uppercase tracking-wider">{brandTag}</span>
+      {!isMobileApp && (
+        <header className="w-full border-b border-slate-900/60 bg-slate-955/65 backdrop-blur-md sticky top-0 z-50">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
+              <div>
+                <span className="text-base font-bold text-white tracking-tight">{brandName}</span>
+                <span className="text-[8px] block text-violet-400 font-bold uppercase tracking-wider">{brandTag}</span>
+              </div>
             </div>
-          </div>
 
-          <nav className="hidden md:flex items-center gap-6 text-xs text-slate-400 font-semibold">
-            <a href="#console" className="hover:text-slate-200 transition-colors">Sign In</a>
-            <a href="#features" className="hover:text-slate-200 transition-colors">Features</a>
-            <a href="#security" className="hover:text-slate-200 transition-colors flex items-center gap-1">
-              Security <ShieldCheck className="h-3.5 w-3.5 text-violet-400" />
-            </a>
-          </nav>
+            <nav className="hidden md:flex items-center gap-6 text-xs text-slate-400 font-semibold">
+              <a href="#console" className="hover:text-slate-200 transition-colors">Sign In</a>
+              <a href="#features" className="hover:text-slate-200 transition-colors">Features</a>
+              <a href="#security" className="hover:text-slate-200 transition-colors flex items-center gap-1">
+                Security <ShieldCheck className="h-3.5 w-3.5 text-violet-400" />
+              </a>
+            </nav>
 
-          <div className="flex items-center gap-4">
-            <ThemeToggle />
-            {!isMobileApp && (
+            <div className="flex items-center gap-4">
+              <ThemeToggle />
               <a 
                 href="/app-debug.apk" 
                 download="app-debug.apk"
@@ -125,16 +125,16 @@ export default function LoginPage() {
               >
                 Download App <ArrowUpRight className="h-3 w-3" />
               </a>
-            )}
-            <a 
-              href="mailto:support@antigravity.com" 
-              className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-bold rounded-lg text-slate-300 transition-colors"
-            >
-              Get Support <ArrowUpRight className="h-3 w-3" />
-            </a>
+              <a 
+                href="mailto:support@antigravity.com" 
+                className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-bold rounded-lg text-slate-300 transition-colors"
+              >
+                Get Support <ArrowUpRight className="h-3 w-3" />
+              </a>
+            </div>
           </div>
-        </div>
-      </header>
+        </header>
+      )}
 
       {/* MAIN SINGLE COLUMN CONTAINER */}
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex flex-col items-center gap-12 relative z-10">
@@ -149,7 +149,14 @@ export default function LoginPage() {
             
             {/* Logo / Brand Header */}
             <div className="flex flex-col items-center mb-6">
-              <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2">
+              {isMobileApp && (
+                <div className="flex flex-col items-center mb-6">
+                  <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-16 w-16 rounded-2xl border border-slate-800 shadow-lg object-cover mb-2" />
+                  <h1 className="text-lg font-bold text-white tracking-tight">{brandName}</h1>
+                  <span className="text-[9px] block text-violet-400 font-bold uppercase tracking-wider text-center max-w-[280px]">{brandTag}</span>
+                </div>
+              )}
+              <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-2">
                 <KeyRound className="h-5 w-5 text-violet-400" /> System Sign In
               </h2>
               <p className="text-slate-400 text-xs mt-1">Single-tenant authentication gateway.</p>
