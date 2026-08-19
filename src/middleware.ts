@@ -63,6 +63,9 @@ export function middleware(request: NextRequest) {
   // Protection for student routes
   if (isStudentPath) {
     if (!user) {
+      if (pathname === '/student/home') {
+        return NextResponse.next();
+      }
       return NextResponse.redirect(new URL('/login', request.url));
     }
     if (user.role !== 'STUDENT') {
@@ -72,6 +75,9 @@ export function middleware(request: NextRequest) {
 
   // Protection for backend APIs
   if (isApiPath) {
+    if (pathname.startsWith('/api/public')) {
+      return NextResponse.next();
+    }
     if (!user) {
       return new NextResponse(
         JSON.stringify({ error: 'Unauthorized. Please login.' }),
