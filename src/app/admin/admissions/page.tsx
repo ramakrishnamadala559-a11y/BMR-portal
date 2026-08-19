@@ -470,7 +470,9 @@ export default function AdmissionsPage() {
                   onChange={setNewStudentIdProofUrl}
                   disabled={!!selectedStudentId}
                 />
-               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-slate-350 text-xs font-semibold mb-2">Guardian Name (Optional)</label>
                   <input
