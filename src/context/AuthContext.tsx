@@ -108,6 +108,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return user.permissions.some(p => p.module === module && p.action === action);
   };
 
+  const refreshAuthData = async () => {
+    await fetchCurrentUser();
+    await fetchSettings();
+  };
+
   return (
     <AuthContext.Provider value={{
       user,
@@ -116,7 +121,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       loading,
       login,
       logout,
-      refreshAuth: fetchCurrentUser,
+      refreshAuth: refreshAuthData,
       hasPermission
     }}>
       {children}

@@ -553,7 +553,7 @@ export default function BillingPage() {
                   <p className="text-xs text-slate-500 mt-1">{settings?.address || '123, Hostel Lane, Bangalore'}</p>
                   {settings?.website && (
                     <a
-                      href={settings.website.startsWith('http') ? settings.website : `https://${settings.website}`}
+                      href={(settings.website || '').startsWith('http') ? settings.website : `https://${settings.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] text-violet-600 font-bold block mt-0.5 hover:underline"
