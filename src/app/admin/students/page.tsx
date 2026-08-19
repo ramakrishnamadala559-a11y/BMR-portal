@@ -60,6 +60,7 @@ export default function StudentsPage() {
   const [editCollege, setEditCollege] = useState('');
   const [editDept, setEditDept] = useState('');
   const [editIdNo, setEditIdNo] = useState('');
+  const [editPassword, setEditPassword] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
   const fetchStudents = async () => {
@@ -132,6 +133,7 @@ export default function StudentsPage() {
     setEditGuardian(student.guardianName || '');
     setEditGuardianPhone(student.guardianPhone || '');
     setEditIdNo(student.idNumber || '');
+    setEditPassword('');
     setEditModalOpen(true);
   };
 
@@ -155,12 +157,14 @@ export default function StudentsPage() {
           emergencyContact: editEmergency || editGuardianPhone || 'N/A',
           guardianName: editGuardian || 'N/A',
           guardianPhone: editGuardianPhone || 'N/A',
-          idNumber: editIdNo || 'N/A'
+          idNumber: editIdNo || 'N/A',
+          password: editPassword || undefined
         })
       });
 
       if (res.ok) {
         setToast({ message: `${editName} updated successfully!`, type: 'success' });
+        setEditPassword('');
         setEditModalOpen(false);
         fetchStudents();
       } else {
@@ -675,14 +679,24 @@ export default function StudentsPage() {
                 </div>
               </div>
 
-              <div className="grid grid-cols-1 gap-4">
+              <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-350 font-semibold mb-2">Email Address</label>
+                  <label className="block text-slate-355 font-semibold mb-2">Email Address</label>
                   <input
                     type="email"
                     value={editEmail || ''}
                     onChange={(e) => setEditEmail(e.target.value)}
                     className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-200 focus:outline-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Change Password (Optional)</label>
+                  <input
+                    type="password"
+                    value={editPassword}
+                    onChange={(e) => setEditPassword(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-200 focus:outline-none"
+                    placeholder="Leave blank to keep current"
                   />
                 </div>
               </div>

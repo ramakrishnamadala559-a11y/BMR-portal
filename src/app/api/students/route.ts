@@ -241,28 +241,29 @@ export async function PUT(request: Request) {
         }
       }
 
-      // If phone is changing, sync with User table
+      // If phone is changing, check uniqueness
       if (phone && phone !== currentStudent.phone) {
-        // Check if phone already taken in student table
         const takenStudent = await tx.student.findFirst({
           where: { phone, id: { not: id } }
         });
         if (takenStudent) {
           throw new Error('This phone number is already registered by another student');
         }
-
-        // Update phone in User table
-        await tx.user.update({
-          where: { phone: currentStudent.phone },
-          data: { phone, name, email: email || null }
-        });
-      } else {
-        // Just sync name/email in User table
-        await tx.user.update({
-          where: { phone: currentStudent.phone },
-          data: { name, email: email || null }
-        });
       }
+
+      // Sync name, phone, email, and password (if changed) in User table
+      const userUpdateData: any = { name, email: email || null };
+      if (phone && phone !== currentStudent.phone) {
+        userUpdateData.phone = phone;
+      }
+      if (otherFields.password) {
+        userUpdateData.password = await hashPassword(otherFields.password);
+      }
+
+      await tx.user.update({
+        where: { phone: currentStudent.phone },
+        data: userUpdateData
+      });
 
       // Parse dates and floats
       const parsedFields: any = {};
