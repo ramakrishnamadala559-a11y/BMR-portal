@@ -311,7 +311,14 @@ export default function BillingPage() {
                         <td className="py-4 px-6 font-bold text-slate-100">{inv.studentName}</td>
                         <td className="py-4 px-6 text-slate-400">Room {inv.roomNumber} ({inv.bedName})</td>
 
-                        <td className="py-4 px-6 text-slate-400">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                        <td className="py-4 px-6 text-slate-400">
+                          <div>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}</div>
+                          {inv.payments && inv.payments.length > 0 && (
+                            <div className="text-[9px] text-emerald-500 font-bold mt-1 whitespace-nowrap">
+                              Paid: {new Date([...inv.payments].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date).toLocaleDateString()}
+                            </div>
+                          )}
+                        </td>
                         <td className="py-4 px-6 font-bold text-slate-100">
                           ₹{inv.total.toLocaleString('en-IN')}
                           {inv.arrears > 0 && (

@@ -460,7 +460,14 @@ export default function StudentDashboardPage() {
                     {invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-slate-855/20 transition-colors">
                         <td className="py-4 px-6 font-mono text-slate-200 font-bold">{inv.invoiceNumber}</td>
-                        <td className="py-4 px-6 text-slate-400">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}</td>
+                        <td className="py-4 px-6 text-slate-400">
+                          <div>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}</div>
+                          {inv.payments && inv.payments.length > 0 && (
+                            <div className="text-[9px] text-emerald-500 font-bold mt-1 whitespace-nowrap">
+                              Paid: {new Date([...inv.payments].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date).toLocaleDateString()}
+                            </div>
+                          )}
+                        </td>
                         <td className="py-4 px-6 font-bold text-slate-100">
                           ₹{(inv.total || 0).toLocaleString('en-IN')}
                           {(inv.arrears || 0) > 0 && (
