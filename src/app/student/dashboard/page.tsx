@@ -20,6 +20,22 @@ import {
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
+const getInitials = (name: string) => {
+  return (name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
+};
+
+const getAvatarBg = (name: string) => {
+  const charCode = (name || '').charCodeAt(0) || 0;
+  const colors = [
+    'bg-violet-600/10 text-violet-400 border-violet-500/20',
+    'bg-cyan-600/10 text-cyan-400 border-cyan-500/20',
+    'bg-emerald-600/10 text-emerald-400 border-emerald-500/20',
+    'bg-rose-600/10 text-rose-400 border-rose-500/20',
+    'bg-amber-600/10 text-amber-400 border-amber-500/20'
+  ];
+  return colors[charCode % colors.length];
+};
+
 export default function StudentDashboardPage() {
   const { user, studentProfile, refreshAuth, settings } = useAuth();
   const brandName = settings?.hostelName || 'Home Stay Hostel';
@@ -128,28 +144,29 @@ export default function StudentDashboardPage() {
   return (
     <div className="space-y-8 animate-slide-in">
       {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl">
-        <div className="flex items-center gap-4">
-          <div className="h-12 w-12 bg-violet-600/10 border border-violet-500/20 rounded-2xl flex items-center justify-center text-violet-400">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-violet-950/20 border border-slate-800/80 p-6 rounded-2xl shadow-xl relative overflow-hidden">
+        <div className="absolute right-0 top-0 h-40 w-40 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
+        <div className="flex items-center gap-4 z-10">
+          <div className="h-12 w-12 bg-gradient-to-br from-violet-650/20 to-violet-600/5 border border-violet-500/25 rounded-2xl flex items-center justify-center text-violet-400">
             <User className="h-6 w-6" />
           </div>
           <div>
             <h1 className="text-lg font-bold text-white leading-snug">Welcome, {user?.name}</h1>
-            <p className="text-slate-450 text-xs mt-0.5">Tenant Account • Registered Phone: {user?.phone}</p>
+            <p className="text-slate-455 text-[11px] mt-0.5 font-medium">Tenant Account • Registered Phone: {user?.phone}</p>
           </div>
         </div>
         
         {studentProfile?.bed ? (
-          <div className="bg-slate-950 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2">
+          <div className="bg-slate-950/85 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2 z-10 shadow-inner">
             <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
+            <span className="text-[10px] text-slate-350 font-bold uppercase tracking-wider">
               {studentProfile.bed.room.building.name} • Room {studentProfile.bed.room.number}
             </span>
           </div>
         ) : (
-          <div className="bg-slate-950 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2">
-            <span className="h-2 w-2 rounded-full bg-amber-400" />
-            <span className="text-[10px] text-slate-450 font-bold uppercase tracking-wider">
+          <div className="bg-slate-950/85 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2 z-10 shadow-inner">
+            <span className="h-2 w-2 rounded-full bg-amber-450 animate-pulse" />
+            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
               Awaiting Room Allocation
             </span>
           </div>
@@ -159,9 +176,9 @@ export default function StudentDashboardPage() {
       {/* KPI Cards Grid */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {/* Outstanding Rent */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-405 text-[10px] font-bold uppercase tracking-wider block">Outstanding Due</span>
+            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Outstanding Due</span>
             <h3 className="text-2xl font-extrabold text-white mt-2">
               ₹{pendingRentSum.toLocaleString('en-IN')}
             </h3>
@@ -169,15 +186,15 @@ export default function StudentDashboardPage() {
               Total outstanding balance
             </p>
           </div>
-          <div className="bg-amber-500/10 border border-amber-500/20 p-3.5 rounded-2xl">
-            <CircleDollarSign className="h-6 w-6 text-amber-400" />
+          <div className="bg-gradient-to-tr from-amber-500/10 to-amber-500/5 border border-amber-500/25 p-3.5 rounded-2xl text-amber-400 shadow-sm">
+            <CircleDollarSign className="h-6 w-6" />
           </div>
         </div>
 
         {/* Monthly Rent */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-405 text-[10px] font-bold uppercase tracking-wider block">Monthly Rent Rate</span>
+            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Monthly Rent Rate</span>
             <h3 className="text-2xl font-extrabold text-white mt-2">
               ₹{studentProfile?.monthlyRent ? studentProfile.monthlyRent.toLocaleString('en-IN') : '0'}/mo
             </h3>
@@ -185,15 +202,15 @@ export default function StudentDashboardPage() {
               Base PG room charges
             </p>
           </div>
-          <div className="bg-violet-500/10 border border-violet-500/20 p-3.5 rounded-2xl">
-            <BedDouble className="h-6 w-6 text-violet-400" />
+          <div className="bg-gradient-to-tr from-violet-500/10 to-violet-500/5 border border-violet-500/25 p-3.5 rounded-2xl text-violet-400 shadow-sm">
+            <BedDouble className="h-6 w-6" />
           </div>
         </div>
 
         {/* Next Due Date */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex items-center justify-between">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-405 text-[10px] font-bold uppercase tracking-wider block">Security Deposit Paid</span>
+            <span className="text-slate-450 text-[10px] font-bold uppercase tracking-wider block">Security Deposit Paid</span>
             <h3 className="text-2xl font-extrabold text-emerald-400 mt-2">
               ₹{studentProfile?.securityDeposit ? studentProfile.securityDeposit.toLocaleString('en-IN') : '0'}
             </h3>
@@ -201,8 +218,8 @@ export default function StudentDashboardPage() {
               Refundable deposit receipted
             </p>
           </div>
-          <div className="bg-emerald-500/10 border border-emerald-500/20 p-3.5 rounded-2xl">
-            <CheckCircle2 className="h-6 w-6 text-emerald-400" />
+          <div className="bg-gradient-to-tr from-emerald-500/10 to-emerald-500/5 border border-emerald-500/25 p-3.5 rounded-2xl text-emerald-400 shadow-sm">
+            <CheckCircle2 className="h-6 w-6" />
           </div>
         </div>
       </div>
@@ -210,65 +227,81 @@ export default function StudentDashboardPage() {
       {/* Room Details & Roommates Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Room Details Card */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between lg:col-span-2">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex flex-col justify-between lg:col-span-2 hover:border-slate-750 transition-all">
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">My PG Room Details</h3>
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Home className="h-4.5 w-4.5 text-violet-400" />
+              <span>My PG Room Details</span>
+            </h3>
             
             {studentProfile?.bed ? (
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4 text-xs">
-                  <div>
-                    <span className="text-slate-500 block mb-0.5">Wing / Block</span>
-                    <span className="text-slate-200 font-bold">{studentProfile.bed.room.building.name}</span>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4 text-xs">
+                  <div className="bg-slate-955/40 border border-slate-850/60 p-3.5 rounded-xl hover:border-slate-800 transition-colors">
+                    <span className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Wing / Block</span>
+                    <span className="text-slate-205 font-bold">{studentProfile.bed.room.building.name}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 block mb-0.5">Floor Number</span>
-                    <span className="text-slate-200 font-semibold">Floor {studentProfile.bed.room.floor.number}</span>
+                  <div className="bg-slate-955/40 border border-slate-855/60 p-3.5 rounded-xl hover:border-slate-800 transition-colors">
+                    <span className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Floor Number</span>
+                    <span className="text-slate-205 font-bold">Floor {studentProfile.bed.room.floor.number}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 block mb-0.5">Room Number</span>
-                    <span className="text-slate-200 font-bold text-violet-400">Room {studentProfile.bed.room.number}</span>
+                  <div className="bg-slate-955/40 border border-slate-855/60 p-3.5 rounded-xl hover:border-slate-800 transition-colors">
+                    <span className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Room Number</span>
+                    <span className="text-slate-205 font-extrabold text-violet-400">Room {studentProfile.bed.room.number}</span>
                   </div>
-                  <div>
-                    <span className="text-slate-500 block mb-0.5">My Bed Space</span>
-                    <span className="text-slate-200 font-bold">{studentProfile.bed.name}</span>
+                  <div className="bg-slate-955/40 border border-slate-855/60 p-3.5 rounded-xl hover:border-slate-800 transition-colors">
+                    <span className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">My Bed Space</span>
+                    <span className="text-slate-205 font-extrabold text-cyan-400">{studentProfile.bed.name}</span>
                   </div>
                 </div>
 
-                <div className="pt-4 border-t border-slate-850 text-xs">
-                  <span className="text-slate-500 block mb-1">Room Facilities Included</span>
-                  <p className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl text-slate-350 leading-relaxed font-semibold">
-                    {studentProfile.bed.room.facilities || 'Basic amenities provided'}
-                  </p>
+                <div className="pt-4 border-t border-slate-850/60 text-xs">
+                  <span className="text-slate-500 block mb-2 font-bold text-[9px] uppercase tracking-wider">Room Facilities Included</span>
+                  <div className="flex flex-wrap gap-2">
+                    {(studentProfile.bed.room.facilities || '').split(',').map((f: string) => f.trim()).filter(Boolean).length > 0 ? (
+                      (studentProfile.bed.room.facilities || '').split(',').map((f: string, idx: number) => (
+                        <span key={idx} className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-950 border border-slate-850/80 rounded-xl text-slate-300 font-bold uppercase text-[9px] tracking-wider shadow-sm">
+                          ⚡ {f.trim()}
+                        </span>
+                      ))
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 px-3 py-1 bg-slate-950 border border-slate-8-850/80 rounded-xl text-slate-500 font-bold uppercase text-[9px] tracking-wider">
+                        ⚡ Basic amenities provided
+                      </span>
+                    )}
+                  </div>
                 </div>
               </div>
             ) : (
               <div className="p-8 text-center text-slate-500">
-                <Home className="h-8 w-8 mx-auto mb-2 text-slate-700" />
-                <p className="text-xs">Your student profile has been registered. The owner is in the process of assigning your room and bed. Invoices will generate automatically once allocated.</p>
+                <Home className="h-8 w-8 mx-auto mb-2 text-slate-700 animate-bounce" />
+                <p className="text-xs max-w-md mx-auto leading-relaxed">Your student profile has been registered. The owner is in the process of assigning your room and bed. Invoices will generate automatically once allocated.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Roommates Card */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl flex flex-col justify-between">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-2xl p-6 shadow-xl backdrop-blur-sm flex flex-col justify-between hover:border-slate-750 transition-all">
           <div>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4">My Roommates</h3>
-            <div className="space-y-4">
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-4 flex items-center gap-2">
+              <Users className="h-4.5 w-4.5 text-violet-400" />
+              <span>My Roommates</span>
+            </h3>
+            <div className="space-y-3">
               {roommates.length === 0 ? (
-                <div className="text-center py-6 text-slate-550 text-xs flex flex-col items-center gap-2">
-                  <Users className="h-8 w-8 text-slate-700" />
-                  <p>You are currently the sole occupant or have a single room setup.</p>
+                <div className="text-center py-8 text-slate-550 text-xs flex flex-col items-center gap-2">
+                  <Users className="h-8 w-8 text-slate-800" />
+                  <p className="max-w-[200px] leading-relaxed">You are currently the sole occupant or have a single room setup.</p>
                 </div>
               ) : (
                 roommates.map((mate: any) => (
-                  <div key={mate.id} className="flex items-center gap-3 p-3 bg-slate-950/60 border border-slate-850 rounded-xl text-xs">
-                    <div className="h-8 w-8 bg-slate-900 border border-slate-800 rounded-lg flex items-center justify-center text-slate-400 flex-shrink-0">
-                      <User className="h-4.5 w-4.5" />
+                  <div key={mate.id} className="flex items-center gap-3.5 p-3.5 bg-slate-955/40 border border-slate-850/60 rounded-xl text-xs hover:border-slate-800 transition-colors shadow-sm">
+                    <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-xs font-extrabold border shadow-inner flex-shrink-0 ${getAvatarBg(mate.student?.name || '')}`}>
+                      {getInitials(mate.student?.name || 'U')}
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-200">{mate.student?.name || 'Unknown'}</h4>
+                      <h4 className="font-extrabold text-slate-205">{mate.student?.name || 'Unknown'}</h4>
                       <span className="text-[10px] text-slate-550 mt-0.5 block">{mate.name} • {mate.student?.phone || 'N/A'}</span>
                     </div>
                   </div>
