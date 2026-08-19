@@ -25,7 +25,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en" className="h-full scroll-smooth">
+    <html lang="en" className="dark h-full scroll-smooth">
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-full bg-slate-950 text-slate-100 font-sans antialiased flex flex-col`}>
         <AuthProvider>
           {children}

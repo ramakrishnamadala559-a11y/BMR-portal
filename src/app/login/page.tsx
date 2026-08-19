@@ -33,8 +33,12 @@ export default function LoginPage() {
   const [isMobileApp, setIsMobileApp] = useState(false);
 
   useEffect(() => {
-    if (typeof window !== 'undefined' && (window as any).Capacitor) {
-      setIsMobileApp(true);
+    if (typeof window !== 'undefined') {
+      if ((window as any).Capacitor) {
+        setIsMobileApp(true);
+      }
+      // Force dark mode for the ambient login experience
+      document.documentElement.classList.add('dark');
     }
   }, []);
   
