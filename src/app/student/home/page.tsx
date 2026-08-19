@@ -225,65 +225,42 @@ export default function StudentHomePage() {
             <h3 className="font-bold text-white uppercase tracking-wider text-xs">My Registered Profile Info</h3>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 text-xs text-slate-400">
-            {/* Column 1: Personal Details */}
-            <div className="space-y-3 p-4.5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
-              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Personal Details</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Gender</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.gender}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Primary Email</span>
-                  <span className="text-slate-250 font-bold truncate max-w-[120px] sm:max-w-[150px]" title={studentProfile.email || 'N/A'}>{studentProfile.email || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span>Registered Phone</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.phone}</span>
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400">
+            {/* Column 1 */}
+            <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Student ID</span>
+                <span className="text-slate-200 font-mono font-bold break-all max-w-[150px] sm:max-w-xs">{studentProfile.id}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Name</span>
+                <span className="text-slate-202 font-bold">{studentProfile.name}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Joining Date</span>
+                <span className="text-slate-202 font-bold">
+                  {studentProfile.admissionDate ? new Date(studentProfile.admissionDate).toLocaleDateString([], { dateStyle: 'medium' }) : 'N/A'}
+                </span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Phone Number</span>
+                <span className="text-slate-202 font-bold">{studentProfile.phone}</span>
               </div>
             </div>
 
-            {/* Column 2: Address & ID Proof */}
-            <div className="space-y-3 p-4.5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
-              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Location & Verification</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>ID Proof Type</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.idProofType}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>ID Document Number</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.idNumber}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span>Permanent Address</span>
-                  <span className="text-slate-250 font-bold text-right truncate max-w-[120px] sm:max-w-[150px]" title={studentProfile.address}>{studentProfile.address}</span>
-                </div>
+            {/* Column 2 */}
+            <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Email</span>
+                <span className="text-slate-202 font-bold truncate max-w-[120px] sm:max-w-xs" title={studentProfile.email || 'N/A'}>{studentProfile.email || 'N/A'}</span>
               </div>
-            </div>
-
-            {/* Column 3: Guardian & Admission */}
-            <div className="space-y-3 p-4.5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
-              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Emergency & Admission</h4>
-              <div className="space-y-2">
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Guardian Name</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.guardianName}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Guardian Contact</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.guardianPhone}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Emergency Contact</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.emergencyContact}</span>
-                </div>
-                <div className="flex justify-between py-1">
-                  <span>Admission Date</span>
-                  <span className="text-slate-250 font-bold">{studentProfile.admissionDate ? new Date(studentProfile.admissionDate).toLocaleDateString() : 'N/A'}</span>
-                </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhar / ID</span>
+                <span className="text-slate-205 font-bold">{studentProfile.idNumber} ({studentProfile.idProofType || 'ID Proof'})</span>
+              </div>
+              <div className="flex justify-between items-start py-2">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px] mt-0.5">Address</span>
+                <span className="text-slate-202 font-bold text-right max-w-[150px] sm:max-w-xs break-words" title={studentProfile.address}>{studentProfile.address}</span>
               </div>
             </div>
           </div>
