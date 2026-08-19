@@ -67,6 +67,11 @@ export default function SettingsPage() {
   const [announcementTitle, setAnnouncementTitle] = useState('');
   const [announcementContent, setAnnouncementContent] = useState('');
   const [announcementTargetGroup, setAnnouncementTargetGroup] = useState('ALL');
+  const [announcementTargetType, setAnnouncementTargetType] = useState<'ALL' | 'BUILDING' | 'ROOM' | 'STUDENT'>('ALL');
+  const [selectedTargetBuilding, setSelectedTargetBuilding] = useState('');
+  const [selectedTargetRoom, setSelectedTargetRoom] = useState('');
+  const [selectedTargetStudent, setSelectedTargetStudent] = useState('');
+  const [rooms, setRooms] = useState<any[]>([]);
   const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
   const [buildings, setBuildings] = useState<any[]>([]);
 
@@ -97,6 +102,8 @@ export default function SettingsPage() {
         fetchAnnouncements();
         // Fetch buildings list
         fetchBuildingsList();
+        // Fetch rooms list
+        fetchRoomsList();
       }
     }
   }, [authUser]);
@@ -276,11 +283,44 @@ export default function SettingsPage() {
     }
   };
 
+  const fetchRoomsList = async () => {
+    try {
+      const res = await fetch('/api/rooms');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setRooms(data);
+      }
+    } catch (err) {
+      console.error('Failed to load rooms list:', err);
+    }
+  };
+
   const handleAnnouncementSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!announcementTitle.trim() || !announcementContent.trim()) {
       setToast({ message: 'Title and content are required', type: 'error' });
       return;
+    }
+
+    let target = 'ALL';
+    if (announcementTargetType === 'BUILDING') {
+      if (!selectedTargetBuilding) {
+        setToast({ message: 'Please select a building', type: 'error' });
+        return;
+      }
+      target = selectedTargetBuilding;
+    } else if (announcementTargetType === 'ROOM') {
+      if (!selectedTargetRoom) {
+        setToast({ message: 'Please select a room number', type: 'error' });
+        return;
+      }
+      target = `ROOM_${selectedTargetRoom}`;
+    } else if (announcementTargetType === 'STUDENT') {
+      if (!selectedTargetStudent) {
+        setToast({ message: 'Please select a student', type: 'error' });
+        return;
+      }
+      target = `STUDENT_${selectedTargetStudent}`;
     }
 
     setAnnouncementSubmitting(true);
@@ -291,7 +331,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           title: announcementTitle,
           content: announcementContent,
-          targetGroup: announcementTargetGroup
+          targetGroup: target
         })
       });
 
@@ -299,7 +339,10 @@ export default function SettingsPage() {
         setToast({ message: 'Announcement posted successfully!', type: 'success' });
         setAnnouncementTitle('');
         setAnnouncementContent('');
-        setAnnouncementTargetGroup('ALL');
+        setAnnouncementTargetType('ALL');
+        setSelectedTargetBuilding('');
+        setSelectedTargetRoom('');
+        setSelectedTargetStudent('');
         fetchAnnouncements();
       } else {
         const data = await res.json();
@@ -330,6 +373,17 @@ export default function SettingsPage() {
     } catch (err) {
       setToast({ message: 'Network error. Please try again.', type: 'error' });
     }
+  };
+
+  const getTargetBadgeText = (targetStr: string) => {
+    if (targetStr === 'ALL') return 'General';
+    if (targetStr.startsWith('ROOM_')) return `Room ${targetStr.replace('ROOM_', '')}`;
+    if (targetStr.startsWith('STUDENT_')) {
+      const studentId = targetStr.replace('STUDENT_', '');
+      const student = students.find(s => s.id === studentId);
+      return student ? `Student: ${student.name}` : 'Student (Deleted)';
+    }
+    return targetStr; // building name
   };
 
   if (loading) {
@@ -676,32 +730,100 @@ export default function SettingsPage() {
 
           {/* Post New Announcement Form */}
           <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <div className="md:col-span-2">
-                <label className="block text-slate-355 font-semibold mb-2">Announcement Title</label>
-                <input
-                  type="text"
-                  value={announcementTitle}
-                  onChange={(e) => setAnnouncementTitle(e.target.value)}
-                  placeholder="e.g. Scheduled Power Outage or Holiday Notice"
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                  required
-                />
-              </div>
+            <div>
+              <label className="block text-slate-355 font-semibold mb-2">Announcement Title</label>
+              <input
+                type="text"
+                value={announcementTitle}
+                onChange={(e) => setAnnouncementTitle(e.target.value)}
+                placeholder="e.g. Scheduled Power Outage or Holiday Notice"
+                className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                required
+              />
+            </div>
 
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
-                <label className="block text-slate-355 font-semibold mb-2">Target Audience</label>
+                <label className="block text-slate-355 font-semibold mb-2">Target Type</label>
                 <select
-                  value={announcementTargetGroup}
-                  onChange={(e) => setAnnouncementTargetGroup(e.target.value)}
+                  value={announcementTargetType}
+                  onChange={(e) => {
+                    setAnnouncementTargetType(e.target.value as any);
+                    setSelectedTargetBuilding('');
+                    setSelectedTargetRoom('');
+                    setSelectedTargetStudent('');
+                  }}
                   className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
                 >
                   <option value="ALL">All Buildings (General)</option>
-                  {buildings.map(b => (
-                    <option key={b.id} value={b.name}>{b.name}</option>
-                  ))}
+                  <option value="BUILDING">Specific Building</option>
+                  <option value="ROOM">Specific Room</option>
+                  <option value="STUDENT">Specific Student</option>
                 </select>
               </div>
+
+              {announcementTargetType === 'BUILDING' && (
+                <div className="md:col-span-2">
+                  <label className="block text-slate-355 font-semibold mb-2">Select Building</label>
+                  <select
+                    value={selectedTargetBuilding}
+                    onChange={(e) => setSelectedTargetBuilding(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose Building --</option>
+                    {buildings.map(b => (
+                      <option key={b.id} value={b.name}>{b.name}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {announcementTargetType === 'ROOM' && (
+                <div className="md:col-span-2">
+                  <label className="block text-slate-355 font-semibold mb-2">Select Room Number</label>
+                  <select
+                    value={selectedTargetRoom}
+                    onChange={(e) => setSelectedTargetRoom(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose Room Number --</option>
+                    {Array.from(new Set(rooms.map(r => r.number))).sort().map(roomNum => (
+                      <option key={roomNum} value={roomNum}>Room {roomNum}</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {announcementTargetType === 'STUDENT' && (
+                <div className="md:col-span-2">
+                  <label className="block text-slate-355 font-semibold mb-2">Select Student</label>
+                  <select
+                    value={selectedTargetStudent}
+                    onChange={(e) => setSelectedTargetStudent(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose Student --</option>
+                    {students.map(s => (
+                      <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>
+                    ))}
+                  </select>
+                </div>
+              )}
+
+              {announcementTargetType === 'ALL' && (
+                <div className="md:col-span-2">
+                  <label className="block text-slate-355 font-semibold mb-2">Target Info</label>
+                  <input
+                    type="text"
+                    value="General notice broadcast to all active residents"
+                    className="w-full bg-slate-955/40 border border-slate-850 rounded-xl py-2.5 px-4 text-slate-500 focus:outline-none"
+                    disabled
+                  />
+                </div>
+              )}
             </div>
 
             <div>
@@ -754,7 +876,7 @@ export default function SettingsPage() {
                         <div className="flex items-center gap-2">
                           <span className="font-bold text-slate-100">{ann.title}</span>
                           <span className="bg-violet-600/10 text-violet-400 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border border-violet-500/15">
-                            {ann.targetGroup === 'ALL' ? 'General' : ann.targetGroup}
+                            {getTargetBadgeText(ann.targetGroup)}
                           </span>
                         </div>
                         <span className="text-[9px] text-slate-500 font-medium">

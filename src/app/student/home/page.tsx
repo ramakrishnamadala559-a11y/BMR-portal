@@ -79,8 +79,21 @@ export default function StudentHomePage() {
   const fetchAnnouncements = async (profile: any) => {
     try {
       let url = '/api/public/announcements';
-      if (profile?.bed?.room?.building?.name) {
-        url += `?targetGroup=${encodeURIComponent(profile.bed.room.building.name)}`;
+      const params = new URLSearchParams();
+      if (profile) {
+        if (profile.bed?.room?.building?.name) {
+          params.append('buildingName', profile.bed.room.building.name);
+        }
+        if (profile.bed?.room?.number) {
+          params.append('roomNumber', profile.bed.room.number);
+        }
+        if (profile.id) {
+          params.append('studentId', profile.id);
+        }
+      }
+      const queryString = params.toString();
+      if (queryString) {
+        url += `?${queryString}`;
       }
       const res = await fetch(url);
       if (res.ok) {
