@@ -70,6 +70,10 @@ export default function StudentDashboardPage() {
     fetchStudentDashboardData();
   }, [studentProfile]);
 
+  useEffect(() => {
+    refreshAuth();
+  }, [refreshAuth]);
+
   const handlePrintClick = (invoice: any) => {
     setSelectedInvoice(invoice);
     setPrintModalOpen(true);
