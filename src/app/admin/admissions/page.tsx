@@ -659,12 +659,12 @@ export default function AdmissionsPage() {
               <h4 className="font-bold text-white uppercase tracking-wider pb-2 border-b border-slate-800">Allocation Summary</h4>
               <div className="grid grid-cols-2 gap-y-3">
                 <span className="text-slate-400">Student Name:</span>
-                <span className="text-slate-200 font-bold">{selectedStudent?.name || tempStudentDetails?.name || 'N/A'}</span>
+                <span className="text-slate-200 font-bold">{newStudentName || 'N/A'}</span>
 
                 <span className="text-slate-400">Mobile Phone:</span>
                 <span className="text-slate-200 font-semibold">
-                  <a href={`tel:+91${selectedStudent?.phone || tempStudentDetails?.phone || ''}`} className="hover:underline text-violet-400 font-semibold">
-                    📞 +91 {selectedStudent?.phone || tempStudentDetails?.phone || 'N/A'}
+                  <a href={`tel:+91${newStudentPhone || ''}`} className="hover:underline text-violet-400 font-semibold">
+                    📞 +91 {newStudentPhone || 'N/A'}
                   </a>
                 </span>
 
