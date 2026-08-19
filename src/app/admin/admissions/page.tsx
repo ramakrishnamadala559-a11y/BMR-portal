@@ -81,6 +81,15 @@ export default function AdmissionsPage() {
     }
   };
 
+  // Automatically fetch student ID when selectedBedId changes
+  useEffect(() => {
+    if (selectedBedId) {
+      fetchAllocatedStudentId(selectedBedId);
+    } else {
+      setAllocatedStudentId('');
+    }
+  }, [selectedBedId]);
+
   const fetchInitialData = async () => {
     try {
       const studRes = await fetch('/api/students?status=INACTIVE');
@@ -283,12 +292,7 @@ export default function AdmissionsPage() {
         </div>
         <ChevronRight className="h-4 w-4 text-slate-600" />
         <div className="flex items-center gap-3">
-          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 3 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>3</div>
-          <span className={`text-xs font-bold ${step >= 3 ? 'text-white' : 'text-slate-450'}`}>Student ID</span>
-        </div>
-        <ChevronRight className="h-4 w-4 text-slate-600" />
-        <div className="flex items-center gap-3">
-          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 4 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>4</div>
+          <div className={`h-8 w-8 rounded-full flex items-center justify-center font-bold text-xs ${step >= 4 ? 'bg-violet-600 text-white' : 'bg-slate-800 text-slate-400'}`}>3</div>
           <span className={`text-xs font-bold ${step >= 4 ? 'text-white' : 'text-slate-450'}`}>Terms & Review</span>
         </div>
       </div>
@@ -543,6 +547,28 @@ export default function AdmissionsPage() {
               </div>
             </div>
 
+            {selectedBedId && (
+              <div className="p-4 bg-slate-955 border border-slate-800 rounded-xl flex items-center justify-between gap-4">
+                <div>
+                  <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Generated Student ID</span>
+                  {loadingStudentId ? (
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="h-4.5 w-4.5 text-violet-500 animate-spin" />
+                      <span className="text-xs text-slate-450">Generating sequential ID...</span>
+                    </div>
+                  ) : (
+                    <span className="text-lg font-mono font-bold text-violet-400 uppercase tracking-wider">
+                      {allocatedStudentId || 'N/A'}
+                    </span>
+                  )}
+                </div>
+                <div className="text-right">
+                  <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Allocation Rule</span>
+                  <span className="text-[10px] text-slate-400">Prefix `STU` + Block Code + bed sequence</span>
+                </div>
+              </div>
+            )}
+
             {availableBeds.length === 0 && (
               <div className="p-4 bg-slate-955 rounded-xl border border-slate-800 text-center">
                 <Bed className="h-5 w-5 text-slate-500 mx-auto mb-2" />
@@ -565,67 +591,11 @@ export default function AdmissionsPage() {
                   setToast({ message: 'Please select a bed to allocate', type: 'error' });
                   return;
                 }
-                fetchAllocatedStudentId(selectedBedId);
-                setStep(3);
+                setStep(4);
               }}
               className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer"
             >
-              Continue to Student ID
-              <ArrowRight className="h-4 w-4" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* STEP 3: STUDENT ID ALLOCATION PREVIEW */}
-      {step === 3 && (
-        <div className="space-y-6">
-          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
-            <h3 className="text-sm font-bold text-white uppercase tracking-wider font-extrabold">Student ID Allocation</h3>
-
-            {loadingStudentId ? (
-              <div className="flex flex-col items-center justify-center py-10">
-                <Loader2 className="h-8 w-8 text-violet-500 animate-spin mb-3" />
-                <p className="text-xs text-slate-400">Calculating sequential Student ID based on bed order...</p>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="p-5 bg-slate-955 border border-slate-800 rounded-2xl flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                  <div>
-                    <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Allocated Student ID</span>
-                    <span className="text-2xl font-mono font-bold text-violet-400 uppercase tracking-wider">
-                      {allocatedStudentId || 'Generating...'}
-                    </span>
-                  </div>
-                  <div className="md:text-right">
-                    <span className="text-slate-500 text-[10px] uppercase font-bold block mb-1">Room Allocation Details</span>
-                    <span className="text-xs text-slate-200 font-semibold bg-slate-950 px-3 py-1.5 border border-slate-800 rounded-lg inline-block">
-                      {selectedBuildingId ? buildings.find(b => b.id === selectedBuildingId)?.name : ''} • Room {selectedRoomId ? filteredRooms.find(r => r.id === selectedRoomId)?.number : ''} ({selectedBedId ? filteredBeds.find(b => b.id === selectedBedId)?.name : ''})
-                    </span>
-                  </div>
-                </div>
-
-                <div className="p-4 bg-violet-950/15 border border-violet-850/30 rounded-2xl text-xs text-slate-350 leading-relaxed">
-                  💡 **Automatic Generation rule**: The Student ID is generated automatically using the prefix `STU`, followed by the Block index and the flat sequence number of the allocated bed within that block (ordered floor-wise, then room-wise, then bed-wise).
-                </div>
-              </div>
-            )}
-          </div>
-
-          <div className="flex justify-between">
-            <button
-              onClick={() => setStep(2)}
-              className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-300 transition-colors cursor-pointer"
-            >
-              <ChevronLeft className="h-4 w-4" />
-              Back
-            </button>
-            <button
-              onClick={() => setStep(4)}
-              disabled={!allocatedStudentId}
-              className="flex items-center gap-2 px-6 py-3 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-colors cursor-pointer disabled:opacity-50"
-            >
-              Confirm & Set Terms
+              Continue to Terms
               <ArrowRight className="h-4 w-4" />
             </button>
           </div>
@@ -723,7 +693,7 @@ export default function AdmissionsPage() {
 
           <div className="flex justify-between">
             <button
-              onClick={() => setStep(3)}
+              onClick={() => setStep(2)}
               className="flex items-center gap-2 px-6 py-3 bg-slate-900 border border-slate-800 hover:bg-slate-855 text-xs font-bold rounded-xl text-slate-300 transition-colors cursor-pointer"
             >
               <ChevronLeft className="h-4 w-4" />
