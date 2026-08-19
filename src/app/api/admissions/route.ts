@@ -367,6 +367,9 @@ export async function POST(request: Request) {
       }
 
       return { admission, updatedStudent, updatedBed };
+    }, {
+      maxWait: 25000,
+      timeout: 50000
     });
 
     await logActivity(
@@ -475,6 +478,9 @@ export async function PUT(request: Request) {
       });
 
       return { student: updatedStudent, bedName: student.bed.name, roomNumber: student.bed.room.number };
+    }, {
+      maxWait: 25000,
+      timeout: 50000
     });
 
     await logActivity(

@@ -160,6 +160,9 @@ export async function POST(request: Request) {
       }
 
       return { payment, invoice: updatedInvoice };
+    }, {
+      maxWait: 20000,
+      timeout: 40000
     });
 
     await logActivity(
