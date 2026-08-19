@@ -51,11 +51,37 @@ export default function SettingsPage() {
   const [profilePassword, setProfilePassword] = useState('');
   const [profileSubmitting, setProfileSubmitting] = useState(false);
 
+  // Reset student/staff password states
+  const [students, setStudents] = useState<any[]>([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
+  const [resetType, setResetType] = useState<'student' | 'staff'>('student');
+  const [selectedResetUserId, setSelectedResetUserId] = useState('');
+  const [resetPasswordValue, setResetPasswordValue] = useState('');
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+
   useEffect(() => {
     if (authUser) {
       setProfileName(authUser.name || '');
       setProfilePhone(authUser.phone || '');
       setProfileEmail(authUser.email || '');
+
+      if (authUser.role === 'OWNER') {
+        // Fetch students list
+        fetch('/api/students')
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) setStudents(data);
+          })
+          .catch(err => console.error('Failed to load students:', err));
+
+        // Fetch staff list
+        fetch('/api/staff')
+          .then(res => res.json())
+          .then(data => {
+            if (Array.isArray(data)) setStaffList(data);
+          })
+          .catch(err => console.error('Failed to load staff:', err));
+      }
     }
   }, [authUser]);
 
@@ -161,6 +187,50 @@ export default function SettingsPage() {
       setToast({ message: 'Network error. Please try again.', type: 'error' });
     } finally {
       setProfileSubmitting(false);
+    }
+  };
+
+  const handleResetPasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!selectedResetUserId) {
+      setToast({ message: 'Please select a user account to reset', type: 'error' });
+      return;
+    }
+    if (!resetPasswordValue || resetPasswordValue.trim().length < 6) {
+      setToast({ message: 'Password must be at least 6 characters long', type: 'error' });
+      return;
+    }
+
+    setResetSubmitting(true);
+    try {
+      const payload: any = {
+        newPassword: resetPasswordValue
+      };
+
+      if (resetType === 'student') {
+        payload.phone = selectedResetUserId; // student phone
+      } else {
+        payload.targetUserId = selectedResetUserId; // staff user id
+      }
+
+      const res = await fetch('/api/settings/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(payload)
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setToast({ message: data.message || 'Password reset successfully!', type: 'success' });
+        setResetPasswordValue('');
+        setSelectedResetUserId('');
+      } else {
+        setToast({ message: data.error || 'Failed to reset password', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setResetSubmitting(false);
     }
   };
 
@@ -417,6 +487,86 @@ export default function SettingsPage() {
           </button>
         </div>
       </form>
+
+      {/* SECTION: Reset Student/Staff Passwords (Owner Only) */}
+      {authUser?.role === 'OWNER' && (
+        <form onSubmit={handleResetPasswordSubmit} className="space-y-6 text-xs mt-6">
+          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
+              <KeyRound className="h-4.5 w-4.5 text-violet-400" />
+              <h3 className="font-bold text-white uppercase tracking-wider">Reset Student / Staff Password</h3>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div>
+                <label className="block text-slate-355 font-semibold mb-2">Account Type</label>
+                <select
+                  value={resetType}
+                  onChange={(e) => {
+                    setResetType(e.target.value as 'student' | 'staff');
+                    setSelectedResetUserId('');
+                  }}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                >
+                  <option value="student">Student Account</option>
+                  <option value="staff">Staff Account (Warden/Manager/Receptionist)</option>
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-355 font-semibold mb-2">Select User Account</label>
+                <select
+                  value={selectedResetUserId}
+                  onChange={(e) => setSelectedResetUserId(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                >
+                  <option value="">-- Choose User --</option>
+                  {resetType === 'student' ? (
+                    students.map(s => (
+                      <option key={s.id} value={s.phone}>{s.name} ({s.phone})</option>
+                    ))
+                  ) : (
+                    staffList.map(st => (
+                      <option key={st.id} value={st.id}>{st.name} ({st.role.toLowerCase()})</option>
+                    ))
+                  )}
+                </select>
+              </div>
+
+              <div>
+                <label className="block text-slate-355 font-semibold mb-2">Set New Password</label>
+                <input
+                  type="password"
+                  value={resetPasswordValue}
+                  onChange={(e) => setResetPasswordValue(e.target.value)}
+                  placeholder="Min 6 characters"
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={resetSubmitting}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-slate-955 border border-slate-800 hover:bg-slate-855 disabled:bg-slate-850 text-xs font-bold rounded-xl text-slate-200 transition-all cursor-pointer hover:shadow-lg"
+            >
+              {resetSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Resetting user password...
+                </>
+              ) : (
+                <>
+                  <Save className="h-4 w-4 text-violet-400" />
+                  Apply New Password
+                </>
+              )}
+            </button>
+          </div>
+        </form>
+      )}
 
       {toast && (
         <Toast
