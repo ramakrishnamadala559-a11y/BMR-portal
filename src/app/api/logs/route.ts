@@ -8,6 +8,20 @@ export async function GET(request: Request) {
     const { errorResponse } = await checkAuthAndPermission(request, 'settings', 'view');
     if (errorResponse) return errorResponse;
 
+    // Auto-cleanup logs older than 12 hours on request
+    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    try {
+      await db.activityLog.deleteMany({
+        where: {
+          createdAt: {
+            lt: twelveHoursAgo
+          }
+        }
+      });
+    } catch (cleanupErr) {
+      console.error('Auto logs cleanup failed:', cleanupErr);
+    }
+
     const logs = await db.activityLog.findMany({
       orderBy: {
         createdAt: 'desc'
