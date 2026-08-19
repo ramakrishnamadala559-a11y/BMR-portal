@@ -126,7 +126,7 @@ export default function LoginPage() {
                 Download App <ArrowUpRight className="h-3 w-3" />
               </a>
               <a 
-                href="mailto:support@antigravity.com" 
+                href={`mailto:${settings?.email || 'contact@premiumhostel.com'}`} 
                 className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-bold rounded-lg text-slate-300 transition-colors"
               >
                 Get Support <ArrowUpRight className="h-3 w-3" />
