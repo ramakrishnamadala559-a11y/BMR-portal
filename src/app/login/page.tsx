@@ -117,6 +117,15 @@ export default function LoginPage() {
 
           <div className="flex items-center gap-4">
             <ThemeToggle />
+            {!isMobileApp && (
+              <a 
+                href="/app-debug.apk" 
+                download="app-debug.apk"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-violet-650 hover:bg-violet-600 text-xs font-bold rounded-lg text-white transition-all shadow-md shadow-violet-650/10 hover:scale-[1.02] cursor-pointer"
+              >
+                Download App <ArrowUpRight className="h-3 w-3" />
+              </a>
+            )}
             <a 
               href="mailto:support@antigravity.com" 
               className="hidden sm:inline-flex items-center gap-1 px-3 py-1.5 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-bold rounded-lg text-slate-300 transition-colors"
