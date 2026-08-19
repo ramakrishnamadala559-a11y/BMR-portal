@@ -13,7 +13,8 @@ import {
   ChevronRight,
   ChevronLeft,
   ArrowRight,
-  Users
+  Users,
+  MessageSquare
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -65,6 +66,7 @@ export default function AdmissionsPage() {
   const [tempStudentDetails, setTempStudentDetails] = useState<any>(null);
   const [allocatedStudentId, setAllocatedStudentId] = useState('');
   const [loadingStudentId, setLoadingStudentId] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   const fetchAllocatedStudentId = async (bedId: string) => {
     setLoadingStudentId(true);
@@ -187,9 +189,7 @@ export default function AdmissionsPage() {
 
       if (res.ok) {
         setToast({ message: 'Admission completed and bed allocated successfully!', type: 'success' });
-        setTimeout(() => {
-          router.push('/admin/rooms');
-        }, 1500);
+        setShowSuccessModal(true);
       } else {
         const errData = await res.json();
         setToast({ message: errData.error || 'Admission allocation failed', type: 'error' });
@@ -199,6 +199,32 @@ export default function AdmissionsPage() {
       setToast({ message: 'Admission failed due to network error.', type: 'error' });
       setSubmitting(false);
     }
+  };
+
+  const handleSendWhatsApp = () => {
+    const bed = availableBeds.find(b => b.id === selectedBedId);
+    const buildingName = bed?.building.name || 'N/A';
+    const floorNumber = bed?.room.floor.number !== undefined ? bed?.room.floor.number : 'N/A';
+    const roomNumber = bed?.room.number || 'N/A';
+    const bedName = bed?.name || 'N/A';
+
+    let welcomeMsg = `Hello ${newStudentName},\n\nWelcome to Home Stay Hostel! Your bed allocation has been successfully completed. 🏡✨\n\n📍 Allocation Details:\n- Block/Building: ${buildingName}\n- Floor: Floor ${floorNumber}\n- Room Number: Room ${roomNumber}\n- Bed Name: ${bedName}\n- Student ID: ${allocatedStudentId}\n\n💳 Financial Terms:\n- Rent Amount: ₹${monthlyRent}/month\n- Security Deposit: ₹${securityDeposit}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-IN')}\n\n`;
+
+    if (tempStudentDetails) {
+      welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Username: ${newStudentPhone}\n- Temporary Password: ${newStudentPhone}\n\n`;
+    } else {
+      welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Login: Use your registered mobile number: ${newStudentPhone}\n\n`;
+    }
+
+    welcomeMsg += `For any assistance, feel free to reach out. Have a pleasant stay!`;
+
+    let cleanPhone = newStudentPhone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(welcomeMsg)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   // Cascading Handlers
@@ -711,6 +737,49 @@ export default function AdmissionsPage() {
                 </>
               )}
             </button>
+          </div>
+        </div>
+      )}
+
+      {showSuccessModal && (
+        <div className="fixed inset-0 z-50 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative text-center">
+            <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-emerald-500/10 text-emerald-400 mb-4">
+              <CheckCircle className="h-8 w-8 animate-bounce" />
+            </div>
+            <h3 className="text-lg font-bold text-white mb-2">Admission Completed!</h3>
+            <p className="text-slate-400 text-xs mb-6">The bed has been allocated and the student profile is active.</p>
+
+            <div className="p-4 bg-slate-950/60 border border-slate-850 rounded-xl mb-6 text-left text-xs space-y-2">
+              <div className="flex justify-between">
+                <span className="text-slate-500">Student ID:</span>
+                <span className="text-violet-400 font-bold font-mono uppercase">{allocatedStudentId}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Student Name:</span>
+                <span className="text-slate-200 font-semibold">{newStudentName}</span>
+              </div>
+              <div className="flex justify-between">
+                <span className="text-slate-500">Mobile Phone:</span>
+                <span className="text-slate-200 font-semibold">{newStudentPhone}</span>
+              </div>
+            </div>
+
+            <div className="space-y-2.5">
+              <button
+                onClick={handleSendWhatsApp}
+                className="w-full py-3 bg-emerald-600 hover:bg-emerald-550 text-xs font-bold rounded-xl text-white flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-md"
+              >
+                <MessageSquare className="h-4 w-4" />
+                Send Profile on WhatsApp
+              </button>
+              <button
+                onClick={() => router.push('/admin/rooms')}
+                className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-xs font-bold rounded-xl text-slate-300 transition-colors cursor-pointer"
+              >
+                Done & Go to Rooms
+              </button>
+            </div>
           </div>
         </div>
       )}

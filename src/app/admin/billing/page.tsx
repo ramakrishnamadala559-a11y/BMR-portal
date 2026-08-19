@@ -14,7 +14,8 @@ import {
   AlertCircle,
   TrendingUp,
   Plus,
-  Home
+  Home,
+  MessageSquare
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -139,6 +140,41 @@ export default function BillingPage() {
 
   const handlePrintTrigger = () => {
     window.print();
+  };
+
+  const handleShareInvoiceWhatsApp = () => {
+    if (!selectedInvoice) return;
+    const phone = selectedInvoice.student?.phone || '';
+    if (!phone) {
+      setToast({ message: 'Student phone number is not available to share.', type: 'error' });
+      return;
+    }
+
+    const tenantName = selectedInvoice.studentName || 'Tenant';
+    const invoiceNo = selectedInvoice.invoiceNumber || 'N/A';
+    const amount = selectedInvoice.total || 0;
+    const paidAmount = selectedInvoice.paidAmount || 0;
+    const balance = selectedInvoice.balance || 0;
+    const status = selectedInvoice.status || 'PENDING';
+    const billingMonth = selectedInvoice.createdAt ? new Date(selectedInvoice.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }) : 'N/A';
+
+    let msg = `Hello ${tenantName},\n\nHere is your billing statement from Home Stay Hostel for ${billingMonth}. 📄✨\n\n📌 Invoice Details:\n- Invoice Number: ${invoiceNo}\n- Status: ${status}\n- Total Bill: ₹${amount.toLocaleString('en-IN')}\n- Paid Amount: ₹${paidAmount.toLocaleString('en-IN')}\n- Remaining Balance: ₹${balance.toLocaleString('en-IN')}\n\n`;
+
+    if (status === 'PAID') {
+      msg += `Thank you for your payment! Your invoice is fully paid. 🙏✅\n\n`;
+    } else {
+      msg += `Please pay your remaining balance of ₹${balance.toLocaleString('en-IN')} as soon as possible. Thank you! 💳🕒\n\n`;
+    }
+
+    msg += `For any billing queries, contact Home Stay Hostel management. Have a great stay!`;
+
+    let cleanPhone = phone.replace(/\D/g, '');
+    if (cleanPhone.length === 10) {
+      cleanPhone = '91' + cleanPhone;
+    }
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${cleanPhone}&text=${encodeURIComponent(msg)}`;
+    window.open(whatsappUrl, '_blank');
   };
 
   const getInvoiceBadge = (status: string) => {
@@ -487,7 +523,16 @@ export default function BillingPage() {
             </button>
 
             {/* Print trigger button */}
-            <div className="mb-6 flex justify-end print:hidden">
+            <div className="mb-6 flex justify-end gap-3 print:hidden">
+              {selectedInvoice.student?.phone && (
+                <button
+                  onClick={handleShareInvoiceWhatsApp}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-550 text-xs font-bold rounded-xl text-white transition-all cursor-pointer"
+                >
+                  <MessageSquare className="h-4 w-4" />
+                  Share on WhatsApp
+                </button>
+              )}
               <button
                 onClick={handlePrintTrigger}
                 className="flex items-center gap-2 px-5 py-2.5 bg-violet-600 hover:bg-violet-500 text-xs font-bold rounded-xl text-white transition-all cursor-pointer"
