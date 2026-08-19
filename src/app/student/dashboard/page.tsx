@@ -222,7 +222,9 @@ export default function StudentDashboardPage() {
             <CheckCircle2 className="h-6 w-6" />
           </div>
         </div>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-fade-in">
         {/* Financial Status Summary Card */}
         {studentProfile && (
           <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4 lg:col-span-1 h-fit hover:border-slate-750 transition-all">
