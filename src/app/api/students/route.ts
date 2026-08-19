@@ -82,6 +82,7 @@ export async function POST(request: Request) {
       idNumber,
       idProofType,
       idProofUrl,
+      oldMoney,
       monthlyRent,
       securityDeposit,
       expectedCheckout,
@@ -164,6 +165,35 @@ export async function POST(request: Request) {
           status: 'INACTIVE' // Set to INACTIVE initially, will turn ACTIVE upon Bed Allocation
         }
       });
+
+      // Create old money invoice if any
+      const oldMoneyVal = parseFloat(oldMoney) || 0;
+      if (oldMoneyVal > 0) {
+        const dbSettings = await tx.hostelSettings.findUnique({
+          where: { id: 'GLOBAL' }
+        });
+        const invoicePrefix = dbSettings?.invoicePrefix || 'INV-';
+        const today = new Date();
+        const oldMoneyInvoiceNumber = `${invoicePrefix}OLD-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        await tx.invoice.create({
+          data: {
+            invoiceNumber: oldMoneyInvoiceNumber,
+            studentId: newStudent.id,
+            studentName: newStudent.name,
+            roomNumber: 'N/A',
+            bedName: 'N/A',
+            billingPeriodStart: new Date(),
+            billingPeriodEnd: new Date(),
+            dueDate: new Date(),
+            subtotal: oldMoneyVal,
+            arrears: 0,
+            total: oldMoneyVal,
+            balance: oldMoneyVal,
+            status: 'PENDING'
+          }
+        });
+      }
 
       // 2. Create student credentials in User table with temp password as studentId@123
       const hashedPassword = await hashPassword(`${newStudent.id}@123`);

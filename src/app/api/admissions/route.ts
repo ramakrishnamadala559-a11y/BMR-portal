@@ -201,6 +201,35 @@ export async function POST(request: Request) {
             status: 'ACTIVE'
           }
         });
+
+        // Create old money invoice if any
+        const oldMoneyVal = parseFloat(studentDetails.oldMoney) || 0;
+        if (oldMoneyVal > 0) {
+          const dbSettings = await tx.hostelSettings.findUnique({
+            where: { id: 'GLOBAL' }
+          });
+          const invoicePrefix = dbSettings?.invoicePrefix || 'INV-';
+          const today = new Date();
+          const oldMoneyInvoiceNumber = `${invoicePrefix}OLD-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+          await tx.invoice.create({
+            data: {
+              invoiceNumber: oldMoneyInvoiceNumber,
+              studentId: generatedStudentId,
+              studentName: name,
+              roomNumber: 'N/A',
+              bedName: 'N/A',
+              billingPeriodStart: new Date(joiningDate),
+              billingPeriodEnd: new Date(joiningDate),
+              dueDate: new Date(joiningDate),
+              subtotal: oldMoneyVal,
+              arrears: 0,
+              total: oldMoneyVal,
+              balance: oldMoneyVal,
+              status: 'PENDING'
+            }
+          });
+        }
       } else {
         // For existing student, update their ID to the custom generated Student ID
         if (studentId !== generatedStudentId) {
