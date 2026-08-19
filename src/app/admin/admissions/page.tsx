@@ -774,10 +774,10 @@ export default function AdmissionsPage() {
                 Send Profile on WhatsApp
               </button>
               <button
-                onClick={() => router.push('/admin/rooms')}
+                onClick={() => router.push('/admin/dashboard')}
                 className="w-full py-3 bg-slate-800 hover:bg-slate-750 text-xs font-bold rounded-xl text-slate-300 transition-colors cursor-pointer"
               >
-                Done & Go to Rooms
+                Done & Go to Dashboard
               </button>
             </div>
           </div>
