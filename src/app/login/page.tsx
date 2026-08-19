@@ -273,7 +273,7 @@ export default function LoginPage() {
         </div>
 
         {/* Contact Info Card */}
-        {settings && settings.showContactOnLogin && (
+        {settings && settings.showContactOnLogin && !isMobileApp && (
           <div className="w-full max-w-md bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl text-xs space-y-3 relative shadow-md">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-800/60 text-slate-300 font-bold uppercase tracking-wider text-[10px]">
               <Building2 className="h-4 w-4 text-violet-400" />
@@ -312,81 +312,79 @@ export default function LoginPage() {
         )}
 
         {/* SECTION 2: MARKETING HERO & FEATURES GRID (STACKED BELOW LOGIN) */}
-        {!isMobileApp && (
-          <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-500/10 border border-violet-500/25 rounded-full text-violet-300 text-xs font-bold shadow-sm">
-              <Sparkles className="h-3.5 w-3.5 text-violet-400" />
-              Next-Generation Single-Tenant Suite
+        <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-500/10 border border-violet-500/25 rounded-full text-violet-300 text-xs font-bold shadow-sm">
+            <Sparkles className="h-3.5 w-3.5 text-violet-400" />
+            Next-Generation Single-Tenant Suite
+          </div>
+          
+          <h2 className="text-3xl sm:text-4.5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl mx-auto">
+            The Operating System for <br />
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-450 via-rose-405 to-cyan-405">
+              Modern Property Management.
+            </span>
+          </h2>
+          
+          <p className="text-slate-400 text-sm max-w-xl mx-auto">
+            Antigravity PG coordinates bookings, simplifies invoice processing, categorizesmess expenses, and monitors role-based staff matrices.
+          </p>
+
+          {/* Clean SaaS Feature cards */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto pt-6 text-left">
+            <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
+              <div className="h-8 w-8 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center mb-3">
+                <LayoutGrid className="h-4 w-4 text-violet-400" />
+              </div>
+              <h3 className="text-xs font-bold text-white">Visual Room Matrix</h3>
+              <p className="text-slate-500 text-[11px] mt-1 leading-snug">Interact with floor-by-floor maps to allocate, check out, and audit beds instantly.</p>
             </div>
-            
-            <h2 className="text-3xl sm:text-4.5xl font-extrabold text-white tracking-tight leading-tight max-w-2xl mx-auto">
-              The Operating System for <br />
-              <span className="bg-clip-text text-transparent bg-gradient-to-r from-violet-450 via-rose-405 to-cyan-405">
-                Modern Property Management.
-              </span>
-            </h2>
-            
-            <p className="text-slate-400 text-sm max-w-xl mx-auto">
-              Antigravity PG coordinates bookings, simplifies invoice processing, categorizesmess expenses, and monitors role-based staff matrices.
-            </p>
 
-            {/* Clean SaaS Feature cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 max-w-3xl mx-auto pt-6 text-left">
-              <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
-                <div className="h-8 w-8 bg-violet-500/10 border border-violet-500/20 rounded-xl flex items-center justify-center mb-3">
-                  <LayoutGrid className="h-4 w-4 text-violet-400" />
-                </div>
-                <h3 className="text-xs font-bold text-white">Visual Room Matrix</h3>
-                <p className="text-slate-500 text-[11px] mt-1 leading-snug">Interact with floor-by-floor maps to allocate, check out, and audit beds instantly.</p>
+            <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
+              <div className="h-8 w-8 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-center mb-3">
+                <Receipt className="h-4 w-4 text-rose-400" />
               </div>
+              <h3 className="text-xs font-bold text-white">Smart Invoicing</h3>
+              <p className="text-slate-500 text-[11px] mt-1 leading-snug">Generate receipts, record mess expenses, and view monthly profit summaries.</p>
+            </div>
 
-              <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
-                <div className="h-8 w-8 bg-rose-500/10 border border-rose-500/20 rounded-xl flex items-center justify-center mb-3">
-                  <Receipt className="h-4 w-4 text-rose-400" />
-                </div>
-                <h3 className="text-xs font-bold text-white">Smart Invoicing</h3>
-                <p className="text-slate-500 text-[11px] mt-1 leading-snug">Generate receipts, record mess expenses, and view monthly profit summaries.</p>
+            <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
+              <div className="h-8 w-8 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center mb-3">
+                <Users className="h-4 w-4 text-cyan-400" />
               </div>
+              <h3 className="text-xs font-bold text-white">RBAC Console Settings</h3>
+              <p className="text-slate-500 text-[11px] mt-1 leading-snug">Toggle module permissions (View, Edit, Delete) dynamically for staff profiles.</p>
+            </div>
 
-              <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
-                <div className="h-8 w-8 bg-cyan-500/10 border border-cyan-500/20 rounded-xl flex items-center justify-center mb-3">
-                  <Users className="h-4 w-4 text-cyan-400" />
-                </div>
-                <h3 className="text-xs font-bold text-white">RBAC Console Settings</h3>
-                <p className="text-slate-500 text-[11px] mt-1 leading-snug">Toggle module permissions (View, Edit, Delete) dynamically for staff profiles.</p>
+            <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
+              <div className="h-8 w-8 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center mb-3">
+                <Compass className="h-4 w-4 text-indigo-400" />
               </div>
-
-              <div className="p-4.5 bg-slate-900/40 border border-slate-900/60 rounded-2xl backdrop-blur-sm">
-                <div className="h-8 w-8 bg-indigo-500/10 border border-indigo-500/20 rounded-xl flex items-center justify-center mb-3">
-                  <Compass className="h-4 w-4 text-indigo-400" />
-                </div>
-                <h3 className="text-xs font-bold text-white">Student Self-Service</h3>
-                <p className="text-slate-500 text-[11px] mt-1 leading-snug">Tenants check roommate names, trace outstanding dues, and print invoices.</p>
-              </div>
+              <h3 className="text-xs font-bold text-white">Student Self-Service</h3>
+              <p className="text-slate-500 text-[11px] mt-1 leading-snug">Tenants check roommate names, trace outstanding dues, and print invoices.</p>
             </div>
           </div>
-        )}
+        </div>
       </main>
 
       {/* FOOTER BAR */}
-      {!isMobileApp && (
-        <footer className="w-full border-t border-slate-900/60 py-8 bg-slate-955/40 backdrop-blur-sm z-10 relative mt-auto text-xs text-slate-400">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
-            <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-500 font-medium pt-2">
-              <div className="flex items-center gap-2">
-                <Home className="h-4 w-4 text-violet-500/70" />
-                <span>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</span>
-              </div>
-              <div className="flex items-center gap-4">
-                <span className="flex items-center gap-1">
-                  <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/70" /> SSL Encrypted Connection
-                </span>
-                <span>AES-256/SHA-512 Security</span>
-              </div>
+      <footer className="w-full border-t border-slate-900/60 py-8 bg-slate-955/40 backdrop-blur-sm z-10 relative mt-auto text-xs text-slate-400">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+
+
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-4 text-[10px] text-slate-500 font-medium pt-2">
+            <div className="flex items-center gap-2">
+              <Home className="h-4 w-4 text-violet-500/70" />
+              <span>&copy; {new Date().getFullYear()} {brandName}. All rights reserved.</span>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="flex items-center gap-1">
+                <ShieldCheck className="h-3.5 w-3.5 text-emerald-500/70" /> SSL Encrypted Connection
+              </span>
+              <span>AES-256/SHA-512 Security</span>
             </div>
           </div>
-        </footer>
-      )}
+        </div>
+      </footer>
 
       {toast && (
         <Toast
