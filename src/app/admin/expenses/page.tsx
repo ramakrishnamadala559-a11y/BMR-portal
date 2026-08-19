@@ -96,7 +96,7 @@ export default function ExpensesPage() {
           category,
           date,
           description,
-          buildingId: ['BUILDING_RENT', 'ELECTRICITY', 'MAINTENANCE', 'WATER', 'INTERNET'].includes(category)
+          buildingId: ['BUILDING_RENT', 'ELECTRICITY', 'MAINTENANCE', 'WATER', 'INTERNET', 'GAS'].includes(category)
             ? selectedBuildingId || null
             : null
         })
@@ -157,6 +157,7 @@ export default function ExpensesPage() {
     'RICE',
     'GROCERY',
     'BUILDING_RENT',
+    'GAS',
     'OTHER'
   ];
 
@@ -175,6 +176,7 @@ export default function ExpensesPage() {
       case 'RICE': return 'text-orange-400 bg-orange-500/10 border-orange-500/20';
       case 'GROCERY': return 'text-yellow-400 bg-yellow-500/10 border-yellow-500/20';
       case 'BUILDING_RENT': return 'text-pink-400 bg-pink-500/10 border-pink-500/20';
+      case 'GAS': return 'text-red-400 bg-red-500/10 border-red-500/20';
       default: return 'text-slate-400 bg-slate-500/10 border-slate-500/20';
     }
   };
@@ -190,6 +192,7 @@ export default function ExpensesPage() {
       case 'RICE': return <span className="text-orange-400 font-bold text-xs">🌾</span>;
       case 'GROCERY': return <span className="text-yellow-400 font-bold text-xs">🍏</span>;
       case 'BUILDING_RENT': return <span className="text-pink-400 font-bold text-xs">🏢</span>;
+      case 'GAS': return <span className="text-red-400 font-bold text-xs">🔥</span>;
       default: return <span className="text-slate-400 font-bold text-xs">📌</span>;
     }
   };
@@ -430,7 +433,7 @@ export default function ExpensesPage() {
                 </div>
               </div>
 
-              {['BUILDING_RENT', 'ELECTRICITY', 'MAINTENANCE', 'WATER', 'INTERNET'].includes(category) && (
+              {['BUILDING_RENT', 'ELECTRICITY', 'MAINTENANCE', 'WATER', 'INTERNET', 'GAS'].includes(category) && (
                 <div className="animate-slide-in">
                   <label className="block text-slate-400 font-bold text-[10px] uppercase tracking-wider mb-2">Assign to Block / Building</label>
                   <div className="flex flex-wrap gap-2">
