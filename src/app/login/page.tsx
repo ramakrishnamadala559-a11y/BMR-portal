@@ -267,7 +267,24 @@ export default function LoginPage() {
               </button>
             </form>
 
-
+            {isMobileApp && (
+              <div className="mt-6 pt-4 border-t border-slate-850/60 flex flex-col gap-2 items-center text-center">
+                <a 
+                  href={`mailto:${settings?.email || 'contact@premiumhostel.com'}`}
+                  className="inline-flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 font-bold transition-colors cursor-pointer"
+                >
+                  Need help? Get Support <ArrowUpRight className="h-3.5 w-3.5" />
+                </a>
+                {settings?.phone && (
+                  <a 
+                    href={`tel:+91${settings.phone}`}
+                    className="text-[11px] text-slate-400 hover:text-slate-350 transition-colors"
+                  >
+                    Call: +91 {settings.phone}
+                  </a>
+                )}
+              </div>
+            )}
 
           </div>
         </div>
@@ -312,7 +329,8 @@ export default function LoginPage() {
         )}
 
         {/* SECTION 2: MARKETING HERO & FEATURES GRID (STACKED BELOW LOGIN) */}
-        <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
+        {!isMobileApp && (
+          <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-500/10 border border-violet-500/25 rounded-full text-violet-300 text-xs font-bold shadow-sm">
             <Sparkles className="h-3.5 w-3.5 text-violet-400" />
             Next-Generation Single-Tenant Suite
@@ -364,10 +382,12 @@ export default function LoginPage() {
             </div>
           </div>
         </div>
+      )}
       </main>
 
       {/* FOOTER BAR */}
-      <footer className="w-full border-t border-slate-900/60 py-8 bg-slate-955/40 backdrop-blur-sm z-10 relative mt-auto text-xs text-slate-400">
+      {!isMobileApp && (
+        <footer className="w-full border-t border-slate-900/60 py-8 bg-slate-955/40 backdrop-blur-sm z-10 relative mt-auto text-xs text-slate-400">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
 
 
@@ -385,6 +405,7 @@ export default function LoginPage() {
           </div>
         </div>
       </footer>
+      )}
 
       {toast && (
         <Toast
