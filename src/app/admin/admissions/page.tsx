@@ -145,6 +145,17 @@ export default function AdmissionsPage() {
       return;
     }
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(newStudentPhone.trim())) {
+      setToast({ message: 'Please enter a valid 10-digit mobile number starting with 6-9', type: 'error' });
+      return;
+    }
+
+    if (newStudentGuardianPhone.trim() && !phoneRegex.test(newStudentGuardianPhone.trim())) {
+      setToast({ message: 'Please enter a valid 10-digit mobile number starting with 6-9 for the guardian', type: 'error' });
+      return;
+    }
+
     setTempStudentDetails({
       name: newStudentName,
       phone: newStudentPhone,

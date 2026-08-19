@@ -92,6 +92,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Missing required student details' }, { status: 400 });
     }
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(phone.trim())) {
+      return NextResponse.json({ error: 'Invalid phone number. Must be a 10-digit Indian mobile number starting with 6-9' }, { status: 400 });
+    }
+
+    if (guardianPhone && guardianPhone !== 'N/A' && !phoneRegex.test(guardianPhone.trim())) {
+      return NextResponse.json({ error: 'Invalid guardian phone number. Must be a 10-digit Indian mobile number starting with 6-9' }, { status: 400 });
+    }
+
     const rent = parseFloat(monthlyRent) || 0;
     const deposit = parseFloat(securityDeposit) || 0;
 
@@ -218,6 +227,15 @@ export async function PUT(request: Request) {
 
     if (!id) {
       return NextResponse.json({ error: 'Student ID is required' }, { status: 400 });
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (phone && !phoneRegex.test(phone.trim())) {
+      return NextResponse.json({ error: 'Invalid student phone number. Must be a 10-digit Indian mobile number starting with 6-9' }, { status: 400 });
+    }
+
+    if (otherFields.guardianPhone && otherFields.guardianPhone !== 'N/A' && !phoneRegex.test(otherFields.guardianPhone.trim())) {
+      return NextResponse.json({ error: 'Invalid guardian phone number. Must be a 10-digit Indian mobile number starting with 6-9' }, { status: 400 });
     }
 
     const currentStudent = await db.student.findUnique({

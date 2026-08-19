@@ -109,6 +109,15 @@ export async function POST(request: Request) {
           throw new Error('Missing required student details');
         }
 
+        const phoneRegex = /^[6-9]\d{9}$/;
+        if (!phoneRegex.test(phone.trim())) {
+          throw new Error('Invalid student phone number. Must be a 10-digit Indian mobile number starting with 6-9');
+        }
+
+        if (guardianPhone && guardianPhone !== 'N/A' && !phoneRegex.test(guardianPhone.trim())) {
+          throw new Error('Invalid guardian phone number. Must be a 10-digit Indian mobile number starting with 6-9');
+        }
+
         // Check if student with phone already exists
         const existingStudent = await tx.student.findUnique({
           where: { phone }

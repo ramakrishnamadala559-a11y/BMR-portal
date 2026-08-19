@@ -144,6 +144,17 @@ export default function StudentsPage() {
     e.preventDefault();
     if (!selectedStudent || !editName.trim() || !editPhone.trim()) return;
 
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(editPhone.trim())) {
+      setToast({ message: 'Please enter a valid 10-digit mobile number starting with 6-9', type: 'error' });
+      return;
+    }
+
+    if (editGuardianPhone.trim() && editGuardianPhone !== 'N/A' && !phoneRegex.test(editGuardianPhone.trim())) {
+      setToast({ message: 'Please enter a valid 10-digit mobile number starting with 6-9 for the guardian', type: 'error' });
+      return;
+    }
+
     setEditSubmitting(true);
     try {
       const res = await fetch('/api/students', {
