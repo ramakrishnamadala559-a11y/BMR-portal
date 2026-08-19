@@ -23,18 +23,6 @@ export default function StudentHomePage() {
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
 
-  // States for editing profile info
-  const [isEditing, setIsEditing] = useState(false);
-  const [editForm, setEditForm] = useState({
-    name: '',
-    phone: '',
-    email: '',
-    idNumber: '',
-    address: ''
-  });
-  const [saveError, setSaveError] = useState('');
-  const [saving, setSaving] = useState(false);
-
   // PG Announcements
   const [announcements, setAnnouncements] = useState<any[]>([]);
 
@@ -143,51 +131,7 @@ export default function StudentHomePage() {
     }
   };
 
-  const startEditing = () => {
-    if (!activeProfile) return;
-    setEditForm({
-      name: activeProfile.name || '',
-      phone: activeProfile.phone || '',
-      email: activeProfile.email || '',
-      idNumber: activeProfile.idNumber || '',
-      address: activeProfile.address || ''
-    });
-    setSaveError('');
-    setIsEditing(true);
-  };
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!activeProfile) return;
-    setSaving(true);
-    setSaveError('');
-    try {
-      const res = await fetch('/api/public/student', {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          id: activeProfile.id,
-          ...editForm
-        })
-      });
-      if (res.ok) {
-        const updated = await res.json();
-        setIsEditing(false);
-        if (user) {
-          await refreshAuth();
-        } else {
-          setPublicProfile(updated);
-        }
-      } else {
-        const errData = await res.json();
-        setSaveError(errData.error || 'Failed to save changes');
-      }
-    } catch (err) {
-      setSaveError('Failed to save changes');
-    } finally {
-      setSaving(false);
-    }
-  };
 
   if (loading) {
     return (
@@ -277,7 +221,6 @@ export default function StudentHomePage() {
                 setPublicProfile(null);
                 setPublicSearch('');
                 setRoommates([]);
-                setIsEditing(false);
               }}
               className="bg-slate-950 hover:bg-slate-900 px-3.5 py-2 border border-slate-800 rounded-xl text-[10px] text-violet-400 font-bold uppercase tracking-wider shadow-sm cursor-pointer transition-all"
             >
@@ -415,152 +358,50 @@ export default function StudentHomePage() {
       {/* Student Profile Metadata Section */}
       {activeProfile && (
         <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
-          <div className="flex justify-between items-center pb-3 border-b border-slate-800/60">
-            <div className="flex items-center gap-2 text-slate-200">
-              <User className="h-4.5 w-4.5 text-violet-400" />
-              <h3 className="font-bold text-white uppercase tracking-wider text-xs">My Registered Profile Info</h3>
-            </div>
-            {!isEditing && (
-              <button
-                onClick={startEditing}
-                className="bg-violet-600/15 hover:bg-violet-600/25 border border-violet-500/25 text-violet-400 hover:text-violet-300 font-bold text-[10px] px-3.5 py-1.5 rounded-xl transition-all shadow-sm flex items-center gap-1 cursor-pointer"
-              >
-                ✏️ Edit Profile Info
-              </button>
-            )}
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
+            <User className="h-4.5 w-4.5 text-violet-400" />
+            <h3 className="font-bold text-white uppercase tracking-wider text-xs">My Registered Profile Info</h3>
           </div>
 
-          {isEditing ? (
-            <form onSubmit={handleSave} className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {/* Field: Name */}
-                <div>
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Name</label>
-                  <input
-                    type="text"
-                    value={editForm.name}
-                    onChange={(e) => setEditForm({ ...editForm, name: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
-                    required
-                  />
-                </div>
-                {/* Field: Phone Number */}
-                <div>
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Phone Number</label>
-                  <input
-                    type="text"
-                    value={editForm.phone}
-                    onChange={(e) => setEditForm({ ...editForm, phone: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
-                    required
-                  />
-                </div>
-                {/* Field: Email */}
-                <div>
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Email Address</label>
-                  <input
-                    type="email"
-                    value={editForm.email}
-                    onChange={(e) => setEditForm({ ...editForm, email: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
-                    placeholder="N/A"
-                  />
-                </div>
-                {/* Field: Aadhaar Number */}
-                <div>
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Aadhaar Number (ID)</label>
-                  <input
-                    type="text"
-                    value={editForm.idNumber}
-                    onChange={(e) => setEditForm({ ...editForm, idNumber: e.target.value })}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-violet-500"
-                    required
-                  />
-                </div>
-                {/* Field: Address */}
-                <div className="md:col-span-2">
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Address</label>
-                  <textarea
-                    value={editForm.address}
-                    onChange={(e) => setEditForm({ ...editForm, address: e.target.value })}
-                    rows={2}
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2 text-xs text-white focus:outline-none focus:border-violet-500 resize-none font-medium"
-                    required
-                  />
-                </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400">
+            {/* Column 1 */}
+            <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Student ID</span>
+                <span className="text-slate-200 font-mono font-bold break-all max-w-[150px] sm:max-w-xs">{activeProfile.id}</span>
               </div>
-
-              {saveError && (
-                <div className="p-3 bg-rose-500/10 border border-rose-500/25 rounded-xl text-rose-400 text-xs font-semibold text-center">
-                  {saveError}
-                </div>
-              )}
-
-              <div className="flex justify-end gap-2.5 pt-2">
-                <button
-                  type="button"
-                  onClick={() => setIsEditing(false)}
-                  className="bg-slate-950 border border-slate-800 hover:border-slate-700 text-slate-400 hover:text-slate-350 font-bold text-xs py-2 px-4 rounded-xl transition-all cursor-pointer"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={saving}
-                  className="bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs py-2 px-4 rounded-xl transition-all shadow-md hover:shadow-violet-600/15 disabled:opacity-50 flex items-center gap-1.5 cursor-pointer"
-                >
-                  {saving ? (
-                    <>
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                      Saving...
-                    </>
-                  ) : (
-                    'Save Changes'
-                  )}
-                </button>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Name</span>
+                <span className="text-slate-202 font-bold">{activeProfile.name}</span>
               </div>
-            </form>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 text-xs text-slate-400">
-              {/* Column 1 */}
-              <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
-                <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Student ID</span>
-                  <span className="text-slate-200 font-mono font-bold break-all max-w-[150px] sm:max-w-xs">{activeProfile.id}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Name</span>
-                  <span className="text-slate-202 font-bold">{activeProfile.name}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Joining Date</span>
-                  <span className="text-slate-202 font-bold">
-                    {activeProfile.admissionDate ? new Date(activeProfile.admissionDate).toLocaleDateString([], { dateStyle: 'medium' }) : 'N/A'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center py-2">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Phone Number</span>
-                  <span className="text-slate-202 font-bold">{activeProfile.phone}</span>
-                </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Joining Date</span>
+                <span className="text-slate-202 font-bold">
+                  {activeProfile.admissionDate ? new Date(activeProfile.admissionDate).toLocaleDateString([], { dateStyle: 'medium' }) : 'N/A'}
+                </span>
               </div>
-
-              {/* Column 2 */}
-              <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
-                <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Email</span>
-                  <span className="text-slate-202 font-bold truncate max-w-[120px] sm:max-w-xs" title={activeProfile.email || 'N/A'}>{activeProfile.email || 'N/A'}</span>
-                </div>
-                <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar / ID Proof ({activeProfile.idProofType || 'Aadhaar'})</span>
-                  <span className="text-slate-205 font-bold">{activeProfile.idNumber}</span>
-                </div>
-                <div className="flex justify-between items-start py-2">
-                  <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px] mt-0.5">Address</span>
-                  <span className="text-slate-202 font-bold text-right max-w-[150px] sm:max-w-xs break-words font-medium" title={activeProfile.address}>{activeProfile.address}</span>
-                </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Phone Number</span>
+                <span className="text-slate-202 font-bold">{activeProfile.phone}</span>
               </div>
             </div>
-          )}
+
+            {/* Column 2 */}
+            <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Email</span>
+                <span className="text-slate-202 font-bold truncate max-w-[120px] sm:max-w-xs" title={activeProfile.email || 'N/A'}>{activeProfile.email || 'N/A'}</span>
+              </div>
+              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar / ID Proof ({activeProfile.idProofType || 'Aadhaar'})</span>
+                <span className="text-slate-205 font-bold">{activeProfile.idNumber}</span>
+              </div>
+              <div className="flex justify-between items-start py-2">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px] mt-0.5">Address</span>
+                <span className="text-slate-202 font-bold text-right max-w-[150px] sm:max-w-xs break-words font-medium" title={activeProfile.address}>{activeProfile.address}</span>
+              </div>
+            </div>
+          </div>
         </div>
       )}
     </div>
