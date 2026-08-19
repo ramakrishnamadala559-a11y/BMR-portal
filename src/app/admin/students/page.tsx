@@ -62,6 +62,7 @@ export default function StudentsPage() {
   const [editDept, setEditDept] = useState('');
   const [editIdNo, setEditIdNo] = useState('');
   const [editIdProofUrl, setEditIdProofUrl] = useState('');
+  const [editOldDues, setEditOldDues] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -136,6 +137,7 @@ export default function StudentsPage() {
     setEditGuardianPhone(student.guardianPhone || '');
     setEditIdNo(student.idNumber || '');
     setEditIdProofUrl(student.idProofUrl || '');
+    setEditOldDues('');
     setEditPassword('');
     setEditModalOpen(true);
   };
@@ -172,7 +174,8 @@ export default function StudentsPage() {
           guardianName: editGuardian || 'N/A',
           guardianPhone: editGuardianPhone || 'N/A',
           idNumber: editIdNo || 'N/A',
-          idProofUrl: editIdProofUrl || null
+          idProofUrl: editIdProofUrl || null,
+          oldDues: editOldDues || '0'
         })
       });
 
@@ -749,6 +752,19 @@ export default function StudentsPage() {
                   value={editIdProofUrl}
                   onChange={setEditIdProofUrl}
                 />
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Add Previous Dues / Old Dues (₹) (Optional)</label>
+                  <input
+                    type="number"
+                    value={editOldDues}
+                    onChange={(e) => setEditOldDues(e.target.value)}
+                    placeholder="Enter amount to add"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-200 focus:outline-none"
+                  />
+                </div>
               </div>
 
               <div className="grid grid-cols-2 gap-4">

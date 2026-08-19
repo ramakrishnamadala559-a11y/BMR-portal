@@ -82,7 +82,6 @@ export async function POST(request: Request) {
       idNumber,
       idProofType,
       idProofUrl,
-      oldMoney,
       monthlyRent,
       securityDeposit,
       expectedCheckout,
@@ -166,35 +165,6 @@ export async function POST(request: Request) {
         }
       });
 
-      // Create old money invoice if any
-      const oldMoneyVal = parseFloat(oldMoney) || 0;
-      if (oldMoneyVal > 0) {
-        const dbSettings = await tx.hostelSettings.findUnique({
-          where: { id: 'GLOBAL' }
-        });
-        const invoicePrefix = dbSettings?.invoicePrefix || 'INV-';
-        const today = new Date();
-        const oldMoneyInvoiceNumber = `${invoicePrefix}OLD-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
-
-        await tx.invoice.create({
-          data: {
-            invoiceNumber: oldMoneyInvoiceNumber,
-            studentId: newStudent.id,
-            studentName: newStudent.name,
-            roomNumber: 'N/A',
-            bedName: 'N/A',
-            billingPeriodStart: new Date(),
-            billingPeriodEnd: new Date(),
-            dueDate: new Date(),
-            subtotal: oldMoneyVal,
-            arrears: 0,
-            total: oldMoneyVal,
-            balance: oldMoneyVal,
-            status: 'PENDING'
-          }
-        });
-      }
-
       // 2. Create student credentials in User table with temp password as studentId@123
       const hashedPassword = await hashPassword(`${newStudent.id}@123`);
       await tx.user.create({
@@ -269,7 +239,14 @@ export async function PUT(request: Request) {
     }
 
     const currentStudent = await db.student.findUnique({
-      where: { id }
+      where: { id },
+      include: {
+        bed: {
+          include: {
+            room: true
+          }
+        }
+      }
     });
 
     if (!currentStudent) {
@@ -337,6 +314,35 @@ export async function PUT(request: Request) {
       if (otherFields.idNumber !== undefined) parsedFields.idNumber = otherFields.idNumber;
       if (otherFields.idProofType !== undefined) parsedFields.idProofType = otherFields.idProofType;
       if (otherFields.status !== undefined) parsedFields.status = otherFields.status;
+
+      // Create old money invoice if any
+      const oldDuesVal = parseFloat(otherFields.oldDues) || 0;
+      if (oldDuesVal > 0) {
+        const dbSettings = await tx.hostelSettings.findUnique({
+          where: { id: 'GLOBAL' }
+        });
+        const invoicePrefix = dbSettings?.invoicePrefix || 'INV-';
+        const today = new Date();
+        const oldMoneyInvoiceNumber = `${invoicePrefix}OLD-${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+
+        await tx.invoice.create({
+          data: {
+            invoiceNumber: oldMoneyInvoiceNumber,
+            studentId: id,
+            studentName: name || currentStudent.name,
+            roomNumber: currentStudent.bed?.room?.number || 'N/A',
+            bedName: currentStudent.bed?.name || 'N/A',
+            billingPeriodStart: new Date(),
+            billingPeriodEnd: new Date(),
+            dueDate: new Date(),
+            subtotal: oldDuesVal,
+            arrears: 0,
+            total: oldDuesVal,
+            balance: oldDuesVal,
+            status: 'PENDING'
+          }
+        });
+      }
 
       return tx.student.update({
         where: { id },

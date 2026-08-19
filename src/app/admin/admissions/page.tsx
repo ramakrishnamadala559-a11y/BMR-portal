@@ -63,7 +63,6 @@ export default function AdmissionsPage() {
   const [newStudentGuardianPhone, setNewStudentGuardianPhone] = useState('');
   const [newStudentIdNo, setNewStudentIdNo] = useState('');
   const [newStudentIdProofUrl, setNewStudentIdProofUrl] = useState('');
-  const [newStudentOldMoney, setNewStudentOldMoney] = useState('');
   const [newStudentCollege, setNewStudentCollege] = useState('');
   const [newStudentDept, setNewStudentDept] = useState('');
   const [tempStudentDetails, setTempStudentDetails] = useState<any>(null);
@@ -171,8 +170,7 @@ export default function AdmissionsPage() {
       courseOrDept: 'N/A',
       idNumber: newStudentIdNo || 'N/A',
       idProofType: 'Aadhaar Card',
-      idProofUrl: newStudentIdProofUrl || null,
-      oldMoney: newStudentOldMoney || '0'
+      idProofUrl: newStudentIdProofUrl || null
     });
     setStep(2);
   };
@@ -361,7 +359,6 @@ export default function AdmissionsPage() {
                           setNewStudentAddress(student.address);
                           setNewStudentIdNo(student.idNumber);
                           setNewStudentIdProofUrl(student.idProofUrl || '');
-                          setNewStudentOldMoney('');
                           setNewStudentGuardian(student.guardianName || '');
                           setNewStudentGuardianPhone(student.guardianPhone || '');
                         }
@@ -373,7 +370,6 @@ export default function AdmissionsPage() {
                         setNewStudentAddress('');
                         setNewStudentIdNo('');
                         setNewStudentIdProofUrl('');
-                        setNewStudentOldMoney('');
                         setNewStudentGuardian('');
                         setNewStudentGuardianPhone('');
                       }
@@ -497,21 +493,6 @@ export default function AdmissionsPage() {
                     disabled={!!selectedStudentId}
                   />
                 </div>
-              </div>
-
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-slate-355 text-xs font-semibold mb-2">Old Money / Previous Dues (₹) (Optional)</label>
-                  <input
-                    type="number"
-                    value={newStudentOldMoney}
-                    onChange={(e) => setNewStudentOldMoney(e.target.value)}
-                    placeholder="0"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
-                    disabled={!!selectedStudentId}
-                  />
-                </div>
-              </div>
               </div>
 
               <div>
