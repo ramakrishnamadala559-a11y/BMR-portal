@@ -52,9 +52,15 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const data = await res.json();
         setUser(data.user);
         setStudentProfile(data.studentProfile);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('has_session', 'true');
+        }
       } else {
         setUser(null);
         setStudentProfile(null);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('has_session');
+        }
       }
     } catch (err) {
       console.error('Failed to fetch auth state:', err);
@@ -66,6 +72,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hasSession = localStorage.getItem('has_session') === 'true';
+      if (!hasSession) {
+        setLoading(false);
+      }
+    }
     fetchCurrentUser();
     fetchSettings();
   }, []);
@@ -98,6 +110,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setUser(null);
       setStudentProfile(null);
+      if (typeof window !== 'undefined') {
+        localStorage.removeItem('has_session');
+      }
       router.push('/login');
     }
   };

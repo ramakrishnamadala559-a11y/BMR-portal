@@ -2,10 +2,17 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
 
+let cachedSettings: any = null;
+let lastFetched = 0;
+const CACHE_TTL = 60 * 1000; // 1 minute in-memory cache TTL
+
 // GET the global hostel settings
 export async function GET(request: Request) {
   try {
-
+    const now = Date.now();
+    if (cachedSettings && (now - lastFetched < CACHE_TTL)) {
+      return NextResponse.json(cachedSettings);
+    }
 
     const settings = await db.hostelSettings.upsert({
       where: { id: 'GLOBAL' },
@@ -22,6 +29,9 @@ export async function GET(request: Request) {
         invoicePrefix: 'INV-'
       }
     });
+
+    cachedSettings = settings;
+    lastFetched = now;
 
     return NextResponse.json(settings);
   } catch (error) {
@@ -79,6 +89,8 @@ export async function PUT(request: Request) {
         showContactOnLogin: showContactOnLogin !== undefined ? showContactOnLogin : undefined
       }
     });
+
+    cachedSettings = null; // Invalidate settings cache on update
 
     await logActivity(
       currentUser!.userId,
