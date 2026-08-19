@@ -30,6 +30,13 @@ export default function LoginPage() {
   const brandName = settings?.hostelName || 'Home Stay Hostel';
   const brandTag = settings?.address || 'Premium Accommodation Stay';
   const router = useRouter();
+  const [isMobileApp, setIsMobileApp] = useState(false);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      setIsMobileApp(true);
+    }
+  }, []);
   
   const [activeTab, setActiveTab] = useState<'admin' | 'student'>('admin');
   const [identifier, setIdentifier] = useState('');
@@ -250,7 +257,7 @@ export default function LoginPage() {
         </div>
 
         {/* Contact Info Card */}
-        {settings && settings.showContactOnLogin && (
+        {settings && settings.showContactOnLogin && !isMobileApp && (
           <div className="w-full max-w-md bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl text-xs space-y-3 relative shadow-md">
             <div className="flex items-center gap-2 pb-2.5 border-b border-slate-800/60 text-slate-300 font-bold uppercase tracking-wider text-[10px]">
               <Building2 className="h-4 w-4 text-violet-400" />
@@ -281,22 +288,24 @@ export default function LoginPage() {
         )}
 
         {/* App Download Promo Card */}
-        <div className="w-full max-w-md bg-gradient-to-r from-violet-950/20 via-slate-900/40 to-indigo-950/20 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between gap-4 shadow-lg relative overflow-hidden">
-          <div className="flex items-center gap-3">
-            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-10 w-10 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
-            <div>
-              <p className="text-xs font-bold text-white">Home Stay Hostel Mobile App</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">Install the web app on your device for instant updates.</p>
+        {!isMobileApp && (
+          <div className="w-full max-w-md bg-gradient-to-r from-violet-950/20 via-slate-900/40 to-indigo-950/20 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between gap-4 shadow-lg relative overflow-hidden">
+            <div className="flex items-center gap-3">
+              <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-10 w-10 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
+              <div>
+                <p className="text-xs font-bold text-white">Home Stay Hostel Mobile App</p>
+                <p className="text-[10px] text-slate-400 mt-0.5">Install the web app on your device for instant updates.</p>
+              </div>
             </div>
+            <a
+              href="/app-debug.apk"
+              download="app-debug.apk"
+              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 hover:scale-[1.02] text-[10px] font-bold rounded-xl text-white shadow-md shadow-violet-600/10 transition-all cursor-pointer whitespace-nowrap"
+            >
+              Download App <ArrowUpRight className="h-3 w-3" />
+            </a>
           </div>
-          <a
-            href="/app-debug.apk"
-            download="app-debug.apk"
-            className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 hover:scale-[1.02] text-[10px] font-bold rounded-xl text-white shadow-md shadow-violet-600/10 transition-all cursor-pointer whitespace-nowrap"
-          >
-            Download App <ArrowUpRight className="h-3 w-3" />
-          </a>
-        </div>
+        )}
 
         {/* SECTION 2: MARKETING HERO & FEATURES GRID (STACKED BELOW LOGIN) */}
         <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
