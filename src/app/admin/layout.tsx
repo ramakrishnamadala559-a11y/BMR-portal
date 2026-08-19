@@ -47,9 +47,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   if (loading || !user || user.role === 'STUDENT') {
     return (
-      <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center">
-        <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
-        <p className="text-slate-400 text-sm">Authorizing admin access...</p>
+      <div className="min-h-screen bg-slate-955 flex flex-col items-center justify-center p-4 text-center">
+        <div className="flex flex-col items-center mb-6 animate-pulse">
+          <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-16 w-16 rounded-2xl border border-slate-800 shadow-lg object-cover mb-3" />
+          <h1 className="text-lg font-bold text-white tracking-tight">{brandName}</h1>
+        </div>
+        <Loader2 className="h-8 w-8 text-violet-500 animate-spin mb-3" />
+        <p className="text-slate-400 text-xs font-semibold">Authorizing admin access...</p>
       </div>
     );
   }
