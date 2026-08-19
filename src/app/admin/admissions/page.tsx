@@ -17,6 +17,7 @@ import {
   MessageSquare
 } from 'lucide-react';
 import Toast from '@/components/Toast';
+import AadhaarPhotoCapture from '@/components/AadhaarPhotoCapture';
 
 export default function AdmissionsPage() {
   const router = useRouter();
@@ -61,6 +62,7 @@ export default function AdmissionsPage() {
   const [newStudentGuardian, setNewStudentGuardian] = useState('');
   const [newStudentGuardianPhone, setNewStudentGuardianPhone] = useState('');
   const [newStudentIdNo, setNewStudentIdNo] = useState('');
+  const [newStudentIdProofUrl, setNewStudentIdProofUrl] = useState('');
   const [newStudentCollege, setNewStudentCollege] = useState('');
   const [newStudentDept, setNewStudentDept] = useState('');
   const [tempStudentDetails, setTempStudentDetails] = useState<any>(null);
@@ -156,7 +158,8 @@ export default function AdmissionsPage() {
       collegeOrCompany: 'N/A',
       courseOrDept: 'N/A',
       idNumber: newStudentIdNo || 'N/A',
-      idProofType: 'Aadhaar Card'
+      idProofType: 'Aadhaar Card',
+      idProofUrl: newStudentIdProofUrl || null
     });
     setStep(2);
   };
@@ -344,6 +347,7 @@ export default function AdmissionsPage() {
                           setNewStudentGender(student.gender);
                           setNewStudentAddress(student.address);
                           setNewStudentIdNo(student.idNumber);
+                          setNewStudentIdProofUrl(student.idProofUrl || '');
                           setNewStudentGuardian(student.guardianName || '');
                           setNewStudentGuardianPhone(student.guardianPhone || '');
                         }
@@ -354,6 +358,7 @@ export default function AdmissionsPage() {
                         setNewStudentGender('MALE');
                         setNewStudentAddress('');
                         setNewStudentIdNo('');
+                        setNewStudentIdProofUrl('');
                         setNewStudentGuardian('');
                         setNewStudentGuardianPhone('');
                       }
@@ -425,7 +430,7 @@ export default function AdmissionsPage() {
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-slate-350 text-xs font-semibold mb-2">Aadhaar Card No (ID Number) (Optional)</label>
+                  <label className="block text-slate-355 text-xs font-semibold mb-2">Aadhaar Card No (ID Number) (Optional)</label>
                   <input
                     type="text"
                     value={newStudentIdNo}
@@ -436,7 +441,7 @@ export default function AdmissionsPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-slate-350 text-xs font-semibold mb-2">Email Address</label>
+                  <label className="block text-slate-355 text-xs font-semibold mb-2">Email Address</label>
                   <input
                     type="email"
                     value={newStudentEmail}
@@ -446,6 +451,14 @@ export default function AdmissionsPage() {
                     disabled={!!selectedStudentId}
                   />
                 </div>
+              </div>
+
+              <div>
+                <AadhaarPhotoCapture
+                  value={newStudentIdProofUrl}
+                  onChange={setNewStudentIdProofUrl}
+                  disabled={!!selectedStudentId}
+                />
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -708,6 +721,19 @@ export default function AdmissionsPage() {
 
                 <span className="text-slate-400">Security Deposit Term:</span>
                 <span className="text-slate-200 font-semibold">₹{(parseFloat(securityDeposit) || 0).toLocaleString('en-IN')}</span>
+
+                {newStudentIdProofUrl && (
+                  <>
+                    <span className="text-slate-400 font-semibold">Aadhaar ID Photo:</span>
+                    <span className="text-slate-200 font-semibold">
+                      <img 
+                        src={newStudentIdProofUrl} 
+                        alt="Aadhaar proof" 
+                        className="h-12 w-20 object-cover rounded border border-slate-800 shadow"
+                      />
+                    </span>
+                  </>
+                )}
               </div>
             </div>
           </div>

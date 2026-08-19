@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { hashPassword } from '@/lib/auth';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
+import { saveBase64Image } from '@/lib/upload';
 
 // GET all students with optional search filters
 export async function GET(request: Request) {
@@ -80,6 +81,7 @@ export async function POST(request: Request) {
       courseOrDept,
       idNumber,
       idProofType,
+      idProofUrl,
       monthlyRent,
       securityDeposit,
       expectedCheckout,
@@ -127,6 +129,8 @@ export async function POST(request: Request) {
         throw new Error('A user with this phone number is already registered');
       }
 
+      const savedIdProofUrl = idProofUrl ? await saveBase64Image(idProofUrl, `aadhaar-${phone}`) : null;
+
       // 1. Create student profile first to get the generated student ID
       const newStudent = await tx.student.create({
         data: {
@@ -143,6 +147,7 @@ export async function POST(request: Request) {
           courseOrDept,
           idNumber,
           idProofType,
+          idProofUrl: savedIdProofUrl,
           monthlyRent: rent,
           securityDeposit: deposit,
           expectedCheckout: expectedCheckout ? new Date(expectedCheckout) : null,
@@ -267,6 +272,9 @@ export async function PUT(request: Request) {
 
       // Parse dates and floats
       const parsedFields: any = {};
+      if (otherFields.idProofUrl !== undefined) {
+        parsedFields.idProofUrl = otherFields.idProofUrl ? await saveBase64Image(otherFields.idProofUrl, `aadhaar-${phone || currentStudent.phone}`) : null;
+      }
       if (otherFields.monthlyRent !== undefined) parsedFields.monthlyRent = parseFloat(otherFields.monthlyRent) || 0;
       if (otherFields.securityDeposit !== undefined) parsedFields.securityDeposit = parseFloat(otherFields.securityDeposit) || 0;
       if (otherFields.expectedCheckout !== undefined) parsedFields.expectedCheckout = otherFields.expectedCheckout ? new Date(otherFields.expectedCheckout) : null;

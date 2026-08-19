@@ -21,6 +21,7 @@ import {
   Play
 } from 'lucide-react';
 import Toast from '@/components/Toast';
+import AadhaarPhotoCapture from '@/components/AadhaarPhotoCapture';
 import Link from 'next/link';
 
 export default function StudentsPage() {
@@ -60,6 +61,7 @@ export default function StudentsPage() {
   const [editCollege, setEditCollege] = useState('');
   const [editDept, setEditDept] = useState('');
   const [editIdNo, setEditIdNo] = useState('');
+  const [editIdProofUrl, setEditIdProofUrl] = useState('');
   const [editPassword, setEditPassword] = useState('');
   const [editSubmitting, setEditSubmitting] = useState(false);
 
@@ -133,6 +135,7 @@ export default function StudentsPage() {
     setEditGuardian(student.guardianName || '');
     setEditGuardianPhone(student.guardianPhone || '');
     setEditIdNo(student.idNumber || '');
+    setEditIdProofUrl(student.idProofUrl || '');
     setEditPassword('');
     setEditModalOpen(true);
   };
@@ -157,7 +160,8 @@ export default function StudentsPage() {
           emergencyContact: editEmergency || editGuardianPhone || 'N/A',
           guardianName: editGuardian || 'N/A',
           guardianPhone: editGuardianPhone || 'N/A',
-          idNumber: editIdNo || 'N/A'
+          idNumber: editIdNo || 'N/A',
+          idProofUrl: editIdProofUrl || null
         })
       });
 
@@ -476,6 +480,24 @@ export default function StudentsPage() {
                 <span className="text-slate-200 font-semibold">{selectedStudent.idNumber || 'N/A'}</span>
               </div>
               <div>
+                <span className="text-slate-500 block mb-0.5">Aadhaar Photo</span>
+                {selectedStudent.idProofUrl ? (
+                  <div className="relative group max-w-[150px] mt-1">
+                    <img
+                      src={selectedStudent.idProofUrl}
+                      alt="Aadhaar ID Proof"
+                      className="h-16 w-24 object-cover rounded-lg border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
+                      onClick={() => window.open(selectedStudent.idProofUrl, '_blank')}
+                    />
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center pointer-events-none transition-opacity rounded-lg">
+                      <span className="text-[10px] text-white font-medium">View Full</span>
+                    </div>
+                  </div>
+                ) : (
+                  <span className="text-slate-400 italic text-[11px]">Not Uploaded</span>
+                )}
+              </div>
+              <div>
                 <span className="text-slate-500 block mb-0.5">Total Outstanding Due</span>
                 <span className={`font-bold ${modalTotalDue > 0 ? 'text-amber-500' : 'text-emerald-450'}`}>
                   ₹{modalTotalDue.toLocaleString('en-IN')}
@@ -701,7 +723,7 @@ export default function StudentsPage() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-slate-350 font-semibold mb-2">Aadhaar Card No (ID Number) (Optional)</label>
+                  <label className="block text-slate-355 font-semibold mb-2">Aadhaar Card No (ID Number) (Optional)</label>
                   <input
                     type="text"
                     value={editIdNo || ''}
@@ -709,6 +731,13 @@ export default function StudentsPage() {
                     className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-200 focus:outline-none"
                   />
                 </div>
+              </div>
+
+              <div>
+                <AadhaarPhotoCapture
+                  value={editIdProofUrl}
+                  onChange={setEditIdProofUrl}
+                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

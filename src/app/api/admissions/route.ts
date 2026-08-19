@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
 import { hashPassword } from '@/lib/auth';
+import { saveBase64Image } from '@/lib/upload';
 
 // POST to allocate a bed to a student (Admission)
 export async function POST(request: Request) {
@@ -100,7 +101,8 @@ export async function POST(request: Request) {
           collegeOrCompany,
           courseOrDept,
           idNumber,
-          idProofType
+          idProofType,
+          idProofUrl
         } = studentDetails;
 
         if (!name || !phone || !dob || !gender || !address || !emergencyContact || !guardianName || !guardianPhone || !idNumber || !idProofType) {
@@ -164,6 +166,8 @@ export async function POST(request: Request) {
           ? (parseFloat(securityDeposit) || 0)
           : 0;
 
+        const savedIdProofUrl = idProofUrl ? await saveBase64Image(idProofUrl, `aadhaar-${generatedStudentId}`) : null;
+
         await tx.student.create({
           data: {
             id: generatedStudentId,
@@ -180,6 +184,7 @@ export async function POST(request: Request) {
             courseOrDept,
             idNumber,
             idProofType,
+            idProofUrl: savedIdProofUrl,
             monthlyRent: rentVal,
             securityDeposit: depositVal,
             expectedCheckout: expectedCheckout ? new Date(expectedCheckout) : null,
