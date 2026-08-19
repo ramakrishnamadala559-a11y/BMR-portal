@@ -278,12 +278,13 @@ export async function POST(request: Request) {
       });
 
       // 8. Generate Initial Rent Invoice
-      const settings = await tx.hostelSettings.findUnique({
+      const dbSettings = await tx.hostelSettings.findUnique({
         where: { id: 'GLOBAL' }
-      }) || { invoicePrefix: 'INV-', defaultDueDateDay: 5 };
-
+      });
+      const invoicePrefix = dbSettings?.invoicePrefix || 'INV-';
+ 
       const today = new Date();
-      const invoiceNumber = `${settings.invoicePrefix}${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
+      const invoiceNumber = `${invoicePrefix}${today.getFullYear()}${String(today.getMonth() + 1).padStart(2, '0')}-${Math.floor(1000 + Math.random() * 9000)}`;
 
       const billingPeriodStart = new Date(joiningDate);
       const billingPeriodEnd = new Date(joiningDate);
@@ -340,9 +341,9 @@ export async function POST(request: Request) {
       }
 
       // Create WhatsApp notification record in Notification table for Admission Welcome
-      const whatsappEnabled = settings && settings.whatsappEnabled !== undefined ? settings.whatsappEnabled : true;
+      const whatsappEnabled = dbSettings && dbSettings.whatsappEnabled !== undefined ? dbSettings.whatsappEnabled : true;
       if (whatsappEnabled) {
-        let welcomeMsg = `Hello ${student.name},\nWelcome to ${settings.hostelName || 'Home Stay Hostel'}! Your bed allocation has been successfully completed.\n\nRoom details:\n- Block/Building: ${bed.room.building.name}\n- Floor: Floor ${bed.room.floor.number}\n- Room Number: Room ${bed.room.number}\n- Bed Name: ${bed.name}\n- Student ID: ${activeStudentId}\n\nFinancial terms:\n- Monthly Rent: ₹${rentAmount}\n- Security Deposit: ₹${depositAmount}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-IN')}\n\n`;
+        let welcomeMsg = `Hello ${student.name},\nWelcome to ${dbSettings?.hostelName || 'Home Stay Hostel'}! Your bed allocation has been successfully completed.\n\nRoom details:\n- Block/Building: ${bed.room.building.name}\n- Floor: Floor ${bed.room.floor.number}\n- Room Number: Room ${bed.room.number}\n- Bed Name: ${bed.name}\n- Student ID: ${activeStudentId}\n\nFinancial terms:\n- Monthly Rent: ₹${rentAmount}\n- Security Deposit: ₹${depositAmount}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-IN')}\n\n`;
         
         if (studentDetails) {
           welcomeMsg += `Your portal login credentials are:\n- Portal URL: https://bmr-portal.vercel.app/login\n- Username: ${student.phone}\n- Temp Password: ${student.phone}\n\n`;
@@ -350,19 +351,19 @@ export async function POST(request: Request) {
           welcomeMsg += `You can login to the portal using your registered mobile number: https://bmr-portal.vercel.app/login\n\n`;
         }
         
-        welcomeMsg += `For any queries, feel free to contact us through our official phone: ${settings.phone || '+91 98765 43210'}.\n\nHave a great stay!`;
+        welcomeMsg += `For any queries, feel free to contact us through our official phone: ${dbSettings?.phone || '+91 98765 43210'}.\n\nHave a great stay!`;
 
         await tx.notification.create({
           data: {
             recipient: student.phone,
             type: 'WHATSAPP',
-            title: 'Room Allocation Completed - ' + (settings.hostelName || 'Home Stay Hostel'),
+            title: 'Room Allocation Completed - ' + (dbSettings?.hostelName || 'Home Stay Hostel'),
             message: welcomeMsg,
             status: 'SENT'
           }
         });
         
-        console.log(`[WHATSAPP DISPATCH] Admission welcome notification sent to ${student.phone} from PG profile number ${settings.phone || '+91 98765 43210'}.`);
+        console.log(`[WHATSAPP DISPATCH] Admission welcome notification sent to ${student.phone} from PG profile number ${dbSettings?.phone || '+91 98765 43210'}.`);
       }
 
       return { admission, updatedStudent, updatedBed };
