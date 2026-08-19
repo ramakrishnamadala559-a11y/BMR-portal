@@ -15,7 +15,9 @@ import {
   Save,
   Info,
   User,
-  KeyRound
+  KeyRound,
+  Megaphone,
+  Trash2
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -59,6 +61,15 @@ export default function SettingsPage() {
   const [resetPasswordValue, setResetPasswordValue] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
+  // Announcements states
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [announcementsLoading, setAnnouncementsLoading] = useState(true);
+  const [announcementTitle, setAnnouncementTitle] = useState('');
+  const [announcementContent, setAnnouncementContent] = useState('');
+  const [announcementTargetGroup, setAnnouncementTargetGroup] = useState('ALL');
+  const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
+  const [buildings, setBuildings] = useState<any[]>([]);
+
   useEffect(() => {
     if (authUser) {
       setProfileName(authUser.name || '');
@@ -81,6 +92,11 @@ export default function SettingsPage() {
             if (Array.isArray(data)) setStaffList(data);
           })
           .catch(err => console.error('Failed to load staff:', err));
+
+        // Fetch announcements
+        fetchAnnouncements();
+        // Fetch buildings list
+        fetchBuildingsList();
       }
     }
   }, [authUser]);
@@ -231,6 +247,88 @@ export default function SettingsPage() {
       setToast({ message: 'Network error. Please try again.', type: 'error' });
     } finally {
       setResetSubmitting(false);
+    }
+  };
+
+  const fetchAnnouncements = async () => {
+    try {
+      const res = await fetch('/api/announcements');
+      if (res.ok) {
+        const data = await res.json();
+        setAnnouncements(data);
+      }
+    } catch (err) {
+      console.error('Failed to load announcements:', err);
+    } finally {
+      setAnnouncementsLoading(false);
+    }
+  };
+
+  const fetchBuildingsList = async () => {
+    try {
+      const res = await fetch('/api/buildings');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) setBuildings(data);
+      }
+    } catch (err) {
+      console.error('Failed to load buildings list:', err);
+    }
+  };
+
+  const handleAnnouncementSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!announcementTitle.trim() || !announcementContent.trim()) {
+      setToast({ message: 'Title and content are required', type: 'error' });
+      return;
+    }
+
+    setAnnouncementSubmitting(true);
+    try {
+      const res = await fetch('/api/announcements', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title: announcementTitle,
+          content: announcementContent,
+          targetGroup: announcementTargetGroup
+        })
+      });
+
+      if (res.ok) {
+        setToast({ message: 'Announcement posted successfully!', type: 'success' });
+        setAnnouncementTitle('');
+        setAnnouncementContent('');
+        setAnnouncementTargetGroup('ALL');
+        fetchAnnouncements();
+      } else {
+        const data = await res.json();
+        setToast({ message: data.error || 'Failed to post announcement', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setAnnouncementSubmitting(false);
+    }
+  };
+
+  const handleAnnouncementDelete = async (id: string) => {
+    if (!confirm('Are you sure you want to delete this announcement?')) return;
+
+    try {
+      const res = await fetch(`/api/announcements?id=${id}`, {
+        method: 'DELETE'
+      });
+
+      if (res.ok) {
+        setToast({ message: 'Announcement deleted successfully!', type: 'success' });
+        fetchAnnouncements();
+      } else {
+        const data = await res.json();
+        setToast({ message: data.error || 'Failed to delete announcement', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
     }
   };
 
@@ -566,6 +664,119 @@ export default function SettingsPage() {
             </button>
           </div>
         </form>
+      )}
+
+      {/* SECTION: Announcements Management (Owner Only) */}
+      {authUser?.role === 'OWNER' && (
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
+          <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
+            <Megaphone className="h-4.5 w-4.5 text-violet-400" />
+            <h3 className="font-bold text-white uppercase tracking-wider">PG Announcements & Broadcasts</h3>
+          </div>
+
+          {/* Post New Announcement Form */}
+          <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-2">
+                <label className="block text-slate-355 font-semibold mb-2">Announcement Title</label>
+                <input
+                  type="text"
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  placeholder="e.g. Scheduled Power Outage or Holiday Notice"
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-355 font-semibold mb-2">Target Audience</label>
+                <select
+                  value={announcementTargetGroup}
+                  onChange={(e) => setAnnouncementTargetGroup(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                >
+                  <option value="ALL">All Buildings (General)</option>
+                  {buildings.map(b => (
+                    <option key={b.id} value={b.name}>{b.name}</option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label className="block text-slate-355 font-semibold mb-2">Announcement Content</label>
+              <textarea
+                rows={3}
+                value={announcementContent}
+                onChange={(e) => setAnnouncementContent(e.target.value)}
+                placeholder="Write the details of the notice here..."
+                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                required
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={announcementSubmitting}
+              className="w-full flex items-center justify-center gap-2 py-3 bg-violet-650 hover:bg-violet-600 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg shadow-violet-650/10"
+            >
+              {announcementSubmitting ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Posting announcement...
+                </>
+              ) : (
+                <>
+                  <Megaphone className="h-4 w-4" />
+                  Broadcast Announcement
+                </>
+              )}
+            </button>
+          </form>
+
+          {/* Active Announcements List */}
+          <div className="pt-4 border-t border-slate-800/60">
+            <h4 className="font-bold text-slate-200 mb-4 uppercase text-[10px] tracking-wider">Active Notices</h4>
+            
+            {announcementsLoading ? (
+              <div className="flex justify-center py-6">
+                <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
+              </div>
+            ) : announcements.length === 0 ? (
+              <p className="text-slate-550 text-center py-6">No active announcements. Use the form above to broadcast notices.</p>
+            ) : (
+              <div className="space-y-3">
+                {announcements.map(ann => (
+                  <div key={ann.id} className="flex gap-4 p-4 bg-slate-955/40 border border-slate-850/60 rounded-xl hover:border-slate-800 transition-all">
+                    <div className="flex-1 min-w-0">
+                      <div className="flex justify-between items-start gap-2 mb-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-slate-100">{ann.title}</span>
+                          <span className="bg-violet-600/10 text-violet-400 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border border-violet-500/15">
+                            {ann.targetGroup === 'ALL' ? 'General' : ann.targetGroup}
+                          </span>
+                        </div>
+                        <span className="text-[9px] text-slate-500 font-medium">
+                          {new Date(ann.createdAt).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <p className="text-slate-400 mt-1 leading-normal">{ann.content}</p>
+                    </div>
+
+                    <button
+                      onClick={() => handleAnnouncementDelete(ann.id)}
+                      className="p-2 bg-slate-950 border border-slate-850 hover:border-rose-500/30 text-slate-500 hover:text-rose-455 rounded-lg transition-colors cursor-pointer flex-shrink-0 self-center"
+                      title="Delete Announcement"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       )}
 
       {toast && (
