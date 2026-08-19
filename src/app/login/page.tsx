@@ -96,6 +96,21 @@ export default function LoginPage() {
       {/* Finer, less distracting grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#131924_1px,transparent_1px),linear-gradient(to_bottom,#131924_1px,transparent_1px)] bg-[size:3rem_3rem] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_50%,#000_70%,transparent_100%)] opacity-35 pointer-events-none" />
 
+      {/* Floating Get Support Badge for Mobile App */}
+      {isMobileApp && (
+        <div className="absolute top-4 right-4 z-50">
+          <a 
+            href={`mailto:${settings?.email || 'contact@premiumhostel.com'}`} 
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-[#0b0f17]/70 backdrop-blur-md border border-slate-800/80 hover:border-slate-700 text-xs font-bold rounded-xl text-slate-300 transition-all hover:scale-[1.02] shadow-lg shadow-black/30 hover:text-white cursor-pointer"
+          >
+            Get Support <ArrowUpRight className="h-3 w-3 text-violet-400" />
+          </a>
+        </div>
+      )}
+
+      {/* Ambient background glow directly behind the login card */}
+      <div className="absolute top-[40%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[380px] h-[380px] bg-gradient-to-tr from-violet-600/15 via-fuchsia-500/10 to-cyan-500/15 rounded-full blur-[120px] pointer-events-none z-0" />
+
       {/* TOP FLOATING NAVBAR */}
       {!isMobileApp && (
         <header className="w-full border-b border-slate-900/60 bg-[#080b11]/70 backdrop-blur-md sticky top-0 z-50">
@@ -140,12 +155,12 @@ export default function LoginPage() {
       <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex flex-col items-center gap-12 relative z-10">
         
         {/* SECTION 1: LOGIN CARD (POSITIONED IN MIDDLE TOP) */}
-        <div id="console" className="w-full max-w-md p-[1px] bg-gradient-to-b from-slate-800 via-slate-900/60 to-[#080b11] rounded-3xl relative shadow-2xl transition-transform duration-300 hover:scale-[1.01]">
+        <div id="console" className="w-full max-w-md p-[1px] bg-gradient-to-b from-slate-800/80 via-slate-900/40 to-[#080b11] rounded-3xl relative shadow-2xl transition-transform duration-300 hover:scale-[1.01] z-10">
           {/* Glowing border outline */}
-          <div className="absolute inset-0 bg-gradient-to-r from-rose-500/10 via-violet-500/15 to-cyan-500/10 rounded-3xl opacity-50 blur-[2px] pointer-events-none" />
+          <div className="absolute inset-0 bg-gradient-to-r from-violet-500/25 via-fuchsia-500/30 to-cyan-500/25 rounded-3xl opacity-85 blur-[3px] pointer-events-none" />
 
-          {/* Inner Card Container */}
-          <div className="bg-[#0b0f17]/90 rounded-[23px] p-6 sm:p-8 backdrop-blur-3xl relative z-10 border border-slate-850/50">
+          {/* Inner Card Container (Glassmorphic) */}
+          <div className="bg-[#0b0f17]/75 rounded-[23px] p-6 sm:p-8 backdrop-blur-2xl relative z-10 border border-slate-850/50">
             
             {/* Logo / Brand Header */}
             <div className="flex flex-col items-center mb-6">
@@ -209,7 +224,7 @@ export default function LoginPage() {
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
                     placeholder={activeTab === 'admin' ? 'owner@antigravity.com' : '9000000001'}
-                    className="w-full bg-[#05070a]/60 border border-slate-800 hover:border-slate-700 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-650 focus:outline-none transition-colors"
+                    className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
                     required
                   />
                 </div>
@@ -235,7 +250,7 @@ export default function LoginPage() {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••"
-                    className="w-full bg-[#05070a]/60 border border-slate-800 hover:border-slate-700 focus:border-violet-500/80 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-100 placeholder-slate-655 focus:outline-none transition-colors"
+                    className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
                     required
                   />
                   <button
@@ -251,7 +266,7 @@ export default function LoginPage() {
               <button
                 type="submit"
                 disabled={submitting}
-                className="w-full py-2.5 bg-gradient-to-r from-violet-650 to-indigo-650 hover:from-violet-600 hover:to-indigo-600 disabled:from-violet-800 disabled:to-indigo-800 text-white rounded-xl text-xs font-bold transition-all hover:shadow-lg hover:shadow-violet-600/10 flex justify-center items-center gap-2 cursor-pointer mt-6"
+                className="w-full py-2.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-750 hover:from-violet-500 hover:via-indigo-500 hover:to-violet-650 text-white rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30 flex justify-center items-center gap-2 cursor-pointer mt-6"
               >
                 {submitting ? (
                   <>
@@ -267,22 +282,17 @@ export default function LoginPage() {
               </button>
             </form>
 
-            {isMobileApp && (
-              <div className="mt-6 pt-4 border-t border-slate-850/60 flex flex-col gap-2 items-center text-center">
-                <a 
-                  href={`mailto:${settings?.email || 'contact@premiumhostel.com'}`}
-                  className="inline-flex items-center gap-1.5 text-xs text-violet-400 hover:text-violet-300 font-bold transition-colors cursor-pointer"
-                >
-                  Need help? Get Support <ArrowUpRight className="h-3.5 w-3.5" />
-                </a>
-                {settings?.phone && (
+            {isMobileApp && settings?.phone && (
+              <div className="mt-6 pt-4 border-t border-slate-850/60 text-center">
+                <span className="text-[11px] text-slate-400">
+                  Emergency Support?{' '}
                   <a 
                     href={`tel:+91${settings.phone}`}
-                    className="text-[11px] text-slate-400 hover:text-slate-350 transition-colors"
+                    className="text-violet-400 font-bold hover:underline"
                   >
-                    Call: +91 {settings.phone}
+                    Call Host
                   </a>
-                )}
+                </span>
               </div>
             )}
 
