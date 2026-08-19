@@ -5,7 +5,7 @@ const config: CapacitorConfig = {
   appName: 'BMR Portal',
   webDir: 'public',
   server: {
-    url: 'http://192.168.29.87:3000',
+    url: 'https://bmr-portal.vercel.app',
     cleartext: true
   }
 };
