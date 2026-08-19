@@ -296,26 +296,6 @@ export default function LoginPage() {
           </div>
         )}
 
-        {/* App Download Promo Card */}
-        {!isMobileApp && (
-          <div className="w-full max-w-md bg-gradient-to-r from-violet-950/20 via-slate-900/40 to-indigo-950/20 border border-slate-800/80 p-5 rounded-2xl flex items-center justify-between gap-4 shadow-lg relative overflow-hidden">
-            <div className="flex items-center gap-3">
-              <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-10 w-10 rounded-xl border border-slate-800 shadow object-cover flex-shrink-0" />
-              <div>
-                <p className="text-xs font-bold text-white">Home Stay Hostel Mobile App</p>
-                <p className="text-[10px] text-slate-400 mt-0.5">Install the web app on your device for instant updates.</p>
-              </div>
-            </div>
-            <a
-              href="/app-debug.apk"
-              download="app-debug.apk"
-              className="flex items-center gap-1.5 px-3 py-2 bg-violet-600 hover:bg-violet-500 hover:scale-[1.02] text-[10px] font-bold rounded-xl text-white shadow-md shadow-violet-600/10 transition-all cursor-pointer whitespace-nowrap"
-            >
-              Download App <ArrowUpRight className="h-3 w-3" />
-            </a>
-          </div>
-        )}
-
         {/* SECTION 2: MARKETING HERO & FEATURES GRID (STACKED BELOW LOGIN) */}
         <div id="features" className="w-full text-center space-y-6 pt-6 border-t border-slate-900/60">
           <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-violet-500/10 border border-violet-500/25 rounded-full text-violet-300 text-xs font-bold shadow-sm">
