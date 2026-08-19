@@ -5,7 +5,7 @@ import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
 // GET all invoices (filtered by student/status, with security checks for students)
 export async function GET(request: Request) {
   try {
-    const { user, errorResponse } = await checkAuthAndPermission(request);
+    const { user, errorResponse } = await checkAuthAndPermission(request, 'student-self');
     if (errorResponse) return errorResponse;
 
     const { searchParams } = new URL(request.url);

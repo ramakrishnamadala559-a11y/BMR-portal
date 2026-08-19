@@ -104,10 +104,10 @@ export default function StudentDashboardPage() {
   }
 
   // Calculate unpaid balances
-  const pendingRentSum = invoices.reduce((sum, inv) => sum + inv.balance, 0);
+  const pendingRentSum = (invoices || []).reduce((sum, inv) => sum + (inv.balance || 0), 0);
 
   // Flatten and sort payments list
-  const paymentsList = invoices.flatMap((inv) => 
+  const paymentsList = (invoices || []).flatMap((inv) => 
     (inv.payments || []).map((p: any) => ({
       ...p,
       invoiceNumber: inv.invoiceNumber,
@@ -115,7 +115,11 @@ export default function StudentDashboardPage() {
       status: inv.status,
       invoice: inv
     }))
-  ).sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime());
+  ).sort((a: any, b: any) => {
+    const timeA = a.date ? new Date(a.date).getTime() : 0;
+    const timeB = b.date ? new Date(b.date).getTime() : 0;
+    return timeB - timeA;
+  });
 
   return (
     <div className="space-y-8 animate-slide-in">
@@ -260,8 +264,8 @@ export default function StudentDashboardPage() {
                       <User className="h-4.5 w-4.5" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-slate-200">{mate.student.name}</h4>
-                      <span className="text-[10px] text-slate-550 mt-0.5 block">{mate.name} • {mate.student.phone}</span>
+                      <h4 className="font-bold text-slate-200">{mate.student?.name || 'Unknown'}</h4>
+                      <span className="text-[10px] text-slate-550 mt-0.5 block">{mate.name} • {mate.student?.phone || 'N/A'}</span>
                     </div>
                   </div>
                 ))
@@ -355,7 +359,7 @@ export default function StudentDashboardPage() {
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Admission Date</span>
-                  <span className="text-slate-250 font-semibold">{new Date(studentProfile.admissionDate).toLocaleDateString()}</span>
+                  <span className="text-slate-250 font-semibold">{studentProfile.admissionDate ? new Date(studentProfile.admissionDate).toLocaleDateString() : 'N/A'}</span>
                 </div>
               </div>
             </div>
@@ -397,7 +401,7 @@ export default function StudentDashboardPage() {
             {studentProfile.expectedCheckout && (
               <div className="p-3 bg-slate-950/60 border border-slate-850 rounded-xl">
                 <span className="text-slate-500 block mb-1">Expected Checkout / Term End</span>
-                <p className="font-semibold text-slate-200">{new Date(studentProfile.expectedCheckout).toLocaleDateString()}</p>
+                <p className="font-semibold text-slate-200">{studentProfile.expectedCheckout ? new Date(studentProfile.expectedCheckout).toLocaleDateString() : 'N/A'}</p>
               </div>
             )}
           </div>
@@ -460,19 +464,19 @@ export default function StudentDashboardPage() {
                     {invoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-slate-855/20 transition-colors">
                         <td className="py-4 px-6 font-mono text-slate-200 font-bold">{inv.invoiceNumber}</td>
-                        <td className="py-4 px-6 text-slate-400">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                        <td className="py-4 px-6 text-slate-400">{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}</td>
                         <td className="py-4 px-6 font-bold text-slate-100">
-                          ₹{inv.total.toLocaleString('en-IN')}
-                          {inv.arrears > 0 && (
+                          ₹{(inv.total || 0).toLocaleString('en-IN')}
+                          {(inv.arrears || 0) > 0 && (
                             <span className="block text-[10px] text-amber-500 font-semibold mt-0.5">
-                              (Inc. ₹{inv.arrears.toLocaleString('en-IN')} arrears)
+                              (Inc. ₹{(inv.arrears || 0).toLocaleString('en-IN')} arrears)
                             </span>
                           )}
                         </td>
-                        <td className="py-4 px-6 text-slate-300 font-semibold">₹{inv.balance.toLocaleString('en-IN')}</td>
+                        <td className="py-4 px-6 text-slate-300 font-semibold">₹{(inv.balance || 0).toLocaleString('en-IN')}</td>
                         <td className="py-4 px-6">
-                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getInvoiceBadge(inv.status)}`}>
-                            {inv.status.replace('_', ' ')}
+                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getInvoiceBadge(inv.status || 'PENDING')}`}>
+                            {(inv.status || 'PENDING').replace('_', ' ')}
                           </span>
                         </td>
                         <td className="py-4 px-6 text-right">
@@ -518,13 +522,13 @@ export default function StudentDashboardPage() {
                       <tr key={pay.id} className="hover:bg-slate-855/20 transition-colors">
                         <td className="py-4 px-6 font-mono text-violet-400 font-semibold">{pay.paymentId}</td>
                         <td className="py-4 px-6 font-mono text-slate-350">{pay.invoiceNumber}</td>
-                        <td className="py-4 px-6 text-slate-400">{new Date(pay.date).toLocaleDateString()}</td>
+                        <td className="py-4 px-6 text-slate-400">{pay.date ? new Date(pay.date).toLocaleDateString() : 'N/A'}</td>
                         <td className="py-4 px-6">
                           <span className="px-2 py-0.5 rounded bg-slate-950 border border-slate-800 text-[9px] font-bold uppercase text-slate-300">
                             {pay.method}
                           </span>
                         </td>
-                        <td className="py-4 px-6 font-bold text-emerald-400">₹{pay.amount.toLocaleString('en-IN')}</td>
+                        <td className="py-4 px-6 font-bold text-emerald-400">₹{(pay.amount || 0).toLocaleString('en-IN')}</td>
                         <td className="py-4 px-6 text-right">
                           <button
                             onClick={() => handlePrintClick(pay.invoice)}

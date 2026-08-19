@@ -1,17 +1,39 @@
 import { NextResponse } from 'next/server';
 import { db } from '@/lib/db';
 import { checkAuthAndPermission, logActivity } from '@/lib/api-helper';
+import { getUserFromRequest } from '@/lib/auth';
 
 // GET beds (can be filtered by status or roomId, or query generated student ID)
 export async function GET(request: Request) {
   try {
-    const { errorResponse } = await checkAuthAndPermission(request, 'rooms', 'view');
-    if (errorResponse) return errorResponse;
+    const user = await getUserFromRequest(request);
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
 
     const { searchParams } = new URL(request.url);
     const roomId = searchParams.get('roomId') || undefined;
     const status = searchParams.get('status') || undefined;
     const action = searchParams.get('action');
+
+    if (user.role === 'STUDENT') {
+      if (action === 'generateStudentId') {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+
+      // Check if student is querying beds for their own room
+      const student = await db.student.findFirst({
+        where: { phone: user.phone },
+        include: { bed: true }
+      });
+
+      if (!student || !student.bed || student.bed.roomId !== roomId) {
+        return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+      }
+    } else {
+      const { errorResponse } = await checkAuthAndPermission(request, 'rooms', 'view');
+      if (errorResponse) return errorResponse;
+    }
 
     if (action === 'generateStudentId') {
       const bedId = searchParams.get('bedId');

@@ -45,7 +45,8 @@ export async function GET(request: Request) {
             include: {
               room: {
                 include: {
-                  building: true
+                  building: true,
+                  floor: true
                 }
               }
             }
