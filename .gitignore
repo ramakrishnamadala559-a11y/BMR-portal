@@ -54,3 +54,4 @@ next-env.d.ts
 /cmdline-tools.zip
 /android-sdk/
 /app-debug.apk
+.vercel

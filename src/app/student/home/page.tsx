@@ -322,9 +322,19 @@ export default function StudentHomePage() {
                     <div className={`h-9 w-9 rounded-lg flex items-center justify-center text-xs font-extrabold border shadow-inner flex-shrink-0 ${getAvatarBg(mate.student?.name || '')}`}>
                       {getInitials(mate.student?.name || 'U')}
                     </div>
-                    <div>
-                      <h4 className="font-extrabold text-slate-205">{mate.student?.name || 'Unknown'}</h4>
-                      <span className="text-[10px] text-slate-550 mt-0.5 block">{mate.name} • {mate.student?.phone || 'N/A'}</span>
+                    <div className="flex-1 min-w-0">
+                      <h4 className="font-extrabold text-slate-205 truncate">{mate.student?.name || 'Unknown'}</h4>
+                      <div className="text-[10px] text-slate-500 mt-0.5 font-semibold flex flex-wrap gap-1.5 items-center">
+                        <span className="bg-slate-950 px-1.5 py-0.5 rounded border border-slate-850 uppercase text-[9px] font-bold text-violet-400">
+                          {mate.building?.name || 'N/A'}
+                        </span>
+                        <span>•</span>
+                        <span>Floor {mate.room?.floor?.number ?? 'N/A'}</span>
+                        <span>•</span>
+                        <span>Room {mate.room?.number || 'N/A'}</span>
+                        <span>•</span>
+                        <span className="text-cyan-400 font-semibold">{mate.name}</span>
+                      </div>
                     </div>
                   </div>
                 ))
