@@ -127,20 +127,7 @@ export async function POST(request: Request) {
         throw new Error('A user with this phone number is already registered');
       }
 
-      // Create student credentials in User table (default password is phone number)
-      const hashedPassword = await hashPassword(phone);
-      await tx.user.create({
-        data: {
-          name,
-          email: email || null,
-          phone,
-          password: hashedPassword,
-          role: 'STUDENT',
-          status: 'ACTIVE'
-        }
-      });
-
-      // Create student profile
+      // 1. Create student profile first to get the generated student ID
       const newStudent = await tx.student.create({
         data: {
           name,
@@ -164,6 +151,19 @@ export async function POST(request: Request) {
         }
       });
 
+      // 2. Create student credentials in User table with temp password as studentId@123
+      const hashedPassword = await hashPassword(`${newStudent.id}@123`);
+      await tx.user.create({
+        data: {
+          name,
+          email: email || null,
+          phone,
+          password: hashedPassword,
+          role: 'STUDENT',
+          status: 'ACTIVE'
+        }
+      });
+
       // Get global hostel settings for PG phone number
       const settings = await tx.hostelSettings.findUnique({
         where: { id: 'GLOBAL' }
@@ -177,7 +177,7 @@ export async function POST(request: Request) {
           recipient: phone,
           type: 'WHATSAPP',
           title: 'Welcome to ' + hostelName,
-          message: `Hello ${name},\nWelcome to ${hostelName}! Your resident profile has been successfully created.\n\nYour login details are:\n- Portal URL: http://localhost:3000/login\n- Username: ${phone}\n- Temp Password: ${phone}\n\nYour rent parameters:\n- Monthly Rent: ₹${rent}\n- Security Deposit: ₹${deposit}\n\nFor any queries, contact us through our official phone: ${hostelPhone}.\n\nHave a great stay!`,
+          message: `Hello ${name},\nWelcome to ${hostelName}! Your resident profile has been successfully created.\n\nYour login details are:\n- Portal URL: https://bmr-portal.vercel.app/login\n- Username: ${phone}\n- Temp Password: ${newStudent.id}@123\n\nYour rent parameters:\n- Monthly Rent: ₹${rent}\n- Security Deposit: ₹${deposit}\n\nFor any queries, contact us through our official phone: ${hostelPhone}.\n\nHave a great stay!`,
           status: 'SENT'
         }
       });
