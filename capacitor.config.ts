@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.bmr.portal',
-  appName: 'BMR Portal',
+  appName: 'Home Stay',
   webDir: 'public',
   server: {
     url: 'https://bmr-portal.vercel.app',

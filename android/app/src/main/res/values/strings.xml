@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">BMR Portal</string>
-    <string name="title_activity_main">BMR Portal</string>
+    <string name="app_name">Home Stay</string>
+    <string name="title_activity_main">Home Stay</string>
     <string name="package_name">com.bmr.portal</string>
     <string name="custom_url_scheme">com.bmr.portal</string>
 </resources>
