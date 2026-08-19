@@ -35,14 +35,12 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
   if (loading || !user || user.role !== 'STUDENT') {
     return (
       <div className="min-h-screen bg-slate-955 flex flex-col items-center justify-center p-4 text-center">
-        <Loader2 className="h-10 w-10 text-violet-500 animate-spin mb-4" />
-        <p className="text-slate-400 text-sm font-medium">Authorizing student portal...</p>
-        <div className="mt-6 p-4 bg-slate-900 border border-slate-800 rounded-2xl text-[10px] text-slate-500 font-mono space-y-1 max-w-sm text-left">
-          <p className="font-bold text-slate-400 border-b border-slate-800 pb-1 mb-2">Auth Diagnostic Panel</p>
-          <div>• loading: <span className="text-violet-400 font-bold">{String(loading)}</span></div>
-          <div>• user: <span className="text-violet-400 font-bold">{user ? JSON.stringify(user) : 'null'}</span></div>
-          <div>• role: <span className="text-violet-400 font-bold">{user?.role || 'none'}</span></div>
+        <div className="flex flex-col items-center mb-6 animate-pulse">
+          <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-16 w-16 rounded-2xl border border-slate-800 shadow-lg object-cover mb-3" />
+          <h1 className="text-lg font-bold text-white tracking-tight">{brandName}</h1>
         </div>
+        <Loader2 className="h-8 w-8 text-violet-500 animate-spin mb-3" />
+        <p className="text-slate-400 text-xs font-semibold">Authorizing student portal...</p>
       </div>
     );
   }
