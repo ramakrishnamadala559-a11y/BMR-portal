@@ -79,9 +79,9 @@ export default function StudentLayout({ children }: { children: React.ReactNode 
       {/* Bottom Navigation for Mobile Devices */}
       <nav className="fixed bottom-0 left-0 right-0 h-16 bg-slate-900 border-t border-slate-800 flex items-center justify-around px-4 z-40 lg:hidden">
         <Link
-          href="/student/dashboard"
+          href="/student/payments"
           className={`flex flex-col items-center gap-1 transition-all ${
-            pathname === '/student/dashboard' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
+            pathname === '/student/payments' ? 'text-violet-400' : 'text-slate-450 hover:text-slate-200'
           }`}
         >
           <Receipt className="h-5 w-5" />

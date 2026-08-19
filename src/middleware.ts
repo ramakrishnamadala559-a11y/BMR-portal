@@ -42,7 +42,7 @@ export function middleware(request: NextRequest) {
   if (pathname === '/' || pathname === '/login') {
     if (user) {
       if (user.role === 'STUDENT') {
-        return NextResponse.redirect(new URL('/student/dashboard', request.url));
+        return NextResponse.redirect(new URL('/student/payments', request.url));
       } else {
         return NextResponse.redirect(new URL('/admin/dashboard', request.url));
       }
@@ -56,7 +56,7 @@ export function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL('/login', request.url));
     }
     if (user.role === 'STUDENT') {
-      return NextResponse.redirect(new URL('/student/dashboard', request.url));
+      return NextResponse.redirect(new URL('/student/payments', request.url));
     }
   }
 

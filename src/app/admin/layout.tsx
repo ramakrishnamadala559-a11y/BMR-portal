@@ -40,7 +40,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       if (!user) {
         router.push('/login');
       } else if (user.role === 'STUDENT') {
-        router.push('/student/dashboard');
+        router.push('/student/payments');
       }
     }
   }, [user, loading, router]);
