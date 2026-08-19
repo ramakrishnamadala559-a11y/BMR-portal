@@ -107,21 +107,25 @@ body {
 
 /* Print CSS Styles */
 @media print {
-  body * {
+  body {
     visibility: hidden;
-  }
-  #printable-receipt, #printable-receipt * {
-    visibility: visible;
+    background: white !important;
   }
   #printable-receipt {
+    visibility: visible;
     position: absolute;
-    left: 0;
+    left: 50%;
+    transform: translateX(-50%);
     top: 0;
-    width: 100%;
+    width: 100% !important;
+    max-width: 680px !important;
     margin: 0 !important;
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
+  }
+  #printable-receipt * {
+    visibility: visible;
   }
 }
 

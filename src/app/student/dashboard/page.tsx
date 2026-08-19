@@ -573,10 +573,10 @@ export default function StudentDashboardPage() {
                     <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-200 shadow-sm object-cover" />
                     <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
+                  <p className="text-xs text-slate-500 mt-1">{settings?.address || '123, Hostel Lane, Bangalore'}</p>
                   {settings?.website && (
                     <a
-                      href={`https://${settings.website}`}
+                      href={settings.website.startsWith('http') ? settings.website : `https://${settings.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] text-violet-600 font-bold block mt-0.5 hover:underline"

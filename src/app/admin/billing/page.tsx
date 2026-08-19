@@ -550,10 +550,10 @@ export default function BillingPage() {
                     <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-200 shadow-sm object-cover" />
                     <h2 className="text-xl font-bold text-slate-900">{brandName}</h2>
                   </div>
-                  <p className="text-xs text-slate-500 mt-1">Block 3, Tech Park Avenue, Bengaluru</p>
+                  <p className="text-xs text-slate-500 mt-1">{settings?.address || '123, Hostel Lane, Bangalore'}</p>
                   {settings?.website && (
                     <a
-                      href={`https://${settings.website}`}
+                      href={settings.website.startsWith('http') ? settings.website : `https://${settings.website}`}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="text-[10px] text-violet-600 font-bold block mt-0.5 hover:underline"
@@ -561,7 +561,9 @@ export default function BillingPage() {
                       🌐 {settings.website}
                     </a>
                   )}
-                  <p className="text-[10px] text-slate-400 mt-0.5">GSTIN: 29AAAAA1111A1Z1</p>
+                  {settings?.gstNumber && (
+                    <p className="text-[10px] text-slate-400 mt-0.5">GSTIN: {settings.gstNumber}</p>
+                  )}
                 </div>
                 <div className="text-right">
                   <span className="text-[9px] bg-slate-200 text-slate-800 px-2 py-0.5 rounded font-bold uppercase tracking-wider">
