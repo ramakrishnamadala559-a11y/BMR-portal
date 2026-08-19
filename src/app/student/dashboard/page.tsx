@@ -174,12 +174,12 @@ export default function StudentDashboardPage() {
       </div>
 
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-3 gap-3 sm:gap-6">
+      <div className="grid grid-cols-3 gap-1.5 min-[380px]:gap-3 sm:gap-6">
         {/* Outstanding Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Outstanding Due</span>
-            <h3 className="text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
+            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Outstanding Due</span>
+            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{pendingRentSum.toLocaleString('en-IN')}
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
@@ -192,10 +192,10 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Monthly Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Monthly Rent Rate</span>
-            <h3 className="text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
+            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Monthly Rent Rate</span>
+            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{studentProfile?.monthlyRent ? studentProfile.monthlyRent.toLocaleString('en-IN') : '0'}/mo
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
@@ -208,10 +208,10 @@ export default function StudentDashboardPage() {
         </div>
 
         {/* Next Due Date */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[8px] sm:text-[10px] font-bold uppercase tracking-wider block">Deposit Paid</span>
-            <h3 className="text-sm sm:text-2xl font-extrabold text-emerald-400 mt-1 sm:mt-2">
+            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Deposit Paid</span>
+            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-emerald-400 mt-1 sm:mt-2">
               ₹{studentProfile?.securityDeposit ? studentProfile.securityDeposit.toLocaleString('en-IN') : '0'}
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
