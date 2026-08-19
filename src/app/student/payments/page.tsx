@@ -142,83 +142,53 @@ export default function StudentDashboardPage() {
   });
 
   return (
-    <div className="space-y-8 animate-slide-in">
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-violet-950/20 border border-slate-800/80 p-6 rounded-2xl shadow-xl relative overflow-hidden">
-        <div className="absolute right-0 top-0 h-40 w-40 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
-        <div className="flex items-center gap-4 z-10">
-          <div className="h-12 w-12 bg-gradient-to-br from-violet-650/20 to-violet-600/5 border border-violet-500/25 rounded-2xl flex items-center justify-center text-violet-400">
-            <User className="h-6 w-6" />
-          </div>
-          <div>
-            <h1 className="text-lg font-bold text-white leading-snug">Welcome, {user?.name}</h1>
-            <p className="text-slate-455 text-[11px] mt-0.5 font-medium">Tenant Account • Registered Phone: {user?.phone}</p>
-          </div>
-        </div>
-        
-        {studentProfile?.bed ? (
-          <div className="bg-slate-950/85 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2 z-10 shadow-inner">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            <span className="text-[10px] text-slate-350 font-bold uppercase tracking-wider">
-              {studentProfile.bed.room.building.name} • Room {studentProfile.bed.room.number}
-            </span>
-          </div>
-        ) : (
-          <div className="bg-slate-950/85 px-4 py-2 border border-slate-800 rounded-xl flex items-center gap-2 z-10 shadow-inner">
-            <span className="h-2 w-2 rounded-full bg-amber-450 animate-pulse" />
-            <span className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">
-              Awaiting Room Allocation
-            </span>
-          </div>
-        )}
-      </div>
-
+    <div className="space-y-6 animate-slide-in">
       {/* KPI Cards Grid */}
-      <div className="grid grid-cols-3 gap-1.5 min-[380px]:gap-3 sm:gap-6">
+      <div className="grid grid-cols-3 gap-2 sm:gap-6">
         {/* Outstanding Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Outstanding Due</span>
-            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
+            <span className="text-slate-400 text-[8px] min-[350px]:text-[9px] sm:text-xs font-bold uppercase tracking-wider block whitespace-nowrap">Outstanding Due</span>
+            <h3 className="text-xs min-[350px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{pendingRentSum.toLocaleString('en-IN')}
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Total outstanding balance
             </p>
           </div>
-          <div className="hidden sm:flex bg-gradient-to-tr from-amber-500/10 to-amber-500/5 border border-amber-500/25 p-3.5 rounded-2xl text-amber-400 shadow-sm">
+          <div className="hidden md:flex bg-gradient-to-tr from-amber-500/10 to-amber-500/5 border border-amber-500/25 p-3.5 rounded-2xl text-amber-400 shadow-sm">
             <CircleDollarSign className="h-6 w-6" />
           </div>
         </div>
 
         {/* Monthly Rent */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Monthly Rent Rate</span>
-            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
+            <span className="text-slate-400 text-[8px] min-[350px]:text-[9px] sm:text-xs font-bold uppercase tracking-wider block whitespace-nowrap">Monthly Rent</span>
+            <h3 className="text-xs min-[350px]:text-sm sm:text-2xl font-extrabold text-white mt-1 sm:mt-2">
               ₹{studentProfile?.monthlyRent ? studentProfile.monthlyRent.toLocaleString('en-IN') : '0'}/mo
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Base PG room charges
             </p>
           </div>
-          <div className="hidden sm:flex bg-gradient-to-tr from-violet-500/10 to-violet-500/5 border border-violet-500/25 p-3.5 rounded-2xl text-violet-400 shadow-sm">
+          <div className="hidden md:flex bg-gradient-to-tr from-violet-500/10 to-violet-500/5 border border-violet-500/25 p-3.5 rounded-2xl text-violet-400 shadow-sm">
             <BedDouble className="h-6 w-6" />
           </div>
         </div>
 
         {/* Next Due Date */}
-        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-2 min-[380px]:p-3.5 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
+        <div className="bg-gradient-to-b from-slate-900/90 to-slate-900/60 border border-slate-800/80 rounded-xl sm:rounded-2xl p-3 sm:p-6 shadow-xl backdrop-blur-sm flex items-center justify-between hover:border-slate-750 transition-all hover:scale-[1.01]">
           <div>
-            <span className="text-slate-450 text-[7px] min-[380px]:text-[9px] sm:text-[10px] font-bold uppercase tracking-wider block whitespace-nowrap">Deposit Paid</span>
-            <h3 className="text-[10px] min-[380px]:text-sm sm:text-2xl font-extrabold text-emerald-400 mt-1 sm:mt-2">
+            <span className="text-slate-400 text-[8px] min-[350px]:text-[9px] sm:text-xs font-bold uppercase tracking-wider block whitespace-nowrap">Deposit Paid</span>
+            <h3 className="text-xs min-[350px]:text-sm sm:text-2xl font-extrabold text-emerald-400 mt-1 sm:mt-2">
               ₹{studentProfile?.securityDeposit ? studentProfile.securityDeposit.toLocaleString('en-IN') : '0'}
             </h3>
             <p className="hidden sm:block text-[10px] text-slate-500 mt-1 font-semibold">
               Refundable deposit receipted
             </p>
           </div>
-          <div className="bg-gradient-to-tr from-emerald-500/10 to-emerald-500/5 border border-emerald-500/25 p-3.5 rounded-2xl text-emerald-400 shadow-sm">
+          <div className="hidden md:flex bg-gradient-to-tr from-emerald-500/10 to-emerald-500/5 border border-emerald-500/25 p-3.5 rounded-2xl text-emerald-400 shadow-sm">
             <CheckCircle2 className="h-6 w-6" />
           </div>
         </div>
