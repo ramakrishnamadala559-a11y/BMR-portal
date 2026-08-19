@@ -35,6 +35,9 @@ export default function StudentHomePage() {
   const [saveError, setSaveError] = useState('');
   const [saving, setSaving] = useState(false);
 
+  // PG Announcements
+  const [announcements, setAnnouncements] = useState<any[]>([]);
+
   const activeProfile = user ? studentProfile : publicProfile;
 
   // Helper for roommate name initials
@@ -85,6 +88,22 @@ export default function StudentHomePage() {
     }
   };
 
+  const fetchAnnouncements = async (profile: any) => {
+    try {
+      let url = '/api/public/announcements';
+      if (profile?.bed?.room?.building?.name) {
+        url += `?targetGroup=${encodeURIComponent(profile.bed.room.building.name)}`;
+      }
+      const res = await fetch(url);
+      if (res.ok) {
+        const data = await res.json();
+        setAnnouncements(data);
+      }
+    } catch (err) {
+      console.error('Failed to load announcements:', err);
+    }
+  };
+
   useEffect(() => {
     // Attempt to load authenticated user info
     refreshAuth().finally(() => {
@@ -93,10 +112,13 @@ export default function StudentHomePage() {
   }, []);
 
   useEffect(() => {
-    if (user && studentProfile) {
-      fetchStudentHomeData(studentProfile);
+    if (activeProfile) {
+      fetchStudentHomeData(activeProfile);
+      fetchAnnouncements(activeProfile);
+    } else {
+      fetchAnnouncements(null);
     }
-  }, [user, studentProfile]);
+  }, [activeProfile]);
 
   const handlePublicSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -369,20 +391,26 @@ export default function StudentHomePage() {
         </div>
       </div>
 
-      {/* Announcements */}
-      <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl animate-fade-in">
-        <div className="flex items-center gap-2 text-violet-400 font-bold text-[10px] uppercase tracking-wider mb-4">
-          <Bell className="h-4.5 w-4.5" />
-          <span>PG Announcements & News</span>
-        </div>
-        <div className="space-y-3">
-          <div className="p-4 bg-slate-950/60 border border-slate-855 rounded-xl text-xs leading-normal">
-            <h4 className="font-bold text-slate-200">Welcome to {brandName}!</h4>
-            <p className="text-slate-400 mt-1">We are excited to welcome you. High-speed broadband credentials and biometric access updates can be completed at the reception counter.</p>
-            <span className="text-[9px] text-slate-555 block mt-2">Posted on 15 Aug 2026</span>
+      {/* Announcements (Only shown when added/present in database) */}
+      {announcements.length > 0 && (
+        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl animate-fade-in">
+          <div className="flex items-center gap-2 text-violet-400 font-bold text-[10px] uppercase tracking-wider mb-4">
+            <Bell className="h-4.5 w-4.5" />
+            <span>PG Announcements & News</span>
+          </div>
+          <div className="space-y-3">
+            {announcements.map((ann: any) => (
+              <div key={ann.id} className="p-4 bg-slate-955/60 border border-slate-855 rounded-xl text-xs leading-normal">
+                <h4 className="font-bold text-slate-200">{ann.title}</h4>
+                <p className="text-slate-400 mt-1">{ann.content}</p>
+                <span className="text-[9px] text-slate-555 block mt-2">
+                  Posted on {new Date(ann.date).toLocaleDateString([], { dateStyle: 'medium' })}
+                </span>
+              </div>
+            ))}
           </div>
         </div>
-      </div>
+      )}
 
       {/* Student Profile Metadata Section */}
       {activeProfile && (
