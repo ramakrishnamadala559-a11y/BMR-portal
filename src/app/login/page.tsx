@@ -274,10 +274,20 @@ export default function LoginPage() {
 
         {/* Contact Info Card */}
         {settings && settings.showContactOnLogin && !isMobileApp && (
-          <div className="w-full max-w-md bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl text-xs space-y-3 relative shadow-md">
-            <div className="flex items-center gap-2 pb-2.5 border-b border-slate-800/60 text-slate-300 font-bold uppercase tracking-wider text-[10px]">
-              <Building2 className="h-4 w-4 text-violet-400" />
-              <span>Contact & Location</span>
+          <div className="w-full max-w-md bg-slate-900/40 border border-slate-800/80 p-5 rounded-2xl text-xs space-y-4 relative shadow-md">
+            <div className="flex items-center justify-between pb-2.5 border-b border-slate-800/60">
+              <div className="flex items-center gap-2 text-slate-300 font-bold uppercase tracking-wider text-[10px]">
+                <Building2 className="h-4 w-4 text-violet-400" />
+                <span>Contact & Location</span>
+              </div>
+              <a
+                href={`https://www.google.com/maps/dir/?api=1&destination=${encodeURIComponent(settings.address || '')}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center gap-1 text-[10px] text-violet-400 hover:text-violet-300 font-bold uppercase hover:underline"
+              >
+                Get Directions <ArrowUpRight className="h-3 w-3" />
+              </a>
             </div>
             <div className="space-y-2 text-slate-400">
               <p className="text-sm font-bold text-slate-200">{brandName}</p>
@@ -300,6 +310,23 @@ export default function LoginPage() {
                 </div>
               )}
             </div>
+
+            {/* Embedded Google Directions Map */}
+            {settings.address && (
+              <div className="w-full h-36 bg-slate-950 border border-slate-850/60 rounded-xl overflow-hidden shadow-inner relative group">
+                <iframe
+                  title="Hostel Location Map"
+                  width="100%"
+                  height="100%"
+                  style={{ border: 0, opacity: 0.85 }}
+                  loading="lazy"
+                  allowFullScreen
+                  referrerPolicy="no-referrer-when-downgrade"
+                  src={`https://maps.google.com/maps?q=${encodeURIComponent(settings.address)}&t=&z=15&ie=UTF8&iwloc=&output=embed`}
+                  className="group-hover:opacity-100 transition-opacity duration-300"
+                />
+              </div>
+            )}
           </div>
         )}
 
