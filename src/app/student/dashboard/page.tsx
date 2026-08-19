@@ -302,75 +302,71 @@ export default function StudentDashboardPage() {
             <h3 className="font-bold text-white uppercase tracking-wider text-xs">My Registered Profile Info</h3>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-xs text-slate-400">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 text-xs text-slate-400">
             {/* Column 1: Personal Details */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Personal Details</h4>
+            <div className="space-y-3 p-4.5 bg-slate-950/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Personal Details</h4>
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Gender</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.gender}</span>
-                </div>
-                <div className="flex justify-between py-1 border-b border-slate-850/30">
-                  <span>Date of Birth</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.dob || 'N/A'}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.gender}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Primary Email</span>
-                  <span className="text-slate-250 font-semibold truncate max-w-40">{studentProfile.email || 'N/A'}</span>
+                  <span className="text-slate-250 font-bold truncate max-w-[120px] sm:max-w-[150px]" title={studentProfile.email || 'N/A'}>{studentProfile.email || 'N/A'}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Registered Phone</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.phone}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.phone}</span>
                 </div>
               </div>
             </div>
 
             {/* Column 2: Address & ID Proof */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Location & Verification</h4>
+            <div className="space-y-3 p-4.5 bg-slate-950/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Location & Verification</h4>
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>ID Proof Type</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.idProofType}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.idProofType}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>ID Document Number</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.idNumber}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.idNumber}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Permanent Address</span>
-                  <span className="text-slate-250 font-semibold text-right truncate max-w-40" title={studentProfile.address}>{studentProfile.address}</span>
+                  <span className="text-slate-250 font-bold text-right truncate max-w-[120px] sm:max-w-[150px]" title={studentProfile.address}>{studentProfile.address}</span>
                 </div>
               </div>
             </div>
 
             {/* Column 3: Guardian & Admission */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Emergency & Admission</h4>
+            <div className="space-y-3 p-4.5 bg-slate-950/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Emergency & Admission</h4>
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Guardian Name</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.guardianName}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.guardianName}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Guardian Contact</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.guardianPhone}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.guardianPhone}</span>
                 </div>
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Emergency Contact</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.emergencyContact}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.emergencyContact}</span>
                 </div>
                 <div className="flex justify-between py-1">
                   <span>Admission Date</span>
-                  <span className="text-slate-250 font-semibold">{studentProfile.admissionDate ? new Date(studentProfile.admissionDate).toLocaleDateString() : 'N/A'}</span>
+                  <span className="text-slate-250 font-bold">{studentProfile.admissionDate ? new Date(studentProfile.admissionDate).toLocaleDateString() : 'N/A'}</span>
                 </div>
               </div>
             </div>
 
             {/* Column 4: Financial Status */}
-            <div className="space-y-3">
-              <h4 className="font-bold text-slate-300 uppercase tracking-wide text-[10px] pb-1 border-b border-slate-850">Financial Status</h4>
+            <div className="space-y-3 p-4.5 bg-slate-950/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
+              <h4 className="font-bold text-slate-200 uppercase tracking-wider text-[10px] pb-1.5 border-b border-slate-800/80">Financial Status</h4>
               <div className="space-y-2">
                 <div className="flex justify-between py-1 border-b border-slate-850/30">
                   <span>Outstanding Due</span>
