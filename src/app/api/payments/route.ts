@@ -144,7 +144,7 @@ export async function POST(request: Request) {
 
       const whatsappEnabled = settings && (settings as any).whatsappEnabled !== undefined ? (settings as any).whatsappEnabled : true;
       if (whatsappEnabled && student) {
-        const receiptMsg = `Hello ${student.name},\nThank you for your payment! We have successfully recorded your fee payment.\n\nReceipt Details:\n- Payment ID: ${paymentId}\n- Invoice Number: ${invoice.invoiceNumber}\n- Paid Amount: ₹${paymentAmount.toLocaleString('en-IN')}\n- Payment Method: ${method}\n- Date: ${new Date().toLocaleDateString('en-IN')}\n- Remaining Balance: ₹${newBalance.toLocaleString('en-IN')}\n- Status: ${invoiceStatus === 'PAID' ? 'FULLY PAID' : 'PARTIALLY PAID'}\n\nFor any billing concerns, contact: ${settings.phone || '+91 98765 43210'}.\n\nHomestay Management`;
+        const receiptMsg = `Hello ${student.name},\nThank you for your payment! We have successfully recorded your fee payment.\n\nReceipt Details:\n- Payment ID: ${paymentId}\n- Invoice Number: ${invoice.invoiceNumber}\n- Paid Amount: ₹${paymentAmount.toLocaleString('en-IN')}\n- Payment Method: ${method}\n- Date: ${new Date().toLocaleDateString('en-GB')}\n- Remaining Balance: ₹${newBalance.toLocaleString('en-IN')}\n- Status: ${invoiceStatus === 'PAID' ? 'FULLY PAID' : 'PARTIALLY PAID'}\n\nFor any billing concerns, contact: ${settings.phone || '+91 98765 43210'}.\n\nHomestay Management`;
 
         await tx.notification.create({
           data: {

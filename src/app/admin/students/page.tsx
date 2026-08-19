@@ -374,7 +374,7 @@ export default function StudentsPage() {
                         </a>
                       </td>
                     <td className="py-4 px-6 text-slate-400">
-                      {student.admissionDate ? new Date(student.admissionDate).toLocaleDateString() : 'N/A'}
+                      {student.admissionDate ? new Date(student.admissionDate).toLocaleDateString('en-GB') : 'N/A'}
                     </td>
                     <td className="py-4 px-6">
                       <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getStatusBadge(student.status || '')}`}>
@@ -470,7 +470,7 @@ export default function StudentsPage() {
               <div>
                 <span className="text-slate-500 block mb-0.5">Joining / Admission Date</span>
                 <span className="text-slate-200 font-semibold">
-                  {selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString() : 'N/A'}
+                  {selectedStudent.admissionDate ? new Date(selectedStudent.admissionDate).toLocaleDateString('en-GB') : 'N/A'}
                 </span>
               </div>
               <div>
@@ -521,7 +521,7 @@ export default function StudentsPage() {
                 <span className="text-slate-500 block mb-0.5">Room & Bed Details</span>
                 {selectedStudent.bed && selectedStudent.bed.room ? (
                   <span className="text-violet-400 font-bold">
-                    Room {selectedStudent.bed.room.number} ({selectedStudent.bed.name})
+                    {selectedStudent.bed.room.building.name} • Floor {selectedStudent.bed.room.floor?.number ?? 'N/A'} • Room {selectedStudent.bed.room.number} ({selectedStudent.bed.name})
                   </span>
                 ) : (
                   <span className="text-slate-400 italic">Unallocated</span>
@@ -621,7 +621,7 @@ export default function StudentsPage() {
                         {modalPendingInvoices.map((inv: any) => (
                           <tr key={inv.id} className="hover:bg-slate-855/10 transition-colors">
                             <td className="py-2.5 px-4 font-mono text-slate-300 font-semibold">{inv.invoiceNumber}</td>
-                            <td className="py-2.5 px-4 text-slate-450">{new Date(inv.dueDate).toLocaleDateString()}</td>
+                            <td className="py-2.5 px-4 text-slate-450">{new Date(inv.dueDate).toLocaleDateString('en-GB')}</td>
                             <td className="py-2.5 px-4 text-slate-400">
                               ₹{inv.total.toLocaleString('en-IN')}
                               {inv.arrears > 0 && (
@@ -659,7 +659,7 @@ export default function StudentsPage() {
                       {paymentHistory.map((pay: any) => (
                         <tr key={pay.id} className="hover:bg-slate-855/10 transition-colors">
                           <td className="py-2.5 px-4 font-mono text-violet-400 font-semibold">{pay.paymentId}</td>
-                          <td className="py-2.5 px-4 text-slate-400">{new Date(pay.date).toLocaleDateString()}</td>
+                          <td className="py-2.5 px-4 text-slate-400">{new Date(pay.date).toLocaleDateString('en-GB')}</td>
                           <td className="py-2.5 px-4">
                             <span className="px-1.5 py-0.5 rounded bg-slate-900 border border-slate-850 text-[8px] font-bold uppercase text-slate-350">
                               {pay.method}

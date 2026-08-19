@@ -134,7 +134,7 @@ export default function LogsPage() {
                     <span className="font-semibold text-violet-400">{log.action}</span>
                   </div>
                   <span className="text-[10px] text-slate-500 font-medium">
-                    {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} — {new Date(log.createdAt).toLocaleDateString()}
+                    {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' })} — {new Date(log.createdAt).toLocaleDateString('en-GB')}
                   </span>
                 </div>
                 <p className="text-slate-350 leading-relaxed mt-1">

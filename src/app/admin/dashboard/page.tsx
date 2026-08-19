@@ -462,7 +462,7 @@ export default function AdminDashboardPage() {
                       <strong className="text-slate-100 font-semibold">{log.userName}</strong>: {log.description}
                     </p>
                     <span className="text-[10px] text-slate-500 block mt-1">
-                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.createdAt).toLocaleDateString()}
+                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.createdAt).toLocaleDateString('en-GB')}
                     </span>
                   </div>
                 </div>

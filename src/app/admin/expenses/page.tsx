@@ -308,7 +308,7 @@ export default function ExpensesPage() {
                 <tbody className="divide-y divide-slate-850/60 text-xs">
                   {expenses.map((exp) => (
                     <tr key={exp.id} className="hover:bg-slate-855/20 transition-colors">
-                      <td className="py-4 px-6 text-slate-400">{new Date(exp.date).toLocaleDateString()}</td>
+                      <td className="py-4 px-6 text-slate-400">{new Date(exp.date).toLocaleDateString('en-GB')}</td>
                       <td className="py-4 px-6">
                         <div className="flex flex-col gap-1">
                           <span className={`w-fit px-2.5 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getCategoryColor(exp.category)}`}>

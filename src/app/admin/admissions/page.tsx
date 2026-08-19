@@ -222,7 +222,7 @@ export default function AdmissionsPage() {
     const roomNumber = bed?.room.number || 'N/A';
     const bedName = bed?.name || 'N/A';
 
-    let welcomeMsg = `Hello ${newStudentName},\n\nWelcome to Home Stay Hostel! Your bed allocation has been successfully completed. 🏡✨\n\n📍 Allocation Details:\n- Block/Building: ${buildingName}\n- Floor: Floor ${floorNumber}\n- Room Number: Room ${roomNumber}\n- Bed Name: ${bedName}\n- Student ID: ${allocatedStudentId}\n\n💳 Financial Terms:\n- Rent Amount: ₹${monthlyRent}/month\n- Security Deposit: ₹${securityDeposit}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-IN')}\n\n`;
+    let welcomeMsg = `Hello ${newStudentName},\n\nWelcome to Home Stay Hostel! Your bed allocation has been successfully completed. 🏡✨\n\n📍 Allocation Details:\n- Block/Building: ${buildingName}\n- Floor: Floor ${floorNumber}\n- Room Number: Room ${roomNumber}\n- Bed Name: ${bedName}\n- Student ID: ${allocatedStudentId}\n\n💳 Financial Terms:\n- Rent Amount: ₹${monthlyRent}/month\n- Security Deposit: ₹${securityDeposit}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-GB')}\n\n`;
 
     if (tempStudentDetails) {
       welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Username: ${newStudentPhone}\n- Temporary Password: ${allocatedStudentId}@123\n\n`;
@@ -708,8 +708,20 @@ export default function AdmissionsPage() {
             <div className="p-5 bg-slate-955 border border-slate-800 rounded-xl space-y-4 text-xs">
               <h4 className="font-bold text-white uppercase tracking-wider pb-2 border-b border-slate-800">Allocation Summary</h4>
               <div className="grid grid-cols-2 gap-y-3">
+                <span className="text-slate-400">Building / Wing:</span>
+                <span className="text-slate-200 font-bold">{selectedBed?.building.name || 'N/A'}</span>
+
+                <span className="text-slate-400">Floor Level:</span>
+                <span className="text-slate-200 font-semibold">Floor {selectedBed?.room?.floor?.number ?? 'N/A'}</span>
+
+                <span className="text-slate-400">Room Number:</span>
+                <span className="text-slate-200 font-bold text-violet-400">Room {selectedBed?.room?.number || 'N/A'}</span>
+
+                <span className="text-slate-400">Bed Allocation:</span>
+                <span className="text-slate-200 font-bold text-cyan-400">{selectedBed?.name || 'N/A'}</span>
+
                 <span className="text-slate-400">Student Name:</span>
-                <span className="text-slate-200 font-bold">{newStudentName || 'N/A'}</span>
+                <span className="text-slate-200 font-bold text-slate-100">{newStudentName || 'N/A'}</span>
 
                 <span className="text-slate-400">Mobile Phone:</span>
                 <span className="text-slate-200 font-semibold">
@@ -718,14 +730,8 @@ export default function AdmissionsPage() {
                   </a>
                 </span>
 
-                <span className="text-slate-400">Allocated Wing:</span>
-                <span className="text-slate-200 font-semibold">{selectedBed?.building.name}</span>
-
-                <span className="text-slate-400">Room / Bed ID:</span>
-                <span className="text-slate-200 font-bold text-violet-400">Room {selectedBed?.room.number} • {selectedBed?.name}</span>
-
                 <span className="text-slate-400">Allocated Student ID:</span>
-                <span className="text-slate-200 font-bold text-violet-400 font-mono uppercase">{allocatedStudentId}</span>
+                <span className="text-violet-450 font-bold font-mono uppercase">{allocatedStudentId}</span>
 
                 <span className="text-slate-400">Monthly Rent Charge:</span>
                 <span className="text-slate-200 font-semibold">₹{(parseFloat(monthlyRent) || 0).toLocaleString('en-IN')}/month</span>

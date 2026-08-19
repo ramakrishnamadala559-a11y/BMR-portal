@@ -357,7 +357,7 @@ export default function StudentHomePage() {
                 <h4 className="font-bold text-slate-200">{ann.title}</h4>
                 <p className="text-slate-400 mt-1">{ann.content}</p>
                 <span className="text-[9px] text-slate-555 block mt-2">
-                  Posted on {new Date(ann.date).toLocaleDateString([], { dateStyle: 'medium' })}
+                  Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
                 </span>
               </div>
             ))}
@@ -387,7 +387,7 @@ export default function StudentHomePage() {
               <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Joining Date</span>
                 <span className="text-slate-202 font-bold">
-                  {activeProfile.admissionDate ? new Date(activeProfile.admissionDate).toLocaleDateString([], { dateStyle: 'medium' }) : 'N/A'}
+                  {activeProfile.admissionDate ? new Date(activeProfile.admissionDate).toLocaleDateString('en-GB') : 'N/A'}
                 </span>
               </div>
               <div className="flex justify-between items-center py-2">

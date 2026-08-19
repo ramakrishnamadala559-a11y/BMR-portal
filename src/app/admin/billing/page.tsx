@@ -312,10 +312,10 @@ export default function BillingPage() {
                         <td className="py-4 px-6 text-slate-400">Room {inv.roomNumber} ({inv.bedName})</td>
 
                         <td className="py-4 px-6 text-slate-400">
-                          <div>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString() : 'N/A'}</div>
+                          <div>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-GB') : 'N/A'}</div>
                           {inv.payments && inv.payments.length > 0 && (
                             <div className="text-[9px] text-emerald-500 font-bold mt-1 whitespace-nowrap">
-                              Paid: {new Date([...inv.payments].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date).toLocaleDateString()}
+                              Paid: {new Date([...inv.payments].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date).toLocaleDateString('en-GB')}
                             </div>
                           )}
                         </td>
@@ -578,7 +578,7 @@ export default function BillingPage() {
                   </span>
                   <h3 className="text-sm font-mono font-bold mt-2">Bill No: {selectedInvoice.invoiceNumber || 'N/A'}</h3>
                   <p className="text-[10px] text-slate-400 mt-1">
-                    Date: {selectedInvoice.createdAt ? new Date(selectedInvoice.createdAt).toLocaleDateString() : 'N/A'}
+                    Date: {selectedInvoice.createdAt ? new Date(selectedInvoice.createdAt).toLocaleDateString('en-GB') : 'N/A'}
                   </p>
                 </div>
               </div>
@@ -603,7 +603,7 @@ export default function BillingPage() {
                   <h4 className="font-bold text-slate-500 uppercase tracking-wider text-[9px] mb-2">Billing Information:</h4>
                   <p className="font-semibold text-slate-800">Room {selectedInvoice.roomNumber || 'N/A'} ({selectedInvoice.bedName || 'N/A'})</p>
                   <p className="text-slate-500 mt-1">
-                    Due Date: {selectedInvoice.dueDate ? new Date(selectedInvoice.dueDate).toLocaleDateString([], { dateStyle: 'medium' }) : 'N/A'}
+                    Due Date: {selectedInvoice.dueDate ? new Date(selectedInvoice.dueDate).toLocaleDateString('en-GB') : 'N/A'}
                   </p>
                   {selectedInvoice.status === 'PAID' && (
                     <p className="text-emerald-600 font-bold mt-2">
