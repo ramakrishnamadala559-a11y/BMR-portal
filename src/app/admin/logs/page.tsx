@@ -39,6 +39,7 @@ export default function LogsPage() {
   const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
   const [buildings, setBuildings] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
+  const [studentSearchTerm, setStudentSearchTerm] = useState('');
 
   const fetchLogs = async () => {
     try {
@@ -162,6 +163,7 @@ export default function LogsPage() {
         setSelectedTargetBuilding('');
         setSelectedTargetRoom('');
         setSelectedTargetStudent('');
+        setStudentSearchTerm('');
         fetchAnnouncements();
       } else {
         const data = await res.json();
@@ -391,19 +393,34 @@ export default function LogsPage() {
               )}
 
               {announcementTargetType === 'STUDENT' && (
-                <div className="md:col-span-2">
-                  <label className="block text-slate-355 font-semibold mb-2">Select Student</label>
-                  <select
-                    value={selectedTargetStudent}
-                    onChange={(e) => setSelectedTargetStudent(e.target.value)}
-                    className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-                    required
-                  >
-                    <option value="">-- Choose Student --</option>
-                    {students.map(s => (
-                      <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>
-                    ))}
-                  </select>
+                <div className="md:col-span-2 space-y-2">
+                  <label className="block text-slate-355 font-semibold">Select Target Student</label>
+                  <div className="flex flex-col sm:flex-row gap-2.5">
+                    <input
+                      type="text"
+                      placeholder="🔍 Search name or phone..."
+                      value={studentSearchTerm}
+                      onChange={(e) => setStudentSearchTerm(e.target.value)}
+                      className="w-full sm:w-1/2 bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2 px-3.5 text-xs text-slate-200 focus:outline-none placeholder-slate-605"
+                    />
+                    <select
+                      value={selectedTargetStudent}
+                      onChange={(e) => setSelectedTargetStudent(e.target.value)}
+                      className="w-full sm:w-1/2 bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2 px-3 text-xs text-slate-300 focus:outline-none"
+                      required
+                    >
+                      <option value="">-- Select Student --</option>
+                      {students
+                        .filter(s => 
+                          s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                          s.phone.includes(studentSearchTerm)
+                        )
+                        .map(s => (
+                          <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>
+                        ))
+                      }
+                    </select>
+                  </div>
                 </div>
               )}
 
