@@ -482,10 +482,6 @@ export default function StudentsPage() {
                 </span>
               </div>
               <div>
-                <span className="text-slate-500 block mb-0.5">Email Address</span>
-                <span className="text-slate-200 font-semibold">{selectedStudent.email || 'N/A'}</span>
-              </div>
-              <div>
                 <span className="text-slate-500 block mb-0.5">Gender</span>
                 <span className="text-slate-200 font-semibold uppercase">{selectedStudent.gender || 'N/A'}</span>
               </div>
@@ -711,16 +707,6 @@ export default function StudentsPage() {
                     required
                   />
                 </div>
-              </div>
-
-              <div>
-                <label className="block text-slate-355 font-semibold mb-2">Email Address</label>
-                <input
-                  type="email"
-                  value={editEmail || ''}
-                  onChange={(e) => setEditEmail(e.target.value)}
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-200 focus:outline-none"
-                />
               </div>
 
               <div className="grid grid-cols-2 gap-4">

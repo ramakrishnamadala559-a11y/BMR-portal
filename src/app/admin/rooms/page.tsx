@@ -1336,8 +1336,22 @@ export default function RoomsPage() {
                   </span>
                 </div>
                 <div>
-                  <span className="text-slate-500 block mb-0.5">Email Address</span>
-                  <span className="text-slate-200 font-semibold">{selectedStudent.email || 'N/A'}</span>
+                  <span className="text-slate-500 block mb-0.5">Aadhaar Photo</span>
+                  {selectedStudent.idProofUrl ? (
+                    <div className="relative group max-w-[120px] mt-1">
+                      <img
+                        src={selectedStudent.idProofUrl}
+                        alt="Aadhaar ID Proof"
+                        className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
+                        onClick={() => window.open(selectedStudent.idProofUrl, '_blank')}
+                      />
+                      <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center pointer-events-none transition-opacity rounded">
+                        <span className="text-[8px] text-white font-medium">View</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <span className="text-slate-450 italic text-[11px]">Not Uploaded</span>
+                  )}
                 </div>
               </div>
               <div className="grid grid-cols-2 gap-4 text-xs">

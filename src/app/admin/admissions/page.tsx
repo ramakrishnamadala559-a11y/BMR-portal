@@ -451,17 +451,6 @@ export default function AdmissionsPage() {
                     disabled={!!selectedStudentId}
                   />
                 </div>
-                <div>
-                  <label className="block text-slate-355 text-xs font-semibold mb-2">Email Address</label>
-                  <input
-                    type="email"
-                    value={newStudentEmail}
-                    onChange={(e) => setNewStudentEmail(e.target.value)}
-                    placeholder="kabir@gmail.com"
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 placeholder-slate-600 focus:outline-none disabled:opacity-50"
-                    disabled={!!selectedStudentId}
-                  />
-                </div>
               </div>
 
               <div>

@@ -412,16 +412,25 @@ export default function StudentHomePage() {
             {/* Column 2 */}
             <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
               <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
-                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Email</span>
-                <span className="text-slate-202 font-bold truncate max-w-[120px] sm:max-w-xs" title={activeProfile.email || 'N/A'}>{activeProfile.email || 'N/A'}</span>
-              </div>
-              <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar / ID Proof ({activeProfile.idProofType || 'Aadhaar'})</span>
                 <span className="text-slate-205 font-bold">{activeProfile.idNumber}</span>
               </div>
-              <div className="flex justify-between items-start py-2">
+              <div className="flex justify-between items-start py-2 border-b border-slate-850/30">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px] mt-0.5">Address</span>
                 <span className="text-slate-202 font-bold text-right max-w-[150px] sm:max-w-xs break-words font-medium" title={activeProfile.address}>{activeProfile.address}</span>
+              </div>
+              <div className="flex justify-between items-center py-2">
+                <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar Photo</span>
+                {activeProfile.idProofUrl ? (
+                  <img
+                    src={activeProfile.idProofUrl}
+                    alt="Aadhaar ID Proof"
+                    className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
+                    onClick={() => window.open(activeProfile.idProofUrl, '_blank')}
+                  />
+                ) : (
+                  <span className="text-slate-500 italic">Not Uploaded</span>
+                )}
               </div>
             </div>
           </div>

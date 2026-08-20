@@ -590,11 +590,6 @@ export default function BillingPage() {
                   <p className="text-slate-500 mt-1">
                     Phone: {selectedInvoice.student?.phone ? `+91 ${selectedInvoice.student.phone}` : 'N/A'}
                   </p>
-                  {selectedInvoice.student?.email && (
-                    <p className="text-slate-500 mt-0.5">
-                      Email: {selectedInvoice.student.email}
-                    </p>
-                  )}
                   <p className="text-slate-500 mt-2 font-semibold">
                     Billing Month: {selectedInvoice.createdAt ? new Date(selectedInvoice.createdAt).toLocaleString('default', { month: 'long', year: 'numeric' }) : 'N/A'}
                   </p>
