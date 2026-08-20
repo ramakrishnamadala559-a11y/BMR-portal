@@ -195,7 +195,7 @@ export default function LoginPage() {
                     type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="9988776655"
+                    placeholder="9876543210"
                     className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
                     required
                   />

@@ -224,7 +224,7 @@ export default function AdmissionsPage() {
     let welcomeMsg = `Hello ${newStudentName},\n\nWelcome to Home Stay Hostel! Your bed allocation has been successfully completed. 🏡✨\n\n📍 Allocation Details:\n- Block/Building: ${buildingName}\n- Floor: Floor ${floorNumber}\n- Room Number: Room ${roomNumber}\n- Bed Name: ${bedName}\n- Student ID: ${allocatedStudentId}\n\n💳 Financial Terms:\n- Rent Amount: ₹${monthlyRent}/month\n- Security Deposit: ₹${securityDeposit}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-GB')}\n\n`;
 
     if (tempStudentDetails) {
-      welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Username: ${newStudentPhone}\n- Temporary Password: ${allocatedStudentId}@123\n\n`;
+      welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Username: ${newStudentPhone}\n- Temporary Password: [Reset on first login / contact admin]\n\n`;
     } else {
       welcomeMsg += `🔐 Portal Access Details:\n- URL: https://bmr-portal.vercel.app/login\n- Login: Use your registered mobile number: ${newStudentPhone}\n\n`;
     }

@@ -192,7 +192,7 @@ export async function POST(request: Request) {
           recipient: phone,
           type: 'WHATSAPP',
           title: 'Welcome to ' + hostelName,
-          message: `Hello ${name},\nWelcome to ${hostelName}! Your resident profile has been successfully created.\n\nYour login details are:\n- Portal URL: https://bmr-portal.vercel.app/login\n- Username: ${phone}\n- Temp Password: ${newStudent.id}@123\n\nYour rent parameters:\n- Monthly Rent: ₹${rent}\n- Security Deposit: ₹${deposit}\n\nFor any queries, contact us through our official phone: ${hostelPhone}.\n\nHave a great stay!`,
+          message: `Hello ${name},\nWelcome to ${hostelName}! Your resident profile has been successfully created.\n\nYour login details are:\n- Portal URL: https://bmr-portal.vercel.app/login\n- Username: ${phone}\n- Temp Password: [Reset on first login / contact admin]\n\nYour rent parameters:\n- Monthly Rent: ₹${rent}\n- Security Deposit: ₹${deposit}\n\nFor any queries, contact us through our official phone: ${hostelPhone}.\n\nHave a great stay!`,
           status: 'SENT'
         }
       });
