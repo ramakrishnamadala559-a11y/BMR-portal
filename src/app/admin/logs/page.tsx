@@ -34,7 +34,7 @@ export default function LogsPage() {
   const [announcementTargetType, setAnnouncementTargetType] = useState<'ALL' | 'BUILDING' | 'ROOM' | 'STUDENT'>('ALL');
   const [selectedTargetBuilding, setSelectedTargetBuilding] = useState('');
   const [selectedTargetRoom, setSelectedTargetRoom] = useState('');
-  const [selectedTargetStudent, setSelectedTargetStudent] = useState('');
+  const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
   const [buildings, setBuildings] = useState<any[]>([]);
@@ -136,11 +136,11 @@ export default function LogsPage() {
       }
       target = `ROOM_${selectedTargetRoom}`;
     } else if (announcementTargetType === 'STUDENT') {
-      if (!selectedTargetStudent) {
-        setToast({ message: 'Please select a student', type: 'error' });
+      if (selectedStudentIds.length === 0) {
+        setToast({ message: 'Please select at least one student', type: 'error' });
         return;
       }
-      target = `STUDENT_${selectedTargetStudent}`;
+      target = selectedStudentIds.map(id => `STUDENT_${id}`) as any;
     }
 
     setAnnouncementSubmitting(true);
@@ -162,7 +162,7 @@ export default function LogsPage() {
         setAnnouncementTargetType('ALL');
         setSelectedTargetBuilding('');
         setSelectedTargetRoom('');
-        setSelectedTargetStudent('');
+        setSelectedStudentIds([]);
         setStudentSearchTerm('');
         fetchAnnouncements();
       } else {
@@ -347,7 +347,7 @@ export default function LogsPage() {
                     setAnnouncementTargetType(e.target.value as any);
                     setSelectedTargetBuilding('');
                     setSelectedTargetRoom('');
-                    setSelectedTargetStudent('');
+                    setSelectedStudentIds([]);
                   }}
                   className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
                 >
@@ -394,32 +394,89 @@ export default function LogsPage() {
 
               {announcementTargetType === 'STUDENT' && (
                 <div className="md:col-span-2 space-y-2">
-                  <label className="block text-slate-355 font-semibold">Select Target Student</label>
-                  <div className="flex flex-col sm:flex-row gap-2.5">
-                    <input
-                      type="text"
-                      placeholder="🔍 Search name or phone..."
-                      value={studentSearchTerm}
-                      onChange={(e) => setStudentSearchTerm(e.target.value)}
-                      className="w-full sm:w-1/2 bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2 px-3.5 text-xs text-slate-200 focus:outline-none placeholder-slate-605"
-                    />
-                    <select
-                      value={selectedTargetStudent}
-                      onChange={(e) => setSelectedTargetStudent(e.target.value)}
-                      className="w-full sm:w-1/2 bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2 px-3 text-xs text-slate-300 focus:outline-none"
-                      required
-                    >
-                      <option value="">-- Select Student --</option>
-                      {students
+                  <div className="flex items-center justify-between">
+                    <label className="block text-slate-355 font-semibold">Select Students ({selectedStudentIds.length} Selected)</label>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => {
+                          const filteredIds = students
+                            .filter(s => 
+                              s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                              s.phone.includes(studentSearchTerm)
+                            )
+                            .map(s => s.id);
+                          setSelectedStudentIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+                        }}
+                        className="text-[10px] text-violet-400 font-bold hover:text-violet-300 transition-colors cursor-pointer"
+                      >
+                        ☑️ Select Filtered
+                      </button>
+                      <span className="text-slate-700 text-[10px]">|</span>
+                      <button
+                        type="button"
+                        onClick={() => setSelectedStudentIds([])}
+                        className="text-[10px] text-rose-400 font-bold hover:text-rose-300 transition-colors cursor-pointer"
+                      >
+                        ✖️ Clear All
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <input
+                    type="text"
+                    placeholder="🔍 Search name or phone..."
+                    value={studentSearchTerm}
+                    onChange={(e) => setStudentSearchTerm(e.target.value)}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2 px-3.5 text-xs text-slate-200 focus:outline-none placeholder-slate-605"
+                  />
+
+                  <div className="max-h-48 overflow-y-auto border border-slate-800/80 rounded-xl p-3 space-y-2.5 bg-slate-955/40">
+                    {students.filter(s => 
+                      s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                      s.phone.includes(studentSearchTerm)
+                    ).length === 0 ? (
+                      <p className="text-slate-500 text-xs italic">No matching students found</p>
+                    ) : (
+                      students
                         .filter(s => 
                           s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
                           s.phone.includes(studentSearchTerm)
                         )
-                        .map(s => (
-                          <option key={s.id} value={s.id}>{s.name} ({s.phone})</option>
-                        ))
-                      }
-                    </select>
+                        .map(s => {
+                          const isChecked = selectedStudentIds.includes(s.id);
+                          return (
+                            <label 
+                              key={s.id} 
+                              className={`flex items-center gap-3 p-1.5 rounded-lg transition-colors cursor-pointer select-none ${
+                                isChecked ? 'bg-violet-500/5 text-slate-100' : 'text-slate-400 hover:text-slate-200'
+                              }`}
+                            >
+                              <input
+                                type="checkbox"
+                                checked={isChecked}
+                                onChange={() => {
+                                  if (isChecked) {
+                                    setSelectedStudentIds(prev => prev.filter(id => id !== s.id));
+                                  } else {
+                                    setSelectedStudentIds(prev => [...prev, s.id]);
+                                  }
+                                }}
+                                className="h-4 w-4 bg-slate-900 border border-slate-800 rounded focus:ring-violet-500/80 text-violet-600 cursor-pointer"
+                              />
+                              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs w-full">
+                                <span className="font-semibold">{s.name}</span>
+                                <span className="text-[10px] text-slate-500">({s.phone})</span>
+                                {s.bed?.room?.building?.name && (
+                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/50 text-slate-450 uppercase font-bold sm:ml-auto">
+                                    {s.bed.room.building.name} - Room {s.bed.room.number}
+                                  </span>
+                                )}
+                              </div>
+                            </label>
+                          );
+                        })
+                    )}
                   </div>
                 </div>
               )}

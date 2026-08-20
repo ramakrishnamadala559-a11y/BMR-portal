@@ -34,14 +34,37 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'Title, content, and target group are required' }, { status: 400 });
     }
 
-    const announcement = await db.announcement.create({
-      data: {
-        title,
-        content,
-        targetGroup,
-        createdBy: user!.name
+    let result;
+    if (Array.isArray(targetGroup)) {
+      if (targetGroup.length === 0) {
+        return NextResponse.json({ error: 'Target group array cannot be empty' }, { status: 400 });
       }
-    });
+      
+      // Create separate announcements in a transaction
+      result = await db.$transaction(
+        targetGroup.map(target => 
+          db.announcement.create({
+            data: {
+              title,
+              content,
+              targetGroup: target,
+              createdBy: user!.name
+            }
+          })
+        )
+      );
+    } else {
+      result = await db.announcement.create({
+        data: {
+          title,
+          content,
+          targetGroup,
+          createdBy: user!.name
+        }
+      });
+    }
+
+    const logTarget = Array.isArray(targetGroup) ? targetGroup.join(', ') : targetGroup;
 
     // Write to audit log!
     await logActivity(
@@ -49,10 +72,10 @@ export async function POST(request: Request) {
       user!.name,
       'CREATE_ANNOUNCEMENT',
       'SETTINGS',
-      `Posted announcement: "${title}" (Target: ${targetGroup})`
+      `Posted announcement: "${title}" (Target: ${logTarget})`
     );
 
-    return NextResponse.json(announcement, { status: 201 });
+    return NextResponse.json(Array.isArray(result) ? result[0] : result, { status: 201 });
   } catch (error) {
     console.error('POST announcement error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
