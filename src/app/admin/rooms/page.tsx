@@ -610,7 +610,16 @@ export default function RoomsPage() {
         <div className="mb-2">
           <div className="flex items-center justify-between pr-14">
             <div className="flex items-center gap-1.5">
-              <span className="text-xs font-black text-white tracking-wide">
+              <span 
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (hasPermission('rooms', 'edit')) {
+                    handleEditRoomClick(room);
+                  }
+                }}
+                className="text-xs font-black text-white tracking-wide hover:text-violet-400 cursor-pointer transition-colors"
+                title="Click to Edit Room Details"
+              >
                 {room.isVirtual ? `Room ${room.virtualNumber}` : `Room ${room.number}`}
               </span>
               <span className={`text-[8px] font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
@@ -761,12 +770,12 @@ export default function RoomsPage() {
         </div>
 
         {/* Facilities footer summary */}
-        {room.facilities && (
-          <div className="mt-2 pt-1 border-t border-slate-800/40 flex items-center justify-between text-[8px] text-slate-550 font-medium">
-            <span className="truncate max-w-[120px]">🛠️ {room.facilities}</span>
-            <span className="font-bold text-slate-400">₹{room.rent}/mo</span>
-          </div>
-        )}
+        <div className="mt-2 pt-1 border-t border-slate-800/40 flex items-center justify-between text-[8px] text-slate-550 font-medium">
+          <span className="truncate max-w-[120px]">
+            {room.facilities ? `🛠️ ${room.facilities}` : '🏡 Standard Room'}
+          </span>
+          <span className="font-bold text-slate-400">₹{room.rent}/mo</span>
+        </div>
       </div>
     );
   };
