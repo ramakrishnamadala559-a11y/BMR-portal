@@ -100,8 +100,8 @@ export default function AadhaarPhotoCapture({
         // Draw the video frame to canvas
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
         
-        // Convert canvas image to base64 jpeg
-        const dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        // Convert canvas image to base64 jpeg with 0.7 quality (approx. 30KB)
+        const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
         onChange(dataUrl);
         setIsCameraActive(false);
       }
@@ -114,7 +114,35 @@ export default function AadhaarPhotoCapture({
       const reader = new FileReader();
       reader.onload = (event) => {
         if (event.target?.result) {
-          onChange(event.target.result as string);
+          const img = new Image();
+          img.onload = () => {
+            // Resize to maximum width/height, keeping aspect ratio
+            const maxW = 800;
+            const maxH = 600;
+            let width = img.width;
+            let height = img.height;
+            
+            if (width > maxW) {
+              height = Math.round((height * maxW) / width);
+              width = maxW;
+            }
+            if (height > maxH) {
+              width = Math.round((width * maxH) / height);
+              height = maxH;
+            }
+            
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(img, 0, 0, width, height);
+              // Compress to JPEG at 70% quality (extremely lightweight, ~30-50KB)
+              const dataUrl = canvas.toDataURL('image/jpeg', 0.7);
+              onChange(dataUrl);
+            }
+          };
+          img.src = event.target.result as string;
         }
       };
       reader.readAsDataURL(file);

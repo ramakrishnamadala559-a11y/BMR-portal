@@ -306,7 +306,7 @@ export default function RoomsPage() {
     setEditingRoom(room);
     setEditRoomNumber(room.number);
     setEditRoomType(room.type);
-    setEditRoomCapacity(room.capacity.toString());
+    setEditRoomCapacity((room.parentCapacity || room.capacity).toString());
     setEditRoomRent(room.rent.toString());
     setEditRoomFacilities(room.facilities || '');
     setEditRoomStatus(room.status);
@@ -534,6 +534,7 @@ export default function RoomsPage() {
             ...room,
             isVirtual: true,
             virtualNumber: srName,
+            parentCapacity: room.capacity,
             capacity: bedsBySubRoom[srName].length,
             beds: bedsBySubRoom[srName]
           });
@@ -541,6 +542,7 @@ export default function RoomsPage() {
         if (standardBeds.length > 0) {
           list.push({
             ...room,
+            parentCapacity: room.capacity,
             capacity: standardBeds.length,
             beds: standardBeds
           });
@@ -572,8 +574,12 @@ export default function RoomsPage() {
       bedLayoutClass = "flex justify-center items-center h-full";
     } else if (cap === 3) {
       bedLayoutClass = "grid grid-cols-3 gap-2";
-    } else if (cap >= 4) {
+    } else if (cap === 4) {
       bedLayoutClass = "grid grid-cols-2 gap-2";
+    } else if (cap > 4 && cap <= 8) {
+      bedLayoutClass = "grid grid-cols-4 gap-1.5";
+    } else if (cap > 8) {
+      bedLayoutClass = "grid grid-cols-5 gap-1.5";
     }
 
     return (
@@ -618,34 +624,32 @@ export default function RoomsPage() {
                  occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
               </span>
             </div>
-            {!room.isVirtual && (
-              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
-                {hasPermission('rooms', 'edit') && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleEditRoomClick(room);
-                    }}
-                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer pointer-events-auto"
-                    title="Edit Room"
-                  >
-                    <Edit className="h-3 w-3" />
-                  </button>
-                )}
-                {hasPermission('rooms', 'delete') && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleDeleteRoomClick(room);
-                    }}
-                    className="p-1 hover:bg-rose-950/40 rounded text-slate-400 hover:text-rose-400 transition-colors cursor-pointer pointer-events-auto"
-                    title="Delete Room"
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </button>
-                )}
-              </div>
-            )}
+            <div className="flex items-center gap-1 z-10">
+              {hasPermission('rooms', 'edit') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleEditRoomClick(room);
+                  }}
+                  className="p-1 bg-slate-800/80 hover:bg-violet-600 rounded text-slate-350 hover:text-white transition-all cursor-pointer pointer-events-auto border border-slate-700/60"
+                  title="Edit Room"
+                >
+                  <Edit className="h-3 w-3" />
+                </button>
+              )}
+              {hasPermission('rooms', 'delete') && (
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleDeleteRoomClick(room);
+                  }}
+                  className="p-1 bg-slate-800/80 hover:bg-rose-900/60 rounded text-slate-355 hover:text-rose-300 transition-all cursor-pointer pointer-events-auto border border-slate-700/60"
+                  title="Delete Room"
+                >
+                  <Trash2 className="h-3 w-3" />
+                </button>
+              )}
+            </div>
           </div>
           <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">{room.type}</span>
         </div>
@@ -665,6 +669,8 @@ export default function RoomsPage() {
                     onClick={() => {
                       if (isOccupied && bed.student) {
                         handleOccupantClick(bed.student, bed.name, room.number);
+                      } else if (bed.status === 'AVAILABLE' && hasPermission('rooms', 'edit')) {
+                        handleEditRoomClick(room);
                       }
                     }}
                     className={`w-full p-2 rounded-lg border flex flex-col justify-between text-left transition-all cursor-pointer hover:scale-[1.05] ${
@@ -697,13 +703,16 @@ export default function RoomsPage() {
                         {bed.student.name.split(' ')[0]}
                       </span>
                     ) : bed.status === 'AVAILABLE' ? (
-                      hasPermission('students', 'edit') ? (
-                        <Link
-                          href={`/admin/admissions?bedId=${bed.id}`}
-                          className="text-[8px] text-emerald-400 hover:text-emerald-300 font-extrabold flex items-center gap-0.5 mt-0.5 cursor-pointer pointer-events-auto"
+                      hasPermission('rooms', 'edit') ? (
+                        <span
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditRoomClick(room);
+                          }}
+                          className="text-[8px] text-violet-400 hover:text-violet-300 font-extrabold flex items-center gap-0.5 mt-0.5 cursor-pointer pointer-events-auto"
                         >
-                          + ADMIT
-                        </Link>
+                          + EDIT
+                        </span>
                       ) : (
                         <span className="text-[8px] text-slate-600 block italic">Empty</span>
                       )
@@ -727,14 +736,17 @@ export default function RoomsPage() {
                         {isOverdue && <p className="text-rose-450 font-extrabold animate-pulse mt-1">⚠️ Rent Payment Overdue!</p>}
                       </div>
                     ) : bed.status === 'AVAILABLE' ? (
-                      hasPermission('students', 'edit') ? (
-                        <Link
-                          href={`/admin/admissions?bedId=${bed.id}`}
-                          className="text-emerald-400 font-bold hover:text-emerald-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto"
+                      hasPermission('rooms', 'edit') ? (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleEditRoomClick(room);
+                          }}
+                          className="text-violet-400 font-bold hover:text-violet-300 flex items-center gap-1 mt-1 cursor-pointer pointer-events-auto text-left"
                         >
-                          ⚡ Allocate Bed
+                          ⚡ Edit Room Details
                           <ChevronRight className="h-3 w-3" />
-                        </Link>
+                        </button>
                       ) : (
                         <p className="text-slate-500 mt-1 font-medium">Available for allocation</p>
                       )
