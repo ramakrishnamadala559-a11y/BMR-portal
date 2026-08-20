@@ -314,8 +314,6 @@ export default function LogsPage() {
         )}
       </div>
 
-      </div>
-
       {/* SECTION: Announcements Management (Owner Only) */}
       {currentUser?.role === 'OWNER' && (
         <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
