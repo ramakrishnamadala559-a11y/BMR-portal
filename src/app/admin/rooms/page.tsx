@@ -1001,24 +1001,56 @@ export default function RoomsPage() {
           </div>
         ) : (
           <div className="space-y-6">
-            {/* Legend */}
-            <div className="flex flex-wrap items-center gap-4 bg-slate-905/30 p-4 rounded-xl border border-slate-850/60 text-[10px]">
-              <span className="text-slate-500 font-bold uppercase tracking-wider">Legend:</span>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded-md bg-emerald-500/10 border border-emerald-500/20 inline-block"></span>
-                <span className="text-slate-300">Available</span>
+            {/* Legend / Map Interactions Guide */}
+            <div className="bg-slate-900/50 p-5 rounded-2xl border border-slate-800/60 text-[10.5px] space-y-3.5">
+              <div className="flex flex-wrap items-center gap-x-5 gap-y-2">
+                <span className="text-slate-500 font-extrabold uppercase tracking-widest text-[9.5px]">Room & Bed Status:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-3 w-3 rounded-full bg-emerald-500 shadow-sm shadow-emerald-500/20 inline-block animate-pulse"></span>
+                  <span className="text-slate-350">Available / Empty</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-3 w-3 rounded-full bg-indigo-500 shadow-sm shadow-indigo-500/20 inline-block"></span>
+                  <span className="text-slate-350">Occupied / Full</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-3 w-3 rounded-full bg-amber-500 shadow-sm shadow-amber-500/20 inline-block"></span>
+                  <span className="text-slate-350">Reserved</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="h-3 w-3 rounded-full bg-rose-500 shadow-sm shadow-rose-500/20 inline-block animate-pulse"></span>
+                  <span className="text-slate-350">Maintenance / Overdue</span>
+                </div>
               </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded-md bg-indigo-500/10 border border-indigo-500/20 inline-block"></span>
-                <span className="text-slate-300">Occupied</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded-md bg-amber-500/10 border border-amber-500/20 inline-block"></span>
-                <span className="text-slate-300">Reserved</span>
-              </div>
-              <div className="flex items-center gap-1.5">
-                <span className="h-3.5 w-3.5 rounded-md bg-rose-500/10 border border-rose-500/20 inline-block"></span>
-                <span className="text-slate-300">Maintenance / Overdue</span>
+              
+              <div className="h-[1px] bg-slate-800/50 w-full"></div>
+              
+              <div className="flex flex-wrap items-center gap-x-6 gap-y-2.5 text-slate-400">
+                <span className="text-slate-500 font-extrabold uppercase tracking-widest text-[9.5px]">Map Interactions:</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[8.5px] font-extrabold text-violet-400">
+                    <Plus className="h-2.5 w-2.5" /> ADD
+                  </span>
+                  <span>Click <b>Add Room</b> button at the top right to add rooms to this floor</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="p-1 bg-slate-800 border border-slate-700 rounded text-slate-300 inline-flex">
+                    <Edit className="h-2.5 w-2.5 text-violet-450" />
+                  </span>
+                  <span>Click <b>Edit Icon</b> on room header or click any <b>Empty Bed</b> to edit room details</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="p-1 bg-slate-800 border border-slate-700 rounded text-slate-300 inline-flex">
+                    <Trash2 className="h-2.5 w-2.5 text-rose-450" />
+                  </span>
+                  <span>Click <b>Trash Icon</b> to delete an empty room</span>
+                </div>
+                <div className="flex items-center gap-1.5">
+                  <span className="flex items-center gap-1 px-1.5 py-0.5 rounded bg-slate-800 border border-slate-700 text-[8.5px] font-bold text-indigo-400">
+                    👤 OCCUPANT
+                  </span>
+                  <span>Click <b>Occupied Bed</b> to view profile & register check-out</span>
+                </div>
               </div>
             </div>
 
