@@ -1054,57 +1054,9 @@ export default function RoomsPage() {
               </div>
             </div>
 
-            <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block mb-2 lg:hidden">
-              ↔ Swipe map plan horizontally to view all wings
-            </span>
-
-            {/* Floor Map Layout */}
-            <div className="bg-slate-950 border border-slate-850 p-6 md:p-8 rounded-3xl overflow-x-auto relative">
-              <div className="min-w-[800px] space-y-4">
-                {/* Top Row (North Wing) of Rooms */}
-                <div 
-                  className="grid gap-4"
-                  style={{ gridTemplateColumns: `repeat(${Math.max(3, topRowRooms.length)}, minmax(0, 1fr))` }}
-                >
-                  {topRowRooms.map((room: any) => renderRoomBox(room))}
-                  {topRowRooms.length < 3 && Array.from({ length: 3 - topRowRooms.length }).map((_, idx) => (
-                    <div key={`empty-top-${idx}`} className="border border-slate-900/60 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-10">
-                      <span className="text-[10px] text-slate-655 italic font-semibold">Unallocated Wing Slot</span>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Central Corridor Walkway */}
-                <div className="h-14 bg-slate-900/80 border-y border-slate-850/80 rounded-xl flex items-center justify-between px-6 relative overflow-hidden shadow-inner">
-                  <div className="absolute inset-0 bg-gradient-to-r from-transparent via-slate-800/10 to-transparent pointer-events-none"></div>
-                  <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-wider z-10">
-                    <span>⬅ EXIT LOBBY</span>
-                  </div>
-                  <div className="flex-1 flex justify-center gap-8 text-[9px] text-slate-500 font-extrabold uppercase tracking-widest pointer-events-none z-0">
-                    <span>N O R T H   W I N G</span>
-                    <span>•</span>
-                    <span>C O R R I D O R</span>
-                    <span>•</span>
-                    <span>S O U T H   W I N G</span>
-                  </div>
-                  <div className="flex items-center gap-2 text-slate-500 text-[10px] font-bold uppercase tracking-wider z-10">
-                    <span>LIFT / STAIRS ➡</span>
-                  </div>
-                </div>
-
-                {/* Bottom Row (South Wing) of Rooms */}
-                <div 
-                  className="grid gap-4"
-                  style={{ gridTemplateColumns: `repeat(${Math.max(3, topRowRooms.length)}, minmax(0, 1fr))` }}
-                >
-                  {bottomRowRooms.map((room: any) => renderRoomBox(room))}
-                  {bottomRowRooms.length < topRowRooms.length && Array.from({ length: topRowRooms.length - bottomRowRooms.length }).map((_, idx) => (
-                    <div key={`empty-bottom-${idx}`} className="border border-slate-900/60 border-dashed rounded-2xl h-40 flex items-center justify-center opacity-10">
-                      <span className="text-[10px] text-slate-650 italic font-semibold">Unallocated Wing Slot</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+            {/* Floor Map Layout (Grid of Rooms) */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {virtualRooms.map((room: any) => renderRoomBox(room))}
             </div>
           </div>
         )}
