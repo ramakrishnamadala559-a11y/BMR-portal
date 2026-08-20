@@ -602,20 +602,50 @@ export default function RoomsPage() {
 
         {/* Room Header Info */}
         <div className="mb-2">
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs font-black text-white tracking-wide">
-              {room.isVirtual ? `Room ${room.virtualNumber}` : `Room ${room.number}`}
-            </span>
-            <span className={`text-[8px] font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
-              isMaintenance ? 'bg-rose-500/10 text-rose-455 border border-rose-500/20' :
-              occupiedCount === room.capacity ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
-              occupiedCount === 0 ? 'bg-emerald-500/10 text-emerald-450 border border-emerald-500/20' : 
-              'bg-amber-500/10 text-amber-400 border border-amber-500/20'
-            }`}>
-              {isMaintenance ? 'Maint' :
-               occupiedCount === room.capacity ? 'Full' :
-               occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
-            </span>
+          <div className="flex items-center justify-between pr-14">
+            <div className="flex items-center gap-1.5">
+              <span className="text-xs font-black text-white tracking-wide">
+                {room.isVirtual ? `Room ${room.virtualNumber}` : `Room ${room.number}`}
+              </span>
+              <span className={`text-[8px] font-extrabold uppercase tracking-widest px-1.5 py-0.5 rounded-md ${
+                isMaintenance ? 'bg-rose-500/10 text-rose-455 border border-rose-500/20' :
+                occupiedCount === room.capacity ? 'bg-indigo-500/10 text-indigo-400 border border-indigo-500/20' :
+                occupiedCount === 0 ? 'bg-emerald-500/10 text-emerald-450 border border-emerald-500/20' : 
+                'bg-amber-500/10 text-amber-400 border border-amber-500/20'
+              }`}>
+                {isMaintenance ? 'Maint' :
+                 occupiedCount === room.capacity ? 'Full' :
+                 occupiedCount === 0 ? 'Empty' : `${room.capacity - occupiedCount} Left`}
+              </span>
+            </div>
+            {!room.isVirtual && (
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity z-10">
+                {hasPermission('rooms', 'edit') && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleEditRoomClick(room);
+                    }}
+                    className="p-1 hover:bg-slate-800 rounded text-slate-400 hover:text-white transition-colors cursor-pointer pointer-events-auto"
+                    title="Edit Room"
+                  >
+                    <Edit className="h-3 w-3" />
+                  </button>
+                )}
+                {hasPermission('rooms', 'delete') && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteRoomClick(room);
+                    }}
+                    className="p-1 hover:bg-rose-950/40 rounded text-slate-400 hover:text-rose-400 transition-colors cursor-pointer pointer-events-auto"
+                    title="Delete Room"
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                )}
+              </div>
+            )}
           </div>
           <span className="text-[8px] text-slate-500 font-bold uppercase tracking-wider block mt-0.5">{room.type}</span>
         </div>
@@ -1162,7 +1192,7 @@ export default function RoomsPage() {
                   <input
                     type="number"
                     min="1"
-                    max="10"
+                    max="15"
                     value={newRoomCapacity}
                     onChange={(e) => setNewRoomCapacity(e.target.value)}
                     className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
@@ -1523,7 +1553,7 @@ export default function RoomsPage() {
                   <input
                     type="number"
                     min="1"
-                    max="10"
+                    max="15"
                     value={editRoomCapacity}
                     onChange={(e) => setEditRoomCapacity(e.target.value)}
                     className="w-full bg-slate-950/80 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-sm text-slate-100 focus:outline-none"
