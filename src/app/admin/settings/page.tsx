@@ -15,8 +15,7 @@ import {
   Save,
   Info,
   User,
-  KeyRound,
-  Trash2
+  KeyRound
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 

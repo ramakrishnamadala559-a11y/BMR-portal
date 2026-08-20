@@ -11,7 +11,6 @@ import {
   User,
   Info,
   Megaphone,
-  Plus,
   Trash2
 } from 'lucide-react';
 import Toast from '@/components/Toast';
