@@ -181,53 +181,21 @@ export default function LoginPage() {
               <p className="text-slate-400 text-xs mt-1">Single-tenant authentication gateway.</p>
             </div>
 
-            {/* RBAC Tab Selection */}
-            <div className="flex bg-[#05070a]/90 p-1.5 rounded-2xl mb-6 border border-slate-850/60">
-              <button
-                onClick={() => {
-                  setActiveTab('admin');
-                  setIdentifier('');
-                  setPassword('');
-                }}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'admin'
-                    ? 'bg-[#0f1420] text-white shadow border border-slate-850/40'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Owner & Staff
-              </button>
-              <button
-                onClick={() => {
-                  setActiveTab('student');
-                  setIdentifier('');
-                  setPassword('');
-                }}
-                className={`flex-1 py-2 text-xs font-bold rounded-xl transition-all cursor-pointer ${
-                  activeTab === 'student'
-                    ? 'bg-[#0f1420] text-white shadow border border-slate-855/40'
-                    : 'text-slate-400 hover:text-slate-200'
-                }`}
-              >
-                Student Portal
-              </button>
-            </div>
-
             {/* Login Form */}
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-slate-350 text-xs font-semibold mb-1.5">
-                  {activeTab === 'admin' ? 'Email Address or Phone' : 'Registered Phone Number'}
+                <label className="block text-slate-355 text-xs font-semibold mb-1.5">
+                  Phone Number
                 </label>
                 <div className="relative">
                   <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
-                    {activeTab === 'admin' ? <Mail className="h-4.5 w-4.5" /> : <Phone className="h-4.5 w-4.5" />}
+                    <Phone className="h-4.5 w-4.5" />
                   </span>
                   <input
-                    type={activeTab === 'admin' ? 'text' : 'tel'}
+                    type="text"
                     value={identifier}
                     onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder={activeTab === 'admin' ? 'owner@antigravity.com' : '9000000001'}
+                    placeholder="9988776655"
                     className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
                     required
                   />

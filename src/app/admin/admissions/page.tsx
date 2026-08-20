@@ -54,7 +54,6 @@ export default function AdmissionsPage() {
   const [showNewStudentForm, setShowNewStudentForm] = useState(true);
   const [newStudentName, setNewStudentName] = useState('');
   const [newStudentPhone, setNewStudentPhone] = useState('');
-  const [newStudentEmail, setNewStudentEmail] = useState('');
   const [newStudentDob, setNewStudentDob] = useState('');
   const [newStudentGender, setNewStudentGender] = useState('MALE');
   const [newStudentAddress, setNewStudentAddress] = useState('');
@@ -159,7 +158,7 @@ export default function AdmissionsPage() {
     setTempStudentDetails({
       name: newStudentName,
       phone: newStudentPhone,
-      email: newStudentEmail,
+      email: '',
       dob: 'N/A',
       gender: newStudentGender,
       address: newStudentAddress,
@@ -354,7 +353,6 @@ export default function AdmissionsPage() {
                         if (student) {
                           setNewStudentName(student.name);
                           setNewStudentPhone(student.phone);
-                          setNewStudentEmail(student.email || '');
                           setNewStudentGender(student.gender);
                           setNewStudentAddress(student.address);
                           setNewStudentIdNo(student.idNumber);
@@ -365,7 +363,6 @@ export default function AdmissionsPage() {
                       } else {
                         setNewStudentName('');
                         setNewStudentPhone('');
-                        setNewStudentEmail('');
                         setNewStudentGender('MALE');
                         setNewStudentAddress('');
                         setNewStudentIdNo('');

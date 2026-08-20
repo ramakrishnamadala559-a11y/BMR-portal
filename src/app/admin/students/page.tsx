@@ -51,7 +51,6 @@ export default function StudentsPage() {
   // Edit form states
   const [editName, setEditName] = useState('');
   const [editPhone, setEditPhone] = useState('');
-  const [editEmail, setEditEmail] = useState('');
   const [editDob, setEditDob] = useState('');
   const [editGender, setEditGender] = useState('MALE');
   const [editAddress, setEditAddress] = useState('');
@@ -128,7 +127,6 @@ export default function StudentsPage() {
     setSelectedStudent(student);
     setEditName(student.name || '');
     setEditPhone(student.phone || '');
-    setEditEmail(student.email || '');
     setEditDob(student.dob || '');
     setEditGender(student.gender || 'MALE');
     setEditAddress(student.address || '');
@@ -166,7 +164,7 @@ export default function StudentsPage() {
           id: selectedStudent.id,
           name: editName,
           phone: editPhone,
-          email: editEmail,
+          email: '',
           dob: 'N/A',
           gender: editGender,
           address: editAddress,
