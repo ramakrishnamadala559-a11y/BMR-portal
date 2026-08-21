@@ -18,6 +18,8 @@ import {
   MessageSquare
 } from 'lucide-react';
 import Toast from '@/components/Toast';
+import { Capacitor } from '@capacitor/core';
+import { PrintWebview } from '@webnativellc/capacitor-print-webview';
 
 export default function BillingPage() {
   const { hasPermission, settings } = useAuth();
@@ -139,9 +141,8 @@ export default function BillingPage() {
   };
 
   const handlePrintTrigger = async () => {
-    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    if (Capacitor.isNativePlatform()) {
       try {
-        const { PrintWebview } = await import('@webnativellc/capacitor-print-webview');
         await PrintWebview.print();
       } catch (err) {
         console.error('Capacitor printing failed, falling back to window.print', err);

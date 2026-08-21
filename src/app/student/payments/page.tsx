@@ -19,6 +19,8 @@ import {
   Home
 } from 'lucide-react';
 import Toast from '@/components/Toast';
+import { Capacitor } from '@capacitor/core';
+import { PrintWebview } from '@webnativellc/capacitor-print-webview';
 
 const getInitials = (name: string) => {
   return (name || '').split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
@@ -96,9 +98,8 @@ export default function StudentDashboardPage() {
   };
 
   const handlePrintTrigger = async () => {
-    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+    if (Capacitor.isNativePlatform()) {
       try {
-        const { PrintWebview } = await import('@webnativellc/capacitor-print-webview');
         await PrintWebview.print();
       } catch (err) {
         console.error('Capacitor printing failed, falling back to window.print', err);
