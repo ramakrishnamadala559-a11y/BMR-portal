@@ -417,7 +417,13 @@ export default function StudentHomePage() {
             <div className="space-y-3.5 p-5 bg-slate-955/40 border border-slate-850/80 rounded-2xl shadow-md hover:border-slate-800 transition-all hover:scale-[1.01]">
               <div className="flex justify-between items-center py-2 border-b border-slate-850/30">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar / ID Proof ({activeProfile.idProofType || 'Aadhaar'})</span>
-                <span className="text-slate-205 font-bold">{activeProfile.idNumber}</span>
+                <span className="text-slate-205 font-bold">
+                  {(() => {
+                    const val = activeProfile.idNumber || '';
+                    const cleaned = val.replace(/[^a-zA-Z0-9]/g, '');
+                    return cleaned.length >= 4 ? `XXXX-XXXX-${cleaned.slice(-4)}` : val;
+                  })()}
+                </span>
               </div>
               <div className="flex justify-between items-start py-2 border-b border-slate-850/30">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px] mt-0.5">Address</span>
