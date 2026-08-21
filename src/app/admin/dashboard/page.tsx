@@ -9,7 +9,6 @@ import {
   CircleDollarSign,
   TrendingDown,
   TrendingUp,
-  Activity,
   UserPlus,
   Building2,
   DollarSign,
@@ -26,7 +25,6 @@ export default function AdminDashboardPage() {
   const brandName = settings?.hostelName || 'Home Stay Hostel';
   
   const [data, setData] = useState<any>(null);
-  const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedBuildingId, setSelectedBuildingId] = useState('');
   const [buildings, setBuildings] = useState<any[]>([]);
@@ -48,17 +46,11 @@ export default function AdminDashboardPage() {
       setLoading(true);
       const queryParams = buildingId ? `?buildingId=${buildingId}` : '';
       
-      // Concurrently fetch reports and activity logs
-      const [reportRes, logRes] = await Promise.all([
-        fetch(`/api/reports${queryParams}`),
-        fetch('/api/logs')
-      ]);
+      const reportRes = await fetch(`/api/reports${queryParams}`);
       
-      if (reportRes.ok && logRes.ok) {
+      if (reportRes.ok) {
         const reportData = await reportRes.json();
-        const logsData = await logRes.json();
         setData(reportData);
-        setLogs(logsData.slice(0, 5)); // show latest 5 logs
       }
     } catch (error) {
       console.error('Failed to load dashboard data:', error);
@@ -414,8 +406,8 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Building stats and logs */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      {/* Building stats */}
+      <div className="w-full">
         {/* Building Stats */}
         <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl">
           <h3 className="text-xs font-bold text-white uppercase tracking-wider mb-6">Wing Wise Occupancy</h3>
@@ -442,35 +434,6 @@ export default function AdminDashboardPage() {
                   </div>
                 );
               })
-            )}
-          </div>
-        </div>
-
-        {/* Audit Log Feed */}
-        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl p-6 shadow-xl">
-          <div className="flex justify-between items-center mb-6">
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">Live System Logs</h3>
-            <Activity className="h-4 w-4 text-violet-400" />
-          </div>
-          <div className="space-y-4">
-            {logs.length === 0 ? (
-              <p className="text-slate-500 text-xs py-4 text-center">No logs recorded yet</p>
-            ) : (
-              logs.map((log: any) => (
-                <div key={log.id} className="flex gap-3 text-xs pb-3 border-b border-slate-800/40 last:border-b-0 last:pb-0">
-                  <div className="mt-0.5 px-2 py-0.5 bg-slate-950 border border-slate-800 rounded text-[9px] font-bold text-slate-400 uppercase h-fit flex-shrink-0">
-                    {log.module}
-                  </div>
-                  <div>
-                    <p className="text-slate-200 leading-normal">
-                      <strong className="text-slate-100 font-semibold">{log.userName}</strong>: {log.description}
-                    </p>
-                    <span className="text-[10px] text-slate-500 block mt-1">
-                      {new Date(log.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} • {new Date(log.createdAt).toLocaleDateString('en-GB')}
-                    </span>
-                  </div>
-                </div>
-              ))
             )}
           </div>
         </div>
