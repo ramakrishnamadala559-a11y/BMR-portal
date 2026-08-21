@@ -70,6 +70,7 @@ export default function AdmissionsPage() {
   const [allocatedStudentId, setAllocatedStudentId] = useState('');
   const [loadingStudentId, setLoadingStudentId] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [showBookings, setShowBookings] = useState(false);
 
   const fetchAllocatedStudentId = async (bedId: string) => {
     setLoadingStudentId(true);
@@ -337,10 +338,20 @@ export default function AdmissionsPage() {
           <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
             <div className="flex justify-between items-center pb-3 border-b border-slate-800/60">
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">Register Tenant Profile</h3>
+              {inactiveStudents.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => setShowBookings(!showBookings)}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-955 hover:bg-slate-850 border border-slate-800 hover:border-slate-700 text-[10px] font-bold uppercase rounded-lg text-slate-300 hover:text-white transition-all cursor-pointer"
+                >
+                  <Users className="h-3.5 w-3.5 text-violet-400" />
+                  {showBookings ? 'Hide Bookings' : 'Show Bookings'} ({inactiveStudents.length})
+                </button>
+              )}
             </div>
 
-            {inactiveStudents.length > 0 && (
-              <div className="space-y-4 pb-6 border-b border-slate-800/60">
+            {inactiveStudents.length > 0 && showBookings && (
+              <div className="space-y-4 pb-6 border-b border-slate-800/60 animate-slide-in">
                 <div className="flex items-center gap-2 text-violet-400 font-bold uppercase tracking-wider text-[10px] mb-2">
                   <Users className="h-4 w-4" />
                   <span>Active Booking Requests ({inactiveStudents.length})</span>
