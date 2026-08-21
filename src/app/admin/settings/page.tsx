@@ -59,6 +59,22 @@ export default function SettingsPage() {
   const [resetPasswordValue, setResetPasswordValue] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
 
+  // Accordion toggle states
+  const [openSections, setOpenSections] = useState({
+    profile: false,
+    notifications: false,
+    owner: false,
+    reset: false
+  });
+  const [showResetUserInfo, setShowResetUserInfo] = useState(false);
+
+  const toggleSection = (section: keyof typeof openSections) => {
+    setOpenSections(prev => ({
+      ...prev,
+      [section]: !prev[section]
+    }));
+  };
+
 
 
   useEffect(() => {
@@ -250,328 +266,439 @@ export default function SettingsPage() {
   }
 
   return (
-    <div className="max-w-3xl mx-auto space-y-8 animate-slide-in">
+    <div className="max-w-3xl mx-auto space-y-6 animate-slide-in">
       {/* Title */}
       <div>
         <h1 className="text-2xl font-bold text-white tracking-tight">Hostel Profile Settings</h1>
         <p className="text-slate-400 text-sm mt-1">Configure global property profile details, default billing parameters, and notifications templates.</p>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6 text-xs">
-        {/* Section 1: Hostel Profile */}
-        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/60">
-            <div className="flex items-center gap-2 text-slate-200">
-              <Home className="h-4.5 w-4.5 text-violet-400" />
-              <h3 className="font-bold text-white uppercase tracking-wider">PG Profile metadata</h3>
-            </div>
-            {/* Brand Logo Display */}
-            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-800 shadow object-cover" />
+      {/* SECTION 1: PG Profile metadata Accordion */}
+      <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('profile')}
+          className="w-full flex items-center justify-between p-5 text-slate-200 hover:bg-slate-950/20 transition-all font-bold uppercase tracking-wider text-xs border-b border-transparent focus:outline-none"
+        >
+          <div className="flex items-center gap-2">
+            <Home className="h-4.5 w-4.5 text-violet-400" />
+            <span>PG Profile Metadata</span>
           </div>
+          <span className="text-[10px] text-slate-500 font-bold">
+            {openSections.profile ? 'Hide Details ▲' : 'Show Details ▼'}
+          </span>
+        </button>
+        {openSections.profile && (
+          <form onSubmit={handleSubmit} className="p-6 border-t border-slate-800/60 space-y-4 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">PG Brand Name</label>
+                <input
+                  type="text"
+                  value={hostelName}
+                  onChange={(e) => setHostelName(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">Contact Phone</label>
+                <input
+                  type="text"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">Public Email Address</label>
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">GSTIN / TAX Code (Optional)</label>
+                <input
+                  type="text"
+                  value={gstNumber}
+                  onChange={(e) => setGstNumber(e.target.value)}
+                  placeholder="29AAAAA1111A1Z1"
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">Website URL (Optional)</label>
+                <input
+                  type="text"
+                  value={website}
+                  onChange={(e) => setWebsite(e.target.value)}
+                  placeholder="www.premiumhostel.com"
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                />
+              </div>
+            </div>
+
             <div>
-              <label className="block text-slate-350 font-semibold mb-2">PG Brand Name</label>
-              <input
-                type="text"
-                value={hostelName}
-                onChange={(e) => setHostelName(e.target.value)}
+              <label className="block text-slate-350 font-semibold mb-2">Physical Address</label>
+              <textarea
+                rows={2}
+                value={address}
+                onChange={(e) => setAddress(e.target.value)}
                 className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
                 required
               />
             </div>
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">Contact Phone</label>
-              <input
-                type="text"
-                value={phone}
-                onChange={(e) => setPhone(e.target.value)}
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                required
-              />
-            </div>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">Public Email Address</label>
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">GSTIN / TAX Code (Optional)</label>
-              <input
-                type="text"
-                value={gstNumber}
-                onChange={(e) => setGstNumber(e.target.value)}
-                placeholder="29AAAAA1111A1Z1"
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">Website URL (Optional)</label>
-              <input
-                type="text"
-                value={website}
-                onChange={(e) => setWebsite(e.target.value)}
-                placeholder="www.premiumhostel.com"
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-              />
-            </div>
-          </div>
-
-          <div>
-            <label className="block text-slate-350 font-semibold mb-2">Physical Address</label>
-            <textarea
-              rows={2}
-              value={address}
-              onChange={(e) => setAddress(e.target.value)}
-              className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-              required
-            />
-          </div>
-        </div>
-
-
-        {/* Section 3: Notification Toggles */}
-        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
-            <BellRing className="h-4.5 w-4.5 text-violet-400" />
-            <h3 className="font-bold text-white uppercase tracking-wider">Automated Notification triggers</h3>
-          </div>
-
-          <div className="space-y-3 pt-2">
-            <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
-              <div>
-                <h4 className="font-bold text-slate-200">Email Notifications</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Send invoice receipts and checkouts copies directly to tenant inbox.</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={emailEnabled}
-                onChange={(e) => setEmailEnabled(e.target.checked)}
-                className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
-              <div>
-                <h4 className="font-bold text-slate-200">WhatsApp Dispatcher Logs</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Generate notification dispatch cues for rent alerts on WhatsApp.</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={whatsappEnabled}
-                onChange={(e) => setWhatsappEnabled(e.target.checked)}
-                className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
-              />
-            </div>
-
-            <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
-              <div>
-                <h4 className="font-bold text-slate-200">Public Contact Visibility</h4>
-                <p className="text-[10px] text-slate-500 mt-0.5">Show the global location, address, and phone contact details card on the login screen.</p>
-              </div>
-              <input
-                type="checkbox"
-                checked={showContactOnLogin}
-                onChange={(e) => setShowContactOnLogin(e.target.checked)}
-                className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Save button */}
-        {hasPermission('settings', 'edit') && (
-          <button
-            type="submit"
-            disabled={submitting}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg hover:shadow-violet-600/10"
-          >
-            {submitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving settings changes...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4" />
-                Save Hostel Settings Configuration
-              </>
+            {hasPermission('settings', 'edit') && (
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg hover:shadow-violet-600/10"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving settings changes...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Hostel Profile
+                  </>
+                )}
+              </button>
             )}
-          </button>
+          </form>
         )}
-      </form>
+      </div>
 
-      {/* SECTION: Personal Profile Settings */}
-      <form onSubmit={handleProfileSubmit} className="space-y-6 text-xs">
-        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
-          <div className="flex items-center justify-between pb-3 border-b border-slate-800/60 text-slate-200">
-            <div className="flex items-center gap-2">
-              <User className="h-4.5 w-4.5 text-violet-400" />
-              <h3 className="font-bold text-white uppercase tracking-wider">Owner Account Profile</h3>
-            </div>
-            {/* Brand Logo Display */}
-            <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-9 w-9 rounded-lg border border-slate-800 shadow object-cover" />
+      {/* SECTION 2: Notification Toggles Accordion */}
+      <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('notifications')}
+          className="w-full flex items-center justify-between p-5 text-slate-200 hover:bg-slate-950/20 transition-all font-bold uppercase tracking-wider text-xs border-b border-transparent focus:outline-none"
+        >
+          <div className="flex items-center gap-2">
+            <BellRing className="h-4.5 w-4.5 text-violet-400" />
+            <span>Automated Notification Triggers</span>
           </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">My Full Name</label>
-              <input
-                type="text"
-                value={profileName}
-                onChange={(e) => setProfileName(e.target.value)}
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                required
-              />
-            </div>
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">My Phone Number</label>
-              <input
-                type="text"
-                value={profilePhone}
-                onChange={(e) => setProfilePhone(e.target.value)}
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                required
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">My Email Address</label>
-              <input
-                type="email"
-                value={profileEmail}
-                onChange={(e) => setProfileEmail(e.target.value)}
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-              />
-            </div>
-            <div>
-              <label className="block text-slate-350 font-semibold mb-2">Change Password (Leave blank to keep current)</label>
-              <div className="relative">
-                <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-550">
-                  <KeyRound className="h-4 w-4" />
-                </span>
+          <span className="text-[10px] text-slate-500 font-bold">
+            {openSections.notifications ? 'Hide Details ▲' : 'Show Details ▼'}
+          </span>
+        </button>
+        {openSections.notifications && (
+          <form onSubmit={handleSubmit} className="p-6 border-t border-slate-800/60 space-y-4 text-xs">
+            <div className="space-y-3">
+              <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
+                <div>
+                  <h4 className="font-bold text-slate-200">Email Notifications</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Send invoice receipts and checkouts copies directly to tenant inbox.</p>
+                </div>
                 <input
-                  type="password"
-                  value={profilePassword}
-                  onChange={(e) => setProfilePassword(e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 pl-10 pr-4 text-slate-250 focus:outline-none"
+                  type="checkbox"
+                  checked={emailEnabled}
+                  onChange={(e) => setEmailEnabled(e.target.checked)}
+                  className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
+                <div>
+                  <h4 className="font-bold text-slate-200">WhatsApp Dispatcher Logs</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Generate notification dispatch cues for rent alerts on WhatsApp.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={whatsappEnabled}
+                  onChange={(e) => setWhatsappEnabled(e.target.checked)}
+                  className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
+                />
+              </div>
+
+              <div className="flex items-center justify-between p-3 bg-slate-955 border border-slate-850 rounded-xl">
+                <div>
+                  <h4 className="font-bold text-slate-200">Public Contact Visibility</h4>
+                  <p className="text-[10px] text-slate-500 mt-0.5">Show the global location, address, and phone contact details card on the login screen.</p>
+                </div>
+                <input
+                  type="checkbox"
+                  checked={showContactOnLogin}
+                  onChange={(e) => setShowContactOnLogin(e.target.checked)}
+                  className="h-4.5 w-4.5 bg-slate-950 border border-slate-800 text-violet-600 rounded focus:ring-0 cursor-pointer"
                 />
               </div>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={profileSubmitting}
-            className="w-full flex items-center justify-center gap-2 py-3 bg-slate-955 border border-slate-800 hover:bg-slate-855 disabled:bg-slate-850 text-xs font-bold rounded-xl text-slate-200 transition-all cursor-pointer hover:shadow-lg"
-          >
-            {profileSubmitting ? (
-              <>
-                <Loader2 className="h-4 w-4 animate-spin" />
-                Saving profile changes...
-              </>
-            ) : (
-              <>
-                <Save className="h-4 w-4 text-violet-400" />
-                Save Personal Profile details
-              </>
+            {hasPermission('settings', 'edit') && (
+              <button
+                type="submit"
+                disabled={submitting}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-violet-600 hover:bg-violet-500 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg hover:shadow-violet-600/10"
+              >
+                {submitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Saving settings changes...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    Save Notification Config
+                  </>
+                )}
+              </button>
             )}
-          </button>
-        </div>
-      </form>
+          </form>
+        )}
+      </div>
 
-      {/* SECTION: Reset Student/Staff Passwords (Owner Only) */}
-      {authUser?.role === 'OWNER' && (
-        <form onSubmit={handleResetPasswordSubmit} className="space-y-6 text-xs mt-6">
-          <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-4">
-            <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
-              <KeyRound className="h-4.5 w-4.5 text-violet-400" />
-              <h3 className="font-bold text-white uppercase tracking-wider">Reset Student / Staff Password</h3>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      {/* SECTION 3: Owner Account Profile Accordion */}
+      <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+        <button
+          type="button"
+          onClick={() => toggleSection('owner')}
+          className="w-full flex items-center justify-between p-5 text-slate-200 hover:bg-slate-950/20 transition-all font-bold uppercase tracking-wider text-xs border-b border-transparent focus:outline-none"
+        >
+          <div className="flex items-center gap-2">
+            <User className="h-4.5 w-4.5 text-violet-400" />
+            <span>Owner Account Profile</span>
+          </div>
+          <span className="text-[10px] text-slate-500 font-bold">
+            {openSections.owner ? 'Hide Details ▲' : 'Show Details ▼'}
+          </span>
+        </button>
+        {openSections.owner && (
+          <form onSubmit={handleProfileSubmit} className="p-6 border-t border-slate-800/60 space-y-4 text-xs">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
-                <label className="block text-slate-355 font-semibold mb-2">Account Type</label>
-                <select
-                  value={resetType}
-                  onChange={(e) => {
-                    setResetType(e.target.value as 'student' | 'staff');
-                    setSelectedResetUserId('');
-                  }}
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                >
-                  <option value="student">Student Account</option>
-                  <option value="staff">Staff Account (Warden/Manager/Receptionist)</option>
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-355 font-semibold mb-2">Select User Account</label>
-                <select
-                  value={selectedResetUserId}
-                  onChange={(e) => setSelectedResetUserId(e.target.value)}
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
-                  required
-                >
-                  <option value="">-- Choose User --</option>
-                  {resetType === 'student' ? (
-                    students.map(s => (
-                      <option key={s.id} value={s.phone}>{s.name} ({s.phone})</option>
-                    ))
-                  ) : (
-                    staffList.map(st => (
-                      <option key={st.id} value={st.id}>{st.name} ({st.role.toLowerCase()})</option>
-                    ))
-                  )}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-slate-355 font-semibold mb-2">Set New Password</label>
+                <label className="block text-slate-350 font-semibold mb-2">My Full Name</label>
                 <input
-                  type="password"
-                  value={resetPasswordValue}
-                  onChange={(e) => setResetPasswordValue(e.target.value)}
-                  placeholder="Min 6 characters"
+                  type="text"
+                  value={profileName}
+                  onChange={(e) => setProfileName(e.target.value)}
                   className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
                   required
                 />
+              </div>
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">My Phone Number</label>
+                <input
+                  type="text"
+                  value={profilePhone}
+                  onChange={(e) => setProfilePhone(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  required
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">My Email Address</label>
+                <input
+                  type="email"
+                  value={profileEmail}
+                  onChange={(e) => setProfileEmail(e.target.value)}
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                />
+              </div>
+              <div>
+                <label className="block text-slate-350 font-semibold mb-2">Change Password (Leave blank to keep current)</label>
+                <div className="relative">
+                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-550">
+                    <KeyRound className="h-4 w-4" />
+                  </span>
+                  <input
+                    type="password"
+                    value={profilePassword}
+                    onChange={(e) => setProfilePassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 pl-10 pr-4 text-slate-250 focus:outline-none"
+                  />
+                </div>
               </div>
             </div>
 
             <button
               type="submit"
-              disabled={resetSubmitting}
+              disabled={profileSubmitting}
               className="w-full flex items-center justify-center gap-2 py-3 bg-slate-955 border border-slate-800 hover:bg-slate-855 disabled:bg-slate-850 text-xs font-bold rounded-xl text-slate-200 transition-all cursor-pointer hover:shadow-lg"
             >
-              {resetSubmitting ? (
+              {profileSubmitting ? (
                 <>
                   <Loader2 className="h-4 w-4 animate-spin" />
-                  Resetting user password...
+                  Saving profile changes...
                 </>
               ) : (
                 <>
                   <Save className="h-4 w-4 text-violet-400" />
-                  Apply New Password
+                  Save Profile Changes
                 </>
               )}
             </button>
-          </div>
-        </form>
+          </form>
+        )}
+      </div>
+
+      {/* SECTION 4: Reset Student/Staff Passwords Accordion */}
+      {authUser?.role === 'OWNER' && (
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+          <button
+            type="button"
+            onClick={() => toggleSection('reset')}
+            className="w-full flex items-center justify-between p-5 text-slate-200 hover:bg-slate-950/20 transition-all font-bold uppercase tracking-wider text-xs border-b border-transparent focus:outline-none"
+          >
+            <div className="flex items-center gap-2">
+              <KeyRound className="h-4.5 w-4.5 text-violet-400" />
+              <span>Reset User Password</span>
+            </div>
+            <span className="text-[10px] text-slate-500 font-bold">
+              {openSections.reset ? 'Hide Details ▲' : 'Show Details ▼'}
+            </span>
+          </button>
+          {openSections.reset && (
+            <form onSubmit={handleResetPasswordSubmit} className="p-6 border-t border-slate-800/60 space-y-4 text-xs">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Account Type</label>
+                  <select
+                    value={resetType}
+                    onChange={(e) => {
+                      setResetType(e.target.value as 'student' | 'staff');
+                      setSelectedResetUserId('');
+                      setShowResetUserInfo(false);
+                    }}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                  >
+                    <option value="student">Student Account</option>
+                    <option value="staff">Staff Account (Warden/Manager/Receptionist)</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Select User Account</label>
+                  <select
+                    value={selectedResetUserId}
+                    onChange={(e) => {
+                      setSelectedResetUserId(e.target.value);
+                      setShowResetUserInfo(false);
+                    }}
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                    required
+                  >
+                    <option value="">-- Choose User --</option>
+                    {resetType === 'student' ? (
+                      students.map(s => (
+                        <option key={s.id} value={s.phone}>{s.name} ({s.phone})</option>
+                      ))
+                    ) : (
+                      staffList.map(st => (
+                        <option key={st.id} value={st.id}>{st.name} ({st.role.toLowerCase()})</option>
+                      ))
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Set New Password</label>
+                  <input
+                    type="password"
+                    value={resetPasswordValue}
+                    onChange={(e) => setResetPasswordValue(e.target.value)}
+                    placeholder="Min 6 characters"
+                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-slate-250 focus:outline-none"
+                    required
+                  />
+                </div>
+              </div>
+
+              {selectedResetUserId && (
+                <div className="mt-4 p-3 bg-slate-955 border border-slate-850 rounded-xl space-y-2">
+                  <div className="flex justify-between items-center">
+                    <span className="text-slate-400 font-semibold text-[10px]">
+                      Selected Account:{' '}
+                      <strong
+                        className="text-slate-200 hover:text-violet-400 hover:underline cursor-pointer transition-colors"
+                        onClick={() => setShowResetUserInfo(!showResetUserInfo)}
+                      >
+                        {resetType === 'student'
+                          ? students.find(s => s.phone === selectedResetUserId)?.name
+                          : staffList.find(st => st.id === selectedResetUserId)?.name
+                        }
+                      </strong>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setShowResetUserInfo(!showResetUserInfo)}
+                      className="text-violet-400 hover:text-violet-300 font-bold text-[10px]"
+                    >
+                      {showResetUserInfo ? 'Hide Info' : 'Show Info'}
+                    </button>
+                  </div>
+                  {showResetUserInfo && (
+                    <div className="grid grid-cols-2 gap-2 text-[10px] text-slate-300 pt-1 border-t border-slate-850/50 animate-slide-in">
+                      {resetType === 'student' ? (
+                        (() => {
+                          const student = students.find(s => s.phone === selectedResetUserId);
+                          return student ? (
+                            <>
+                              <div><span className="text-slate-500 font-semibold">ID:</span> {student.id}</div>
+                              <div><span className="text-slate-500 font-semibold">Status:</span> {student.status}</div>
+                              <div><span className="text-slate-500 font-semibold">Name:</span> {student.name}</div>
+                              <div><span className="text-slate-500 font-semibold">Phone:</span> {student.phone}</div>
+                            </>
+                          ) : <p className="text-slate-500">No details found</p>;
+                        })()
+                      ) : (
+                        (() => {
+                          const staff = staffList.find(st => st.id === selectedResetUserId);
+                          return staff ? (
+                            <>
+                              <div><span className="text-slate-500 font-semibold">ID:</span> {staff.id}</div>
+                              <div><span className="text-slate-500 font-semibold">Role:</span> {staff.role}</div>
+                              <div><span className="text-slate-500 font-semibold">Name:</span> {staff.name}</div>
+                              <div><span className="text-slate-500 font-semibold">Phone:</span> {staff.phone}</div>
+                            </>
+                          ) : <p className="text-slate-500">No details found</p>;
+                        })()
+                      )}
+                    </div>
+                  )}
+                </div>
+              )}
+
+              <button
+                type="submit"
+                disabled={resetSubmitting}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-slate-955 border border-slate-800 hover:bg-slate-855 disabled:bg-slate-850 text-xs font-bold rounded-xl text-slate-200 transition-all cursor-pointer hover:shadow-lg"
+              >
+                {resetSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Resetting user password...
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4 text-violet-400" />
+                    Apply New Password
+                  </>
+                )}
+              </button>
+            </form>
+          )}
+        </div>
       )}
 
       {toast && (
