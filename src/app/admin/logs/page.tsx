@@ -329,11 +329,11 @@ export default function LogsPage() {
       </div>      {/* Announcements Management Modal (Owner Only) */}
       {showAnnouncementsModal && currentUser?.role === 'OWNER' && (
         <div 
-          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4 cursor-pointer backdrop-blur-sm animate-fade-in animate-duration-200"
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-start p-4 pt-16 sm:pt-24 cursor-pointer backdrop-blur-sm animate-fade-in animate-duration-200 overflow-y-auto"
           onClick={() => setShowAnnouncementsModal(false)}
         >
           <div 
-            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative cursor-default space-y-6 max-h-[90vh] overflow-y-auto"
+            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative cursor-default space-y-6 my-auto sm:my-0 max-h-none sm:max-h-[90vh] overflow-y-visible sm:overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
