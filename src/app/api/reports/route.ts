@@ -10,38 +10,30 @@ export async function GET(request: Request) {
     const url = new URL(request.url);
     const buildingId = url.searchParams.get('buildingId') || undefined;
 
-    // 1. Fetch total counts
+    // 1. Dispatch queries in parallel for maximum concurrency (dispatched to Neon Singapore from Vercel)
     const studentWhere: any = { status: 'ACTIVE' };
     if (buildingId) {
       studentWhere.bed = { buildingId };
     }
-    const totalStudents = await db.student.count({ where: studentWhere });
+    const totalStudentsPromise = db.student.count({ where: studentWhere });
 
     const roomWhere: any = {};
     if (buildingId) {
       roomWhere.buildingId = buildingId;
     }
-    const totalRooms = await db.room.count({ where: roomWhere });
+    const totalRoomsPromise = db.room.count({ where: roomWhere });
     
-    // Beds status count
     const bedWhere: any = {};
     if (buildingId) {
       bedWhere.buildingId = buildingId;
     }
-    const beds = await db.bed.findMany({
+    const bedsPromise = db.bed.findMany({
       where: bedWhere,
       include: {
         building: true
       }
     });
     
-    const totalBeds = beds.length;
-    const occupiedBeds = beds.filter(b => b.status === 'OCCUPIED').length;
-    const availableBeds = beds.filter(b => b.status === 'AVAILABLE').length;
-    const reservedBeds = beds.filter(b => b.status === 'RESERVED').length;
-    const maintenanceBeds = beds.filter(b => b.status === 'MAINTENANCE').length;
-
-    // 2. Fetch payments, expenses, and invoices for financial overview
     const paymentWhere: any = {};
     if (buildingId) {
       paymentWhere.student = {
@@ -54,9 +46,38 @@ export async function GET(request: Request) {
         bed: { buildingId }
       };
     }
-    const payments = await db.payment.findMany({ where: paymentWhere });
-    const expenses = buildingId ? [] : await db.expense.findMany();
-    const invoices = await db.invoice.findMany({ where: invoiceWhere });
+
+    const paymentsPromise = db.payment.findMany({ where: paymentWhere });
+    const expensesPromise = buildingId ? Promise.resolve([]) : db.expense.findMany();
+    const invoicesPromise = db.invoice.findMany({ where: invoiceWhere });
+    const oldestStudentPromise = db.student.findFirst({
+      orderBy: { createdAt: 'asc' }
+    });
+
+    // Execute concurrently
+    const [
+      totalStudents,
+      totalRooms,
+      beds,
+      payments,
+      expenses,
+      invoices,
+      oldestStudent
+    ] = await Promise.all([
+      totalStudentsPromise,
+      totalRoomsPromise,
+      bedsPromise,
+      paymentsPromise,
+      expensesPromise,
+      invoicesPromise,
+      oldestStudentPromise
+    ]);
+
+    const totalBeds = beds.length;
+    const occupiedBeds = beds.filter(b => b.status === 'OCCUPIED').length;
+    const availableBeds = beds.filter(b => b.status === 'AVAILABLE').length;
+    const reservedBeds = beds.filter(b => b.status === 'RESERVED').length;
+    const maintenanceBeds = beds.filter(b => b.status === 'MAINTENANCE').length;
 
     const totalInvoices = invoices.reduce((sum, inv) => sum + inv.total, 0);
     const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
@@ -85,10 +106,6 @@ export async function GET(request: Request) {
       .reduce((sum, e) => sum + e.amount, 0);
 
     // 3. Compile Monthly Trends (start from when students were added)
-    const oldestStudent = await db.student.findFirst({
-      orderBy: { createdAt: 'asc' }
-    });
-
     const startYearMonth = oldestStudent ? new Date(oldestStudent.createdAt) : new Date();
     startYearMonth.setDate(1);
     startYearMonth.setHours(0, 0, 0, 0);

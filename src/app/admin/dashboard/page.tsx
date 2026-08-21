@@ -47,8 +47,12 @@ export default function AdminDashboardPage() {
     try {
       setLoading(true);
       const queryParams = buildingId ? `?buildingId=${buildingId}` : '';
-      const reportRes = await fetch(`/api/reports${queryParams}`);
-      const logRes = await fetch('/api/logs');
+      
+      // Concurrently fetch reports and activity logs
+      const [reportRes, logRes] = await Promise.all([
+        fetch(`/api/reports${queryParams}`),
+        fetch('/api/logs')
+      ]);
       
       if (reportRes.ok && logRes.ok) {
         const reportData = await reportRes.json();
