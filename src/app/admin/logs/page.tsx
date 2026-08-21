@@ -333,7 +333,7 @@ export default function LogsPage() {
           onClick={() => setShowAnnouncementsModal(false)}
         >
           <div 
-            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative cursor-default space-y-6 my-auto sm:my-0 max-h-none sm:max-h-[90vh] overflow-y-visible sm:overflow-y-auto"
+            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative cursor-default space-y-6 mt-2 sm:mt-0 max-h-none sm:max-h-[90vh] overflow-y-visible sm:overflow-y-auto"
             onClick={(e) => e.stopPropagation()}
           >
             <button
