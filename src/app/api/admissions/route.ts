@@ -345,9 +345,9 @@ export async function POST(request: Request) {
         let welcomeMsg = `Hello ${student.name},\nWelcome to ${dbSettings?.hostelName || 'Home Stay Hostel'}! Your bed allocation has been successfully completed.\n\nRoom details:\n- Block/Building: ${bed.room.building.name}\n- Floor: Floor ${bed.room.floor.number}\n- Room Number: Room ${bed.room.number}\n- Bed Name: ${bed.name}\n- Student ID: ${activeStudentId}\n\nFinancial terms:\n- Monthly Rent: ₹${rentAmount}\n- Security Deposit: ₹${depositAmount}\n- Joining Date: ${new Date(joiningDate).toLocaleDateString('en-GB')}\n\n`;
         
         if (studentDetails) {
-          welcomeMsg += `Your portal login credentials are:\n- Portal URL: https://bmr-portal.vercel.app/login\n- Username: ${student.phone}\n- Temp Password: [Reset on first login / contact admin]\n\n`;
+          welcomeMsg += `Your portal login credentials are:\n- Portal URL: https://hostel2-five.vercel.app/login\n- Username: ${student.phone}\n- Temp Password: ${activeStudentId}@123\n\n`;
         } else {
-          welcomeMsg += `You can login to the portal using your registered mobile number: https://bmr-portal.vercel.app/login\n\n`;
+          welcomeMsg += `You can login to the portal using your registered mobile number: https://hostel2-five.vercel.app/login\n\n`;
         }
         
         welcomeMsg += `For any queries, feel free to contact us through our official phone: ${dbSettings?.phone || '+91 98765 43210'}.\n\nHave a great stay!`;
