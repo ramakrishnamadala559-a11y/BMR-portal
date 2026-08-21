@@ -33,6 +33,38 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [notifications, setNotifications] = useState<any[]>([]);
+  const [notifLoading, setNotifLoading] = useState(false);
+
+  const fetchNotifications = async () => {
+    try {
+      setNotifLoading(true);
+      const res = await fetch('/api/notifications');
+      if (res.ok) {
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setNotifications(data);
+        }
+      }
+    } catch (err) {
+      console.error('Failed to load notifications:', err);
+    } finally {
+      setNotifLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user && user.role !== 'STUDENT') {
+      fetchNotifications();
+    }
+  }, [user]);
+
+  // Refresh notifications whenever the dropdown is opened
+  useEffect(() => {
+    if (notifOpen && user && user.role !== 'STUDENT') {
+      fetchNotifications();
+    }
+  }, [notifOpen, user]);
 
   // Redirect if not logged in or is student
   useEffect(() => {
@@ -164,35 +196,54 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Theme Toggle */}
             <ThemeToggle />
 
-            {/* Mock Notifications Dropdown */}
-            <div className="relative">
-              <button
-                onClick={() => setNotifOpen(!notifOpen)}
-                className="p-2.5 bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/40 hover:border-slate-750 text-slate-400 hover:text-slate-100 rounded-xl transition-all relative"
-              >
-                <Bell className="h-4.5 w-4.5" />
-                <span className="absolute top-1 right-1 h-2 w-2 bg-violet-500 rounded-full" />
-              </button>
-              
-              {notifOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 animate-slide-in">
-                  <div className="flex justify-between items-center pb-3 border-b border-slate-800/60 mb-3">
-                    <h5 className="text-xs font-bold text-white uppercase tracking-wide">PG Notifications</h5>
-                    <span className="text-[10px] bg-violet-600/20 text-violet-400 px-2 py-0.5 rounded-full font-bold">2 New</span>
-                  </div>
-                  <div className="space-y-3">
-                    <div className="p-2.5 hover:bg-slate-950/40 rounded-lg transition-colors border border-transparent hover:border-slate-800/40">
-                      <p className="text-xs font-bold text-slate-200">Rent Payment Logged</p>
-                      <p className="text-[10px] text-slate-500 mt-1">Aarav Mehta paid rent 14,000 for June.</p>
-                    </div>
-                    <div className="p-2.5 hover:bg-slate-950/40 rounded-lg transition-colors border border-transparent hover:border-slate-800/40">
-                      <p className="text-xs font-bold text-slate-200">Bed Allocation Completed</p>
-                      <p className="text-[10px] text-slate-500 mt-1">Allocated Room 101 Bed A to Arjun Sen.</p>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </div>
+             {/* Live Notifications Dropdown */}
+             <div className="relative">
+               <button
+                 onClick={() => setNotifOpen(!notifOpen)}
+                 className="p-2.5 bg-slate-950/40 hover:bg-slate-800/50 border border-slate-800/40 hover:border-slate-750 text-slate-400 hover:text-slate-100 rounded-xl transition-all relative"
+               >
+                 <Bell className="h-4.5 w-4.5" />
+                 {notifications.length > 0 && (
+                   <span className="absolute top-1 right-1 h-2 w-2 bg-violet-500 rounded-full animate-pulse" />
+                 )}
+               </button>
+               
+               {notifOpen && (
+                 <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 z-50 animate-slide-in">
+                   <div className="flex justify-between items-center pb-3 border-b border-slate-800/60 mb-3">
+                     <h5 className="text-xs font-bold text-white uppercase tracking-wide">Notification Log</h5>
+                     <span className="text-[10px] bg-violet-600/20 text-violet-400 px-2 py-0.5 rounded-full font-bold">
+                       {notifications.length} Total
+                     </span>
+                   </div>
+                   <div className="space-y-3 max-h-64 overflow-y-auto pr-1">
+                     {notifLoading && notifications.length === 0 ? (
+                       <div className="flex justify-center py-4">
+                         <Loader2 className="h-5 w-5 text-violet-500 animate-spin" />
+                       </div>
+                     ) : notifications.length === 0 ? (
+                       <p className="text-slate-500 text-[10px] text-center py-6">No recent notifications</p>
+                     ) : (
+                       notifications.map((notif: any) => (
+                         <div key={notif.id} className="p-2.5 hover:bg-slate-950/40 rounded-xl transition-all border border-slate-850/30 hover:border-slate-800/45 text-[11px] leading-relaxed">
+                           <div className="flex justify-between items-start gap-1">
+                             <p className="font-bold text-slate-200">{notif.title}</p>
+                             <span className={`text-[8px] px-1 py-0.2 rounded border font-bold uppercase ${
+                               notif.status === 'SENT' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                             }`}>{notif.status.toLowerCase()}</span>
+                           </div>
+                           <p className="text-slate-400 mt-1">{notif.message}</p>
+                           <div className="flex justify-between text-[8px] text-slate-500 mt-1.5 font-medium">
+                             <span>To: {notif.recipient}</span>
+                             <span>{new Date(notif.createdAt).toLocaleDateString('en-GB')}</span>
+                           </div>
+                         </div>
+                       ))
+                     )}
+                   </div>
+                 </div>
+               )}
+             </div>
 
             {/* Profile Dropdown Placeholder */}
             <div className="flex items-center gap-3">

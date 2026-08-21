@@ -17,21 +17,21 @@ export async function GET(request: Request) {
       }
     }
 
-    const twelveHoursAgo = new Date(Date.now() - 12 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
     const deleteResult = await db.activityLog.deleteMany({
       where: {
         createdAt: {
-          lt: twelveHoursAgo
+          lt: thirtyDaysAgo
         }
       }
     });
 
-    console.log(`CRON: Cleaned up ${deleteResult.count} activity logs older than 12 hours.`);
+    console.log(`CRON: Cleaned up ${deleteResult.count} activity logs older than 30 days.`);
 
     return NextResponse.json({
       success: true,
       deletedCount: deleteResult.count,
-      message: `Cleaned up ${deleteResult.count} activity logs older than 12 hours.`
+      message: `Cleaned up ${deleteResult.count} activity logs older than 30 days.`
     });
   } catch (error) {
     console.error('CRON cleanup-logs error:', error);
