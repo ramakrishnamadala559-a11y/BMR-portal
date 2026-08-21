@@ -339,47 +339,63 @@ export default function AdmissionsPage() {
               <h3 className="text-sm font-bold text-white uppercase tracking-wider">Register Tenant Profile</h3>
             </div>
 
+            {inactiveStudents.length > 0 && (
+              <div className="space-y-4 pb-6 border-b border-slate-800/60">
+                <div className="flex items-center gap-2 text-violet-400 font-bold uppercase tracking-wider text-[10px] mb-2">
+                  <Users className="h-4 w-4" />
+                  <span>Active Booking Requests ({inactiveStudents.length})</span>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {inactiveStudents.map((student) => (
+                    <div 
+                      key={student.id} 
+                      onClick={() => {
+                        setSelectedStudentId(student.id);
+                        setNewStudentName(student.name);
+                        setNewStudentPhone(student.phone);
+                        setNewStudentGender(student.gender);
+                        setNewStudentIdNo(student.idNumber || '');
+                        setNewStudentIdProofUrl(student.idProofUrl || '');
+                        setNewStudentGuardian(student.guardianName || '');
+                        setNewStudentGuardianPhone(student.guardianPhone || '');
+                        setStep(2); // Automatically proceed to allocation
+                      }}
+                      className="p-4 bg-slate-950 border border-slate-850 hover:border-violet-500/50 rounded-2xl cursor-pointer hover:shadow-lg transition-all group flex items-center justify-between"
+                    >
+                      <div className="space-y-1">
+                        <p className="text-xs font-bold text-slate-200 group-hover:text-violet-400 transition-colors">{student.name}</p>
+                        <p className="text-[10px] text-slate-500">📞 +91 {student.phone}</p>
+                      </div>
+                      <div className="px-3 py-1.5 bg-slate-900 border border-slate-800 group-hover:bg-violet-650 group-hover:border-violet-600 rounded-xl text-[10px] font-bold text-slate-300 group-hover:text-white transition-all flex items-center gap-1">
+                        Allocate Bed <ArrowRight className="h-3 w-3" />
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Inline Registration Form */}
             <form onSubmit={handleRegisterInlineStudent} className="space-y-4">
-              {inactiveStudents.length > 0 && (
-                <div className="pb-4 border-b border-slate-800/40">
-                  <label className="block text-slate-350 text-xs font-semibold mb-2">Select Existing Student Profile (Optional)</label>
-                  <select
-                    value={selectedStudentId}
-                    onChange={(e) => {
-                      const val = e.target.value;
-                      setSelectedStudentId(val);
-                      if (val) {
-                        const student = inactiveStudents.find(s => s.id === val);
-                        if (student) {
-                          setNewStudentName(student.name);
-                          setNewStudentPhone(student.phone);
-                          setNewStudentGender(student.gender);
-                          setNewStudentIdNo(student.idNumber);
-                          setNewStudentIdProofUrl(student.idProofUrl || '');
-                          setNewStudentGuardian(student.guardianName || '');
-                          setNewStudentGuardianPhone(student.guardianPhone || '');
-                        }
-                      } else {
-                        setNewStudentName('');
-                        setNewStudentPhone('');
-                        setNewStudentGender('MALE');
-                        setNewStudentAddress('');
-                        setNewStudentIdNo('');
-                        setNewStudentIdProofUrl('');
-                        setNewStudentGuardian('');
-                        setNewStudentGuardianPhone('');
-                      }
+              {selectedStudentId && (
+                <div className="p-3 bg-violet-950/20 border border-violet-500/30 rounded-xl flex items-center justify-between text-xs text-violet-300 animate-slide-in">
+                  <span>Selected Booking: <strong>{newStudentName} ({newStudentPhone})</strong></span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setSelectedStudentId('');
+                      setNewStudentName('');
+                      setNewStudentPhone('');
+                      setNewStudentGender('MALE');
+                      setNewStudentIdNo('');
+                      setNewStudentIdProofUrl('');
+                      setNewStudentGuardian('');
+                      setNewStudentGuardianPhone('');
                     }}
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-100 focus:outline-none"
+                    className="px-2.5 py-1 bg-violet-650 hover:bg-violet-600 text-[10px] font-bold text-white rounded-lg transition-colors cursor-pointer"
                   >
-                    <option value="">-- Create New Student Profile --</option>
-                    {inactiveStudents.map((student) => (
-                      <option key={student.id} value={student.id}>
-                        {student.name} ({student.phone})
-                      </option>
-                    ))}
-                  </select>
+                    Clear Selection
+                  </button>
                 </div>
               )}
 
