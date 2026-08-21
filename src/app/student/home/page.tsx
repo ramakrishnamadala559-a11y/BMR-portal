@@ -27,6 +27,7 @@ export default function StudentHomePage() {
 
   // PG Announcements
   const [announcements, setAnnouncements] = useState<any[]>([]);
+  const [showAnnouncementsModal, setShowAnnouncementsModal] = useState(false);
 
   const activeProfile = user ? studentProfile : publicProfile;
 
@@ -229,7 +230,16 @@ export default function StudentHomePage() {
           </div>
         </div>
         
-        <div className="flex items-center gap-2.5 z-10">
+        <div className="flex flex-wrap items-center gap-2.5 z-10">
+          {announcements.length > 0 && (
+            <button
+              onClick={() => setShowAnnouncementsModal(true)}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-[10px] font-bold uppercase tracking-wider shadow-md hover:shadow-blue-600/15 cursor-pointer transition-all flex items-center gap-1.5 border border-blue-500"
+            >
+              <Bell className="h-3.5 w-3.5 animate-pulse" /> Announcements ({announcements.length})
+            </button>
+          )}
+
           {!user && (
             <button
               onClick={() => {
@@ -359,26 +369,7 @@ export default function StudentHomePage() {
         </div>
       </div>
 
-      {/* Announcements (Only shown when added/present in database) */}
-      {announcements.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl animate-fade-in">
-          <div className="flex items-center gap-2 text-violet-400 font-bold text-[10px] uppercase tracking-wider mb-4">
-            <Bell className="h-4.5 w-4.5" />
-            <span>PG Announcements & News</span>
-          </div>
-          <div className="space-y-3">
-            {announcements.map((ann: any) => (
-              <div key={ann.id} className="p-4 bg-slate-955/60 border border-slate-855 rounded-xl text-xs leading-normal">
-                <h4 className="font-bold text-slate-200">{ann.title}</h4>
-                <p className="text-slate-400 mt-1">{ann.content}</p>
-                <span className="text-[9px] text-slate-555 block mt-2">
-                  Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Student Profile Metadata Section */}
       {activeProfile && (
@@ -460,6 +451,41 @@ export default function StudentHomePage() {
               alt="Aadhaar ID Proof Full View" 
               className="max-w-full max-h-[80vh] object-contain rounded-2xl border border-slate-800 shadow-2xl"
             />
+          </div>
+        </div>
+      )}
+
+      {/* Announcements Modal */}
+      {showAnnouncementsModal && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/85 flex flex-col items-center justify-center p-4 cursor-pointer backdrop-blur-sm animate-fade-in animate-duration-200"
+          onClick={() => setShowAnnouncementsModal(false)}
+        >
+          <div className="bg-slate-900 border border-slate-800 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative cursor-default" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setShowAnnouncementsModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer bg-transparent border-none p-1"
+            >
+              <X className="h-5 w-5" />
+            </button>
+            
+            <div className="flex items-center gap-2 text-blue-400 font-bold text-[11px] uppercase tracking-wider mb-5">
+              <Bell className="h-4.5 w-4.5 animate-bounce" />
+              <span>PG Announcements & News</span>
+            </div>
+
+            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
+              {announcements.map((ann: any) => (
+                <div key={ann.id} className="p-4 bg-slate-950 border border-slate-850 rounded-xl text-xs leading-normal">
+                  <h4 className="font-bold text-slate-200">{ann.title}</h4>
+                  <p className="text-slate-400 mt-1.5 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
+                  <span className="text-[9px] text-slate-500 block mt-2 font-semibold">
+                    Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
+                  </span>
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       )}
