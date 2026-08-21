@@ -57,6 +57,15 @@ export async function POST(request: Request) {
         throw new Error('A user with this phone or email already exists');
       }
 
+      // Check if phone already registered by a student
+      const existingStudent = await tx.student.findUnique({
+        where: { phone }
+      });
+
+      if (existingStudent) {
+        throw new Error('A student with this phone number is already registered');
+      }
+
       const user = await tx.user.create({
         data: {
           name,
@@ -161,6 +170,13 @@ export async function PUT(request: Request) {
         });
         if (takenPhone) {
           throw new Error('This phone number is already registered by another staff member');
+        }
+
+        const takenStudent = await tx.student.findUnique({
+          where: { phone }
+        });
+        if (takenStudent) {
+          throw new Error('This phone number is already registered by a student');
         }
       }
 

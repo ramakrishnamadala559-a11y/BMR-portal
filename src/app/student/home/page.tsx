@@ -7,7 +7,8 @@ import {
   Users,
   Home,
   Bell,
-  Loader2
+  Loader2,
+  X
 } from 'lucide-react';
 
 export default function StudentHomePage() {
@@ -22,6 +23,7 @@ export default function StudentHomePage() {
   const [publicProfile, setPublicProfile] = useState<any>(null);
   const [searchError, setSearchError] = useState('');
   const [searching, setSearching] = useState(false);
+  const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
 
   // PG Announcements
   const [announcements, setAnnouncements] = useState<any[]>([]);
@@ -422,17 +424,42 @@ export default function StudentHomePage() {
               <div className="flex justify-between items-center py-2">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar Photo</span>
                 {activeProfile.idProofUrl ? (
-                  <img
-                    src={activeProfile.idProofUrl}
-                    alt="Aadhaar ID Proof"
-                    className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
-                    onClick={() => window.open(activeProfile.idProofUrl, '_blank')}
-                  />
+                  <div className="relative group mt-1">
+                    <img
+                      src={activeProfile.idProofUrl}
+                      alt="Aadhaar ID Proof"
+                      className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
+                      onClick={() => setEnlargedPhotoUrl(activeProfile.idProofUrl)}
+                    />
+                  </div>
                 ) : (
                   <span className="text-slate-500 italic">Not Uploaded</span>
                 )}
               </div>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Enlarged ID Proof Modal */}
+      {enlargedPhotoUrl && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+          onClick={() => setEnlargedPhotoUrl(null)}
+        >
+          <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setEnlargedPhotoUrl(null)}
+              className="absolute -top-12 right-0 text-slate-355 hover:text-white flex items-center gap-1.5 text-xs cursor-pointer bg-slate-900/80 px-3.5 py-2 rounded-full border border-slate-800 transition-colors"
+            >
+              <X className="h-4 w-4" /> Close View
+            </button>
+            <img 
+              src={enlargedPhotoUrl} 
+              alt="Aadhaar ID Proof Full View" 
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl border border-slate-800 shadow-2xl"
+            />
           </div>
         </div>
       )}

@@ -209,6 +209,29 @@ export async function POST(request: Request) {
         throw new Error('Student not found');
       }
 
+      // Ensure User credentials exist for this student's phone number
+      const existingUser = await tx.user.findUnique({
+        where: { phone: student.phone }
+      });
+
+      if (existingUser) {
+        if (existingUser.role !== 'STUDENT') {
+          throw new Error('A staff user with this phone number is already registered');
+        }
+      } else {
+        const studentTempPassword = await hashPassword(`${activeStudentId}@123`);
+        await tx.user.create({
+          data: {
+            name: student.name,
+            email: null,
+            phone: student.phone,
+            password: studentTempPassword,
+            role: 'STUDENT',
+            status: 'ACTIVE'
+          }
+        });
+      }
+
       if (!studentDetails && (student.status === 'ACTIVE' || student.bed)) {
         throw new Error(`Student is already active or allocated to Bed "${student.bed?.name || 'unknown'}"`);
       }

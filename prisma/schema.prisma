@@ -1,88 +1,87 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
 datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
-generator client {
-  provider = "prisma-client-js"
-}
-
 model User {
-  id         String           @id @default(uuid())
-  name       String
-  email      String?          @unique
-  phone      String           @unique
-  password   String
-  role       String           // OWNER, WARDEN, MANAGER, RECEPTIONIST
-  status     String           // ACTIVE, SUSPENDED, DEACTIVATED
-  buildingId String?
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
+  id          String       @id @default(uuid())
+  name        String
+  email       String?      @unique
+  phone       String       @unique
+  password    String
+  role        String
+  status      String
+  buildingId  String?
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
   permissions Permission[]
 }
 
 model Permission {
   id        String   @id @default(uuid())
   userId    String
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  module    String   // students, rooms, payments, expenses, invoices, reports, settings
-  action    String   // view, create, edit, delete
+  module    String
+  action    String
   createdAt DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, module, action])
 }
 
 model Student {
-  id                 String     @id @default(uuid())
-  name               String
-  phone              String     @unique
-  dob                String
-  gender             String
-  address            String
-  emergencyContact   String
-  guardianName       String
-  guardianPhone      String
-  collegeOrCompany   String
-  courseOrDept       String
-  idNumber           String
-  idProofType        String
-  idProofUrl         String?
-  status             String     // ACTIVE, CHECKED_OUT, INACTIVE
-  admissionDate      DateTime   @default(now())
-  expectedCheckout   DateTime?
-  securityDeposit    Float      @default(0)
-  monthlyRent        Float      @default(0)
-  createdAt          DateTime   @default(now())
-  updatedAt          DateTime   @updatedAt
-
-  bed                Bed?
-  admissions         Admission[]
-  invoices           Invoice[]
-  payments           Payment[]
-  documents          Document[]
+  id               String      @id @default(uuid())
+  name             String
+  phone            String      @unique
+  dob              String
+  gender           String
+  address          String
+  emergencyContact String
+  guardianName     String
+  guardianPhone    String
+  collegeOrCompany String
+  courseOrDept     String
+  idNumber         String
+  idProofType      String
+  idProofUrl       String?
+  status           String
+  admissionDate    DateTime    @default(now())
+  expectedCheckout DateTime?
+  securityDeposit  Float       @default(0)
+  monthlyRent      Float       @default(0)
+  createdAt        DateTime    @default(now())
+  updatedAt        DateTime    @updatedAt
+  admissions       Admission[]
+  bed              Bed?
+  documents        Document[]
+  invoices         Invoice[]
+  payments         Payment[]
 }
 
 model Building {
   id          String   @id @default(uuid())
   name        String   @unique
-  gender      String   @default("COLIVING") // MALE, FEMALE, COLIVING
-  description String?
   wardenId    String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  description String?
+  gender      String   @default("COLIVING")
+  beds        Bed[]
   floors      Floor[]
   rooms       Room[]
-  beds        Bed[]
 }
 
 model Floor {
   id         String   @id @default(uuid())
   number     Int
   buildingId String
-  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  rooms      Room[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  rooms      Room[]
 
   @@unique([buildingId, number])
 }
@@ -90,59 +89,58 @@ model Floor {
 model Room {
   id         String   @id @default(uuid())
   number     String
-  type       String   // AC Single, Non-AC Double, etc.
+  type       String
   capacity   Int
   rent       Float
-  status     String   // AVAILABLE, PARTIALLY_OCCUPIED, FULL, MAINTENANCE
-  facilities String?  // Comma-separated list: "Wifi, AC, Geyser"
+  status     String
+  facilities String?
   floorId    String
-  floor      Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
   buildingId String
-  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
-  beds       Bed[]
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  beds       Bed[]
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  floor      Floor    @relation(fields: [floorId], references: [id], onDelete: Cascade)
 
   @@unique([buildingId, number])
 }
 
 model Bed {
   id         String   @id @default(uuid())
-  name       String   // Bed A, Bed B, Bed C
-  status     String   // AVAILABLE, OCCUPIED, RESERVED, MAINTENANCE
+  name       String
+  status     String
   roomId     String
-  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
   buildingId String
-  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
   studentId  String?  @unique
-  student    Student? @relation(fields: [studentId], references: [id], onDelete: SetNull)
   createdAt  DateTime @default(now())
   updatedAt  DateTime @updatedAt
+  building   Building @relation(fields: [buildingId], references: [id], onDelete: Cascade)
+  room       Room     @relation(fields: [roomId], references: [id], onDelete: Cascade)
+  student    Student? @relation(fields: [studentId], references: [id])
 
   @@unique([roomId, name])
 }
 
 model Admission {
-  id             String    @id @default(uuid())
-  studentId      String
-  student        Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  bedId          String
-  bedName        String
-  roomNumber     String
-  buildingName   String
-  floorNumber    Int
+  id              String    @id @default(uuid())
+  studentId       String
+  bedId           String
+  bedName         String
+  roomNumber      String
+  buildingName    String
+  floorNumber     Int
   rentAtAdmission Float
-  joiningDate    DateTime  @default(now())
-  checkoutDate   DateTime?
-  status         String    // ACTIVE, COMPLETED
-  createdAt      DateTime  @default(now())
+  joiningDate     DateTime  @default(now())
+  checkoutDate    DateTime?
+  status          String
+  createdAt       DateTime  @default(now())
+  student         Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Invoice {
   id                 String    @id @default(uuid())
   invoiceNumber      String    @unique
   studentId          String
-  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   studentName        String
   roomNumber         String
   bedName            String
@@ -150,31 +148,32 @@ model Invoice {
   billingPeriodEnd   DateTime
   dueDate            DateTime
   subtotal           Float
-  arrears            Float     @default(0)
   lateFee            Float     @default(0)
   discount           Float     @default(0)
   total              Float
   paidAmount         Float     @default(0)
   balance            Float
-  status             String    // PAID, PARTIALLY_PAID, PENDING, OVERDUE
+  status             String
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
+  arrears            Float     @default(0)
+  student            Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
   payments           Payment[]
 }
 
 model Payment {
-  id            String   @id @default(uuid())
-  paymentId     String   @unique // Auto-generated transaction ref
-  studentId     String
-  student       Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  invoiceId     String?
-  invoice       Invoice? @relation(fields: [invoiceId], references: [id], onDelete: SetNull)
-  amount        Float
-  date          DateTime @default(now())
-  method        String   // CASH, UPI, CARD, BANK_TRANSFER
-  notes         String?
-  recordedBy    String   // Staff/User Name
-  createdAt     DateTime @default(now())
+  id         String   @id @default(uuid())
+  paymentId  String   @unique
+  studentId  String
+  invoiceId  String?
+  amount     Float
+  date       DateTime @default(now())
+  method     String
+  notes      String?
+  recordedBy String
+  createdAt  DateTime @default(now())
+  invoice    Invoice? @relation(fields: [invoiceId], references: [id])
+  student    Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Expense {
@@ -185,27 +184,27 @@ model Expense {
   date        DateTime
   description String
   receiptUrl  String?
-  addedBy     String   // Staff/User Name
+  addedBy     String
   createdAt   DateTime @default(now())
 }
 
 model Document {
   id        String   @id @default(uuid())
   studentId String
-  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
-  type      String   // ID Proof, Address Proof, College ID, etc.
+  type      String
   name      String
   fileUrl   String
   createdAt DateTime @default(now())
+  student   Student  @relation(fields: [studentId], references: [id], onDelete: Cascade)
 }
 
 model Notification {
   id        String   @id @default(uuid())
-  recipient String   // Phone or Email
-  type      String   // SMS, EMAIL, WHATSAPP, IN_APP
+  recipient String
+  type      String
   title     String
   message   String
-  status    String   // SENT, PENDING, FAILED
+  status    String
   createdAt DateTime @default(now())
 }
 
@@ -213,7 +212,7 @@ model Announcement {
   id          String   @id @default(uuid())
   title       String
   content     String
-  targetGroup String   // ALL, BUILDING_A, etc.
+  targetGroup String
   date        DateTime @default(now())
   createdBy   String
   createdAt   DateTime @default(now())
@@ -222,9 +221,9 @@ model Announcement {
 model ActivityLog {
   id          String   @id @default(uuid())
   userId      String?
-  userName    String   // System, Student name or Staff name
-  action      String   // LOGIN, CREATE_STUDENT, ALLOCATE_BED, RECORD_PAYMENT, etc.
-  module      String   // AUTH, STUDENTS, ROOMS, PAYMENTS, EXPENSES, STAFF, SETTINGS
+  userName    String
+  action      String
+  module      String
   description String
   ipAddress   String?
   userAgent   String?
@@ -232,22 +231,22 @@ model ActivityLog {
 }
 
 model HostelSettings {
-  id                  String   @id @default("GLOBAL")
-  hostelName          String   @default("Premium Stay Hostel")
-  logoUrl             String?
-  address             String   @default("123 Luxury Road, Silicon Valley")
-  phone               String   @default("+1234567890")
-  email               String   @default("contact@premiumhostel.com")
-  website             String?  @default("www.premiumhostel.com")
-  gstNumber           String?
-  defaultRent         Float    @default(5000)
-  defaultDueDateDay   Int      @default(5) // 5th of every month
-  defaultLateFee      Float    @default(200)
-  invoicePrefix       String   @default("INV-")
-  emailEnabled        Boolean  @default(true)
-  smsEnabled          Boolean  @default(false)
-  whatsappEnabled     Boolean  @default(true)
-  showContactOnLogin  Boolean  @default(true)
-  createdAt           DateTime @default(now())
-  updatedAt           DateTime @updatedAt
+  id                 String   @id @default("GLOBAL")
+  hostelName         String   @default("Premium Stay Hostel")
+  logoUrl            String?
+  address            String   @default("123 Luxury Road, Silicon Valley")
+  phone              String   @default("+1234567890")
+  email              String   @default("contact@premiumhostel.com")
+  website            String?  @default("www.premiumhostel.com")
+  gstNumber          String?
+  defaultRent        Float    @default(5000)
+  defaultDueDateDay  Int      @default(5)
+  defaultLateFee     Float    @default(200)
+  invoicePrefix      String   @default("INV-")
+  emailEnabled       Boolean  @default(true)
+  smsEnabled         Boolean  @default(false)
+  whatsappEnabled    Boolean  @default(true)
+  showContactOnLogin Boolean  @default(true)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
 }

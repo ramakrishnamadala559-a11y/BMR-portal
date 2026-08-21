@@ -248,6 +248,13 @@ export async function PUT(request: Request) {
         if (takenStudent) {
           throw new Error('This phone number is already registered by another student');
         }
+
+        const takenUser = await tx.user.findFirst({
+          where: { phone, NOT: { phone: currentStudent.phone } }
+        });
+        if (takenUser) {
+          throw new Error('This phone number is already registered by another user');
+        }
       }
 
       // Sync name, phone, and password (if changed) in User table

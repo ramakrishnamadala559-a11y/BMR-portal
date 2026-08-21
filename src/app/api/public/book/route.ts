@@ -23,6 +23,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: 'This phone number is already registered' }, { status: 409 });
     }
 
+    // Check if user already exists with this phone number
+    const existingUser = await db.user.findUnique({
+      where: { phone: phone.trim() }
+    });
+
+    if (existingUser) {
+      return NextResponse.json({ error: 'This phone number is already registered by another user' }, { status: 409 });
+    }
+
     // Create the inactive student (representing a new pending booking)
     const newStudent = await db.student.create({
       data: {
