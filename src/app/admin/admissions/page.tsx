@@ -42,7 +42,7 @@ export default function AdmissionsPage() {
   // Form selections
   const [selectedStudentId, setSelectedStudentId] = useState('');
   const [selectedBedId, setSelectedBedId] = useState(preSelectedBedId);
-  
+
   // Custom Terms
   const [joiningDate, setJoiningDate] = useState(new Date().toISOString().slice(0, 10));
   const [expectedCheckout, setExpectedCheckout] = useState('');
@@ -255,7 +255,7 @@ export default function AdmissionsPage() {
 
   const handleRoomChange = (val: string) => {
     setSelectedRoomId(val);
-    
+
     // Auto-select the first available bed in the selected room
     const roomBeds = availableBeds.filter(b => b.room.id === val);
     if (roomBeds.length > 0) {
@@ -353,7 +353,6 @@ export default function AdmissionsPage() {
                           setNewStudentName(student.name);
                           setNewStudentPhone(student.phone);
                           setNewStudentGender(student.gender);
-                          setNewStudentAddress(student.address);
                           setNewStudentIdNo(student.idNumber);
                           setNewStudentIdProofUrl(student.idProofUrl || '');
                           setNewStudentGuardian(student.guardianName || '');
@@ -728,9 +727,9 @@ export default function AdmissionsPage() {
                   <>
                     <span className="text-slate-400 font-semibold">Aadhaar ID Photo:</span>
                     <span className="text-slate-200 font-semibold">
-                      <img 
-                        src={newStudentIdProofUrl} 
-                        alt="Aadhaar proof" 
+                      <img
+                        src={newStudentIdProofUrl}
+                        alt="Aadhaar proof"
                         className="h-12 w-20 object-cover rounded border border-slate-800 shadow"
                       />
                     </span>
