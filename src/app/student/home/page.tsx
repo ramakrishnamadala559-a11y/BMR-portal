@@ -425,17 +425,23 @@ export default function StudentHomePage() {
               </div>
               <div className="flex justify-between items-center py-2">
                 <span className="text-slate-500 font-bold uppercase tracking-wider text-[9px]">Aadhaar Photo</span>
-                {activeProfile.idProofUrl ? (
-                  <div className="relative group mt-1">
-                    <img
-                      src={activeProfile.idProofUrl}
-                      alt="Aadhaar ID Proof"
-                      className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
-                      onClick={() => setEnlargedPhotoUrl(activeProfile.idProofUrl)}
-                    />
-                  </div>
+                {user ? (
+                  activeProfile.idProofUrl ? (
+                    <div className="relative group mt-1">
+                      <img
+                        src={activeProfile.idProofUrl}
+                        alt="Aadhaar ID Proof"
+                        className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
+                        onClick={() => setEnlargedPhotoUrl(activeProfile.idProofUrl)}
+                      />
+                    </div>
+                  ) : (
+                    <span className="text-slate-500 italic">Not Uploaded</span>
+                  )
                 ) : (
-                  <span className="text-slate-500 italic">Not Uploaded</span>
+                  <span className="text-slate-500 italic flex items-center gap-1">
+                    🔒 Hidden (Log in to view)
+                  </span>
                 )}
               </div>
             </div>

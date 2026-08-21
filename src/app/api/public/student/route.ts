@@ -37,7 +37,13 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Student not found' }, { status: 404 });
     }
 
-    return NextResponse.json(student);
+    // Sanitize sensitive ID proof url from public response
+    const sanitizedStudent = {
+      ...student,
+      idProofUrl: null
+    };
+
+    return NextResponse.json(sanitizedStudent);
   } catch (error) {
     console.error('Public GET student error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
