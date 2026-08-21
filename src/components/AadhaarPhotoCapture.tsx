@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { Camera, UploadCloud, X, RotateCw, Trash2, Eye, Check, AlertCircle } from 'lucide-react';
 
 interface AadhaarPhotoCaptureProps {
@@ -46,17 +46,17 @@ export default function AadhaarPhotoCapture({
     }
   }, [isCameraActive]);
 
-  // Start stream when camera ID or activity changes
-  useEffect(() => {
-    if (isCameraActive) {
-      startCamera();
-    } else {
-      stopCamera();
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
     }
-    return () => stopCamera();
-  }, [isCameraActive, selectedCameraId]);
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
+  }, []);
 
-  const startCamera = async () => {
+  const startCamera = useCallback(async () => {
     stopCamera();
     setErrorMsg('');
     try {
@@ -75,17 +75,17 @@ export default function AadhaarPhotoCapture({
       setErrorMsg("Failed to access camera. Please make sure webcam permission is granted, or select an image file instead.");
       setIsCameraActive(false);
     }
-  };
+  }, [selectedCameraId, stopCamera]);
 
-  const stopCamera = () => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-      streamRef.current = null;
+  // Start stream when camera ID or activity changes
+  useEffect(() => {
+    if (isCameraActive) {
+      startCamera();
+    } else {
+      stopCamera();
     }
-    if (videoRef.current) {
-      videoRef.current.srcObject = null;
-    }
-  };
+    return () => stopCamera();
+  }, [isCameraActive, startCamera, stopCamera]);
 
   const capturePhoto = () => {
     if (videoRef.current && canvasRef.current) {

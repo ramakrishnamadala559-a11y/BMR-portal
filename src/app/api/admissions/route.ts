@@ -91,7 +91,6 @@ export async function POST(request: Request) {
         const {
           name,
           phone,
-          email,
           dob,
           gender,
           address,
@@ -126,22 +125,7 @@ export async function POST(request: Request) {
           throw new Error('Student with this phone number is already registered');
         }
 
-        // Check if student with email already exists
-        if (email) {
-          const existingEmailStudent = await tx.student.findFirst({
-            where: { email }
-          });
-          if (existingEmailStudent) {
-            throw new Error('A student with this email address is already registered');
-          }
 
-          const existingEmailUser = await tx.user.findFirst({
-            where: { email }
-          });
-          if (existingEmailUser) {
-            throw new Error('A user with this email address is already registered');
-          }
-        }
 
         // Check if user with phone already exists
         const existingUser = await tx.user.findUnique({
@@ -159,7 +143,7 @@ export async function POST(request: Request) {
         await tx.user.create({
           data: {
             name,
-            email: email || null,
+            email: null,
             phone,
             password: studentTempPassword,
             role: 'STUDENT',
@@ -182,7 +166,6 @@ export async function POST(request: Request) {
             id: generatedStudentId,
             name,
             phone,
-            email: email || null,
             dob,
             gender,
             address,

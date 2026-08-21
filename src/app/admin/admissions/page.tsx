@@ -158,7 +158,6 @@ export default function AdmissionsPage() {
     setTempStudentDetails({
       name: newStudentName,
       phone: newStudentPhone,
-      email: '',
       dob: 'N/A',
       gender: newStudentGender,
       address: newStudentAddress,

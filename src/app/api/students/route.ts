@@ -71,7 +71,6 @@ export async function POST(request: Request) {
     const {
       name,
       phone,
-      email,
       dob,
       gender,
       address,
@@ -114,22 +113,7 @@ export async function POST(request: Request) {
         throw new Error('Student with this phone number is already registered');
       }
 
-      // Check if student with email already exists
-      if (email) {
-        const existingEmailStudent = await tx.student.findFirst({
-          where: { email }
-        });
-        if (existingEmailStudent) {
-          throw new Error('A student with this email address is already registered');
-        }
 
-        const existingEmailUser = await tx.user.findFirst({
-          where: { email }
-        });
-        if (existingEmailUser) {
-          throw new Error('A user with this email address is already registered');
-        }
-      }
 
       // Check if user with phone already exists
       const existingUser = await tx.user.findUnique({
@@ -146,7 +130,6 @@ export async function POST(request: Request) {
         data: {
           name,
           phone,
-          email: email || null,
           dob,
           gender,
           address,
@@ -171,7 +154,7 @@ export async function POST(request: Request) {
       await tx.user.create({
         data: {
           name,
-          email: email || null,
+          email: null,
           phone,
           password: hashedPassword,
           role: 'STUDENT',
@@ -224,7 +207,7 @@ export async function PUT(request: Request) {
     if (errorResponse) return errorResponse;
 
     const data = await request.json();
-    const { id, name, phone, email, ...otherFields } = data;
+    const { id, name, phone, ...otherFields } = data;
 
     if (!id) {
       return NextResponse.json({ error: 'Student ID is required' }, { status: 400 });
@@ -255,22 +238,7 @@ export async function PUT(request: Request) {
     }
 
     const result = await db.$transaction(async (tx) => {
-      // If email is changing, check uniqueness
-      if (email && email !== currentStudent.email) {
-        const takenUser = await tx.user.findFirst({
-          where: { email, phone: { not: currentStudent.phone } }
-        });
-        if (takenUser) {
-          throw new Error('This email address is already registered by another user');
-        }
 
-        const takenStudent = await tx.student.findFirst({
-          where: { email, id: { not: id } }
-        });
-        if (takenStudent) {
-          throw new Error('This email address is already registered by another student');
-        }
-      }
 
       // If phone is changing, check uniqueness
       if (phone && phone !== currentStudent.phone) {
@@ -282,8 +250,8 @@ export async function PUT(request: Request) {
         }
       }
 
-      // Sync name, phone, email, and password (if changed) in User table
-      const userUpdateData: any = { name, email: email || null };
+      // Sync name, phone, and password (if changed) in User table
+      const userUpdateData: any = { name };
       if (phone && phone !== currentStudent.phone) {
         userUpdateData.phone = phone;
       }
@@ -350,7 +318,6 @@ export async function PUT(request: Request) {
         data: {
           name,
           phone,
-          email: email || null,
           ...parsedFields
         }
       });

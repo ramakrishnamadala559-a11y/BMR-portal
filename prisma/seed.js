@@ -251,7 +251,6 @@ async function main() {
         id: studentId,
         name: s.name,
         phone: s.phone,
-        email: s.email,
         dob: s.dob,
         gender: s.gender,
         address: s.address,
@@ -273,7 +272,7 @@ async function main() {
     await db.user.create({
       data: {
         name: s.name,
-        email: s.email,
+        email: null,
         phone: s.phone,
         password: studHash,
         role: 'STUDENT',

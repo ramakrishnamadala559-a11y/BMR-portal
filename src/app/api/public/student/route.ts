@@ -48,7 +48,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const data = await request.json();
-    const { id, name, phone, email, idNumber, address } = data;
+    const { id, name, phone, idNumber, address } = data;
 
     if (!id) {
       return NextResponse.json({ error: 'Student ID is required' }, { status: 400 });
@@ -67,22 +67,7 @@ export async function PUT(request: Request) {
     }
 
     const result = await db.$transaction(async (tx) => {
-      // If email is changing, check uniqueness
-      if (email && email !== currentStudent.email) {
-        const takenUser = await tx.user.findFirst({
-          where: { email, phone: { not: currentStudent.phone } }
-        });
-        if (takenUser) {
-          throw new Error('This email address is already registered by another user');
-        }
 
-        const takenStudent = await tx.student.findFirst({
-          where: { email, id: { not: id } }
-        });
-        if (takenStudent) {
-          throw new Error('This email address is already registered by another student');
-        }
-      }
 
       // If phone is changing, check uniqueness
       if (phone && phone !== currentStudent.phone) {
@@ -101,8 +86,8 @@ export async function PUT(request: Request) {
         }
       }
 
-      // Sync name, phone, email in User table if user exists
-      const userUpdateData: any = { name, email: email || null };
+      // Sync name, phone in User table if user exists
+      const userUpdateData: any = { name };
       if (phone && phone !== currentStudent.phone) {
         userUpdateData.phone = phone;
       }
@@ -124,7 +109,6 @@ export async function PUT(request: Request) {
         data: {
           name,
           phone,
-          email: email || null,
           idNumber,
           address
         }

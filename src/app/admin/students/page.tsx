@@ -164,7 +164,6 @@ export default function StudentsPage() {
           id: selectedStudent.id,
           name: editName,
           phone: editPhone,
-          email: '',
           dob: 'N/A',
           gender: editGender,
           address: editAddress,

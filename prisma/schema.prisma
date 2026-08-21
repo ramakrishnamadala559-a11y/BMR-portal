@@ -36,7 +36,6 @@ model Student {
   id                 String     @id @default(uuid())
   name               String
   phone              String     @unique
-  email              String?
   dob                String
   gender             String
   address            String
