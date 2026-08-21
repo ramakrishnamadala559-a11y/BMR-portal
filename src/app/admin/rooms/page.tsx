@@ -33,6 +33,7 @@ export default function RoomsPage() {
   const [buildings, setBuildings] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
+  const [enlargedPhotoUrl, setEnlargedPhotoUrl] = useState<string | null>(null);
 
   // Selection states
   const [selectedBuildingId, setSelectedBuildingId] = useState<string>('');
@@ -1348,7 +1349,7 @@ export default function RoomsPage() {
                         src={selectedStudent.idProofUrl}
                         alt="Aadhaar ID Proof"
                         className="h-10 w-16 object-cover rounded border border-slate-800 cursor-pointer hover:border-violet-500 transition-colors"
-                        onClick={() => window.open(selectedStudent.idProofUrl, '_blank')}
+                        onClick={() => setEnlargedPhotoUrl(selectedStudent.idProofUrl)}
                       />
                       <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center pointer-events-none transition-opacity rounded">
                         <span className="text-[8px] text-white font-medium">View</span>
@@ -1617,6 +1618,29 @@ export default function RoomsPage() {
           type={toast.type}
           onClose={() => setToast(null)}
         />
+      )}
+
+      {/* Enlarged ID Proof Modal */}
+      {enlargedPhotoUrl && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/95 flex flex-col items-center justify-center p-4 cursor-zoom-out animate-fade-in"
+          onClick={() => setEnlargedPhotoUrl(null)}
+        >
+          <div className="relative max-w-3xl w-full max-h-[90vh] flex flex-col items-center" onClick={(e) => e.stopPropagation()}>
+            <button
+              type="button"
+              onClick={() => setEnlargedPhotoUrl(null)}
+              className="absolute -top-12 right-0 text-slate-350 hover:text-white flex items-center gap-1.5 text-xs cursor-pointer bg-slate-900/80 px-3.5 py-2 rounded-full border border-slate-800 transition-colors"
+            >
+              <X className="h-4 w-4" /> Close View
+            </button>
+            <img 
+              src={enlargedPhotoUrl} 
+              alt="Aadhaar ID Proof Full View" 
+              className="max-w-full max-h-[80vh] object-contain rounded-2xl border border-slate-800 shadow-2xl"
+            />
+          </div>
+        </div>
       )}
     </div>
   );
