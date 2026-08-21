@@ -20,9 +20,7 @@ import {
   Users,
   Compass,
   ArrowUpRight,
-  Home,
-  Bell,
-  X
+  Home
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 import ThemeToggle from '@/components/ThemeToggle';
@@ -54,24 +52,6 @@ export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
-  
-  const [announcements, setAnnouncements] = useState<any[]>([]);
-  const [showAnnouncementsModal, setShowAnnouncementsModal] = useState(false);
-
-  useEffect(() => {
-    const fetchAnnouncements = async () => {
-      try {
-        const res = await fetch('/api/public/announcements');
-        if (res.ok) {
-          const data = await res.json();
-          setAnnouncements(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch announcements:', err);
-      }
-    };
-    fetchAnnouncements();
-  }, []);
 
   // Redirect if already logged in
   useEffect(() => {
@@ -217,19 +197,7 @@ export default function LoginPage() {
       )}
 
       {/* MAIN SINGLE COLUMN CONTAINER */}
-      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex flex-col items-center gap-8 relative z-10">
-        
-        {/* Announcements Button */}
-        {announcements.length > 0 && (
-          <div className="z-10">
-            <button
-              onClick={() => setShowAnnouncementsModal(true)}
-              className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-xs font-extrabold uppercase tracking-wider rounded-xl text-white transition-all shadow-lg shadow-blue-600/10 hover:scale-[1.02] cursor-pointer border border-blue-500"
-            >
-              <Bell className="h-4 w-4 animate-pulse" /> PG Announcements & Broadcasts ({announcements.length})
-            </button>
-          </div>
-        )}
+      <main className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8 lg:py-12 flex flex-col items-center gap-12 relative z-10">
 
         {/* SECTION 1: LOGIN CARD (POSITIONED IN MIDDLE TOP) */}
         <div id="console" className="w-full max-w-md p-[1px] bg-gradient-to-b from-slate-800/80 via-slate-900/40 to-[#080b11] rounded-3xl relative shadow-2xl transition-transform duration-300 hover:scale-[1.01] z-10">
@@ -567,41 +535,6 @@ export default function LoginPage() {
           type={toast.type}
           onClose={() => setToast(null)}
         />
-      )}
-
-      {/* Announcements Modal */}
-      {showAnnouncementsModal && (
-        <div 
-          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4 cursor-pointer backdrop-blur-sm animate-fade-in animate-duration-200"
-          onClick={() => setShowAnnouncementsModal(false)}
-        >
-          <div className="bg-[#0b0f17]/95 border border-slate-800/80 w-full max-w-lg rounded-2xl p-6 shadow-2xl relative cursor-default" onClick={(e) => e.stopPropagation()}>
-            <button
-              type="button"
-              onClick={() => setShowAnnouncementsModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer bg-transparent border-none p-1"
-            >
-              <X className="h-5 w-5" />
-            </button>
-            
-            <div className="flex items-center gap-2 text-blue-400 font-bold text-[11px] uppercase tracking-wider mb-5">
-              <Bell className="h-4.5 w-4.5 animate-bounce" />
-              <span>PG Announcements & News</span>
-            </div>
-
-            <div className="space-y-4 max-h-[60vh] overflow-y-auto pr-1">
-              {announcements.map((ann: any) => (
-                <div key={ann.id} className="p-4 bg-[#06090f]/90 border border-slate-850 rounded-xl text-xs leading-normal">
-                  <h4 className="font-bold text-slate-200">{ann.title}</h4>
-                  <p className="text-slate-400 mt-1.5 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
-                  <span className="text-[9px] text-slate-555 block mt-2 font-semibold">
-                    Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
       )}
     </div>
   );

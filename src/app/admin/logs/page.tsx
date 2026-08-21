@@ -11,7 +11,8 @@ import {
   User,
   Info,
   Megaphone,
-  Trash2
+  Trash2,
+  X
 } from 'lucide-react';
 import Toast from '@/components/Toast';
 
@@ -37,6 +38,7 @@ export default function LogsPage() {
   const [selectedStudentIds, setSelectedStudentIds] = useState<string[]>([]);
   const [rooms, setRooms] = useState<any[]>([]);
   const [announcementSubmitting, setAnnouncementSubmitting] = useState(false);
+  const [showAnnouncementsModal, setShowAnnouncementsModal] = useState(false);
   const [buildings, setBuildings] = useState<any[]>([]);
   const [students, setStudents] = useState<any[]>([]);
   const [studentSearchTerm, setStudentSearchTerm] = useState('');
@@ -232,9 +234,19 @@ export default function LogsPage() {
   return (
     <div className="space-y-8 animate-slide-in">
       {/* Title */}
-      <div>
-        <h1 className="text-2xl font-bold text-white tracking-tight">Audit Logs History</h1>
-        <p className="text-slate-400 text-sm mt-1">Review live security audit trails and administrative operation records.</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+          <h1 className="text-2xl font-bold text-white tracking-tight">Audit Logs History</h1>
+          <p className="text-slate-400 text-sm mt-1">Review live security audit trails and administrative operation records.</p>
+        </div>
+        {currentUser?.role === 'OWNER' && (
+          <button
+            onClick={() => setShowAnnouncementsModal(true)}
+            className="inline-flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-500 text-xs font-extrabold uppercase tracking-wider rounded-xl text-white transition-all shadow-lg shadow-blue-600/10 hover:scale-[1.02] cursor-pointer border border-blue-500"
+          >
+            <Megaphone className="h-4 w-4 animate-pulse" /> Announcements & Broadcasts
+          </button>
+        )}
       </div>
 
       {/* Filters */}
@@ -314,257 +326,271 @@ export default function LogsPage() {
             </div>
           ))
         )}
-      </div>
+      </div>      {/* Announcements Management Modal (Owner Only) */}
+      {showAnnouncementsModal && currentUser?.role === 'OWNER' && (
+        <div 
+          className="fixed inset-0 z-50 bg-black/80 flex flex-col items-center justify-center p-4 cursor-pointer backdrop-blur-sm animate-fade-in animate-duration-200"
+          onClick={() => setShowAnnouncementsModal(false)}
+        >
+          <div 
+            className="bg-slate-900 border border-slate-800 w-full max-w-2xl rounded-2xl p-6 shadow-2xl relative cursor-default space-y-6 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <button
+              type="button"
+              onClick={() => setShowAnnouncementsModal(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-white cursor-pointer bg-transparent border-none p-1"
+            >
+              <X className="h-5 w-5" />
+            </button>
 
-      {/* SECTION: Announcements Management (Owner Only) */}
-      {currentUser?.role === 'OWNER' && (
-        <div className="bg-slate-900 border border-slate-800/80 p-6 rounded-2xl shadow-xl space-y-6">
-          <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-200">
-            <Megaphone className="h-4.5 w-4.5 text-violet-400" />
-            <h3 className="font-bold text-white uppercase tracking-wider text-xs">PG Announcements & Broadcasts</h3>
-          </div>
-
-          {/* Post New Announcement Form */}
-          <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
-            <div>
-              <label className="block text-slate-355 font-semibold mb-2">Announcement Title</label>
-              <input
-                type="text"
-                value={announcementTitle}
-                onChange={(e) => setAnnouncementTitle(e.target.value)}
-                placeholder="e.g. Scheduled Power Outage or Holiday Notice"
-                className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-200 focus:outline-none"
-                required
-              />
+            <div className="flex items-center gap-2 pb-3 border-b border-slate-800/60 text-slate-202">
+              <Megaphone className="h-4.5 w-4.5 text-blue-400 animate-pulse" />
+              <h3 className="font-bold text-white uppercase tracking-wider text-xs">PG Announcements & Broadcasts</h3>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {/* Post New Announcement Form */}
+            <form onSubmit={handleAnnouncementSubmit} className="space-y-4">
               <div>
-                <label className="block text-slate-355 font-semibold mb-2">Target Type</label>
-                <select
-                  value={announcementTargetType}
-                  onChange={(e) => {
-                    setAnnouncementTargetType(e.target.value as any);
-                    setSelectedTargetBuilding('');
-                    setSelectedTargetRoom('');
-                    setSelectedStudentIds([]);
-                  }}
-                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-                >
-                  <option value="ALL">All Buildings (General)</option>
-                  <option value="BUILDING">Specific Building</option>
-                  <option value="ROOM">Specific Room</option>
-                  <option value="STUDENT">Specific Student</option>
-                </select>
+                <label className="block text-slate-355 font-semibold mb-2">Announcement Title</label>
+                <input
+                  type="text"
+                  value={announcementTitle}
+                  onChange={(e) => setAnnouncementTitle(e.target.value)}
+                  placeholder="e.g. Scheduled Power Outage or Holiday Notice"
+                  className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-200 focus:outline-none"
+                  required
+                />
               </div>
 
-              {announcementTargetType === 'BUILDING' && (
-                <div className="md:col-span-2">
-                  <label className="block text-slate-355 font-semibold mb-2">Select Building</label>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                  <label className="block text-slate-355 font-semibold mb-2">Target Type</label>
                   <select
-                    value={selectedTargetBuilding}
-                    onChange={(e) => setSelectedTargetBuilding(e.target.value)}
+                    value={announcementTargetType}
+                    onChange={(e) => {
+                      setAnnouncementTargetType(e.target.value as any);
+                      setSelectedTargetBuilding('');
+                      setSelectedTargetRoom('');
+                      setSelectedStudentIds([]);
+                    }}
                     className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-                    required
                   >
-                    <option value="">-- Choose Building --</option>
-                    {buildings.map(b => (
-                      <option key={b.id} value={b.name}>{b.name}</option>
-                    ))}
+                    <option value="ALL">All Buildings (General)</option>
+                    <option value="BUILDING">Specific Building</option>
+                    <option value="ROOM">Specific Room</option>
+                    <option value="STUDENT">Specific Student</option>
                   </select>
                 </div>
-              )}
 
-              {announcementTargetType === 'ROOM' && (
-                <div className="md:col-span-2">
-                  <label className="block text-slate-355 font-semibold mb-2">Select Room Number</label>
-                  <select
-                    value={selectedTargetRoom}
-                    onChange={(e) => setSelectedTargetRoom(e.target.value)}
-                    className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-                    required
-                  >
-                    <option value="">-- Choose Room Number --</option>
-                    {Array.from(new Set(rooms.map(r => r.number))).sort().map(roomNum => (
-                      <option key={roomNum} value={roomNum}>Room {roomNum}</option>
-                    ))}
-                  </select>
-                </div>
-              )}
+                {announcementTargetType === 'BUILDING' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-slate-355 font-semibold mb-2">Select Building</label>
+                    <select
+                      value={selectedTargetBuilding}
+                      onChange={(e) => setSelectedTargetBuilding(e.target.value)}
+                      className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
+                      required
+                    >
+                      <option value="">-- Choose Building --</option>
+                      {buildings.map(b => (
+                        <option key={b.id} value={b.name}>{b.name}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
 
-              {announcementTargetType === 'STUDENT' && (
-                <div className="md:col-span-2 space-y-2">
-                  <div className="flex items-center justify-between">
-                    <label className="block text-slate-355 font-semibold">Select Students ({selectedStudentIds.length} Selected)</label>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const filteredIds = students
-                            .filter(s => 
-                              s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
-                              s.phone.includes(studentSearchTerm)
-                            )
-                            .map(s => s.id);
-                          setSelectedStudentIds(prev => Array.from(new Set([...prev, ...filteredIds])));
-                        }}
-                        className="text-[10px] text-violet-400 font-bold hover:text-violet-300 transition-colors cursor-pointer"
-                      >
-                        ☑️ Select Filtered
-                      </button>
-                      <span className="text-slate-700 text-[10px]">|</span>
-                      <button
-                        type="button"
-                        onClick={() => setSelectedStudentIds([])}
-                        className="text-[10px] text-rose-400 font-bold hover:text-rose-300 transition-colors cursor-pointer"
-                      >
-                        ✖️ Clear All
-                      </button>
+                {announcementTargetType === 'ROOM' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-slate-355 font-semibold mb-2">Select Room Number</label>
+                    <select
+                      value={selectedTargetRoom}
+                      onChange={(e) => setSelectedTargetRoom(e.target.value)}
+                      className="w-full bg-slate-955 border border-slate-800/80 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
+                      required
+                    >
+                      <option value="">-- Choose Room Number --</option>
+                      {Array.from(new Set(rooms.map(r => r.number))).sort().map(roomNum => (
+                        <option key={roomNum} value={roomNum}>Room {roomNum}</option>
+                      ))}
+                    </select>
+                  </div>
+                )}
+
+                {announcementTargetType === 'STUDENT' && (
+                  <div className="md:col-span-2 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <label className="block text-slate-355 font-semibold">Select Students ({selectedStudentIds.length} Selected)</label>
+                      <div className="flex gap-2">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const filteredIds = students
+                              .filter(s => 
+                                s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                                s.phone.includes(studentSearchTerm)
+                              )
+                              .map(s => s.id);
+                            setSelectedStudentIds(prev => Array.from(new Set([...prev, ...filteredIds])));
+                          }}
+                          className="text-[10px] text-violet-400 font-bold hover:text-violet-300 transition-colors cursor-pointer"
+                        >
+                          ☑️ Select Filtered
+                        </button>
+                        <span className="text-slate-700 text-[10px]">|</span>
+                        <button
+                          type="button"
+                          onClick={() => setSelectedStudentIds([])}
+                          className="text-[10px] text-rose-400 font-bold hover:text-rose-300 transition-colors cursor-pointer"
+                        >
+                          ✖️ Clear All
+                        </button>
+                      </div>
+                    </div>
+                    
+                    <input
+                      type="text"
+                      placeholder="🔍 Search name or phone..."
+                      value={studentSearchTerm}
+                      onChange={(e) => setStudentSearchTerm(e.target.value)}
+                      className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2 px-3.5 text-xs text-slate-200 focus:outline-none placeholder-slate-605"
+                    />
+
+                    <div className="max-h-48 overflow-y-auto border border-slate-800/80 rounded-xl p-3 space-y-2.5 bg-slate-955/40">
+                      {students.filter(s => 
+                        s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                        s.phone.includes(studentSearchTerm)
+                      ).length === 0 ? (
+                        <p className="text-slate-500 text-xs italic">No matching students found</p>
+                      ) : (
+                        students
+                          .filter(s => 
+                            s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
+                            s.phone.includes(studentSearchTerm)
+                          )
+                          .map(s => {
+                            const isChecked = selectedStudentIds.includes(s.id);
+                            return (
+                              <label 
+                                key={s.id} 
+                                className={`flex items-center gap-3 p-1.5 rounded-lg transition-colors cursor-pointer select-none ${
+                                  isChecked ? 'bg-violet-500/5 text-slate-100' : 'text-slate-400 hover:text-slate-200'
+                                }`}
+                              >
+                                <input
+                                  type="checkbox"
+                                  checked={isChecked}
+                                  onChange={() => {
+                                    if (isChecked) {
+                                      setSelectedStudentIds(prev => prev.filter(id => id !== s.id));
+                                    } else {
+                                      setSelectedStudentIds(prev => [...prev, s.id]);
+                                    }
+                                  }}
+                                  className="h-4 w-4 bg-slate-900 border border-slate-800 rounded focus:ring-violet-500/80 text-violet-600 cursor-pointer"
+                                />
+                                <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs w-full">
+                                  <span className="font-semibold">{s.name}</span>
+                                  <span className="text-[10px] text-slate-500">({s.phone})</span>
+                                  {s.bed?.room?.building?.name && (
+                                    <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/50 text-slate-450 uppercase font-bold sm:ml-auto">
+                                      {s.bed.room.building.name} - Room {s.bed.room.number}
+                                    </span>
+                                  )}
+                                </div>
+                              </label>
+                            );
+                          })
+                      )}
                     </div>
                   </div>
-                  
-                  <input
-                    type="text"
-                    placeholder="🔍 Search name or phone..."
-                    value={studentSearchTerm}
-                    onChange={(e) => setStudentSearchTerm(e.target.value)}
-                    className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2 px-3.5 text-xs text-slate-200 focus:outline-none placeholder-slate-605"
-                  />
+                )}
 
-                  <div className="max-h-48 overflow-y-auto border border-slate-800/80 rounded-xl p-3 space-y-2.5 bg-slate-955/40">
-                    {students.filter(s => 
-                      s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
-                      s.phone.includes(studentSearchTerm)
-                    ).length === 0 ? (
-                      <p className="text-slate-500 text-xs italic">No matching students found</p>
-                    ) : (
-                      students
-                        .filter(s => 
-                          s.name.toLowerCase().includes(studentSearchTerm.toLowerCase()) || 
-                          s.phone.includes(studentSearchTerm)
-                        )
-                        .map(s => {
-                          const isChecked = selectedStudentIds.includes(s.id);
-                          return (
-                            <label 
-                              key={s.id} 
-                              className={`flex items-center gap-3 p-1.5 rounded-lg transition-colors cursor-pointer select-none ${
-                                isChecked ? 'bg-violet-500/5 text-slate-100' : 'text-slate-400 hover:text-slate-200'
-                              }`}
-                            >
-                              <input
-                                type="checkbox"
-                                checked={isChecked}
-                                onChange={() => {
-                                  if (isChecked) {
-                                    setSelectedStudentIds(prev => prev.filter(id => id !== s.id));
-                                  } else {
-                                    setSelectedStudentIds(prev => [...prev, s.id]);
-                                  }
-                                }}
-                                className="h-4 w-4 bg-slate-900 border border-slate-800 rounded focus:ring-violet-500/80 text-violet-600 cursor-pointer"
-                              />
-                              <div className="flex flex-col sm:flex-row sm:items-center sm:gap-2 text-xs w-full">
-                                <span className="font-semibold">{s.name}</span>
-                                <span className="text-[10px] text-slate-500">({s.phone})</span>
-                                {s.bed?.room?.building?.name && (
-                                  <span className="text-[9px] px-1.5 py-0.5 rounded bg-slate-800/50 text-slate-450 uppercase font-bold sm:ml-auto">
-                                    {s.bed.room.building.name} - Room {s.bed.room.number}
-                                  </span>
-                                )}
-                              </div>
-                            </label>
-                          );
-                        })
-                    )}
+                {announcementTargetType === 'ALL' && (
+                  <div className="md:col-span-2">
+                    <label className="block text-slate-355 font-semibold mb-2">Target Info</label>
+                    <input
+                      type="text"
+                      value="General notice broadcast to all active residents"
+                      className="w-full bg-slate-955/40 border border-slate-850 rounded-xl py-2.5 px-4 text-xs text-slate-500 focus:outline-none"
+                      disabled
+                    />
                   </div>
-                </div>
-              )}
-
-              {announcementTargetType === 'ALL' && (
-                <div className="md:col-span-2">
-                  <label className="block text-slate-355 font-semibold mb-2">Target Info</label>
-                  <input
-                    type="text"
-                    value="General notice broadcast to all active residents"
-                    className="w-full bg-slate-955/40 border border-slate-850 rounded-xl py-2.5 px-4 text-xs text-slate-500 focus:outline-none"
-                    disabled
-                  />
-                </div>
-              )}
-            </div>
-
-            <div>
-              <label className="block text-slate-355 font-semibold mb-2">Announcement Content</label>
-              <textarea
-                rows={3}
-                value={announcementContent}
-                onChange={(e) => setAnnouncementContent(e.target.value)}
-                placeholder="Write the details of the notice here..."
-                className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-200 focus:outline-none"
-                required
-              />
-            </div>
-
-            <button
-              type="submit"
-              disabled={announcementSubmitting}
-              className="w-full flex items-center justify-center gap-2 py-3 bg-violet-650 hover:bg-violet-600 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg shadow-violet-650/10"
-            >
-              {announcementSubmitting ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Posting announcement...
-                </>
-              ) : (
-                <>
-                  <Megaphone className="h-4 w-4" />
-                  Broadcast Announcement
-                </>
-              )}
-            </button>
-          </form>
-
-          {/* Active Announcements List */}
-          <div className="pt-4 border-t border-slate-800/60">
-            <h4 className="font-bold text-slate-250 mb-4 uppercase text-[9px] tracking-wider">Active Notices</h4>
-            
-            {announcementsLoading ? (
-              <div className="flex justify-center py-6">
-                <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
+                )}
               </div>
-            ) : announcements.length === 0 ? (
-              <p className="text-slate-550 text-center py-6">No active announcements. Use the form above to broadcast notices.</p>
-            ) : (
-              <div className="space-y-3">
-                {announcements.map(ann => (
-                  <div key={ann.id} className="flex gap-4 p-4 bg-slate-955/40 border border-slate-850/60 rounded-xl hover:border-slate-800 transition-all">
-                    <div className="flex-1 min-w-0">
-                      <div className="flex justify-between items-start gap-2 mb-1">
-                        <div className="flex items-center gap-2">
-                          <span className="font-bold text-slate-100">{ann.title}</span>
-                          <span className="bg-violet-600/10 text-violet-400 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border border-violet-500/15">
-                            {getTargetBadgeText(ann.targetGroup)}
+
+              <div>
+                <label className="block text-slate-355 font-semibold mb-2">Announcement Content</label>
+                <textarea
+                  rows={3}
+                  value={announcementContent}
+                  onChange={(e) => setAnnouncementContent(e.target.value)}
+                  placeholder="Write the details of the notice here..."
+                  className="w-full bg-slate-955 border border-slate-800 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-200 focus:outline-none"
+                  required
+                />
+              </div>
+
+              <button
+                type="submit"
+                disabled={announcementSubmitting}
+                className="w-full flex items-center justify-center gap-2 py-3 bg-violet-650 hover:bg-violet-600 disabled:bg-violet-850 text-xs font-bold rounded-xl text-white transition-all cursor-pointer hover:shadow-lg shadow-violet-650/10"
+              >
+                {announcementSubmitting ? (
+                  <>
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    Posting announcement...
+                  </>
+                ) : (
+                  <>
+                    <Megaphone className="h-4 w-4" />
+                    Broadcast Announcement
+                  </>
+                )}
+              </button>
+            </form>
+
+            {/* Active Announcements List */}
+            <div className="pt-4 border-t border-slate-800/60">
+              <h4 className="font-bold text-slate-250 mb-4 uppercase text-[9px] tracking-wider">Active Notices</h4>
+              
+              {announcementsLoading ? (
+                <div className="flex justify-center py-6">
+                  <Loader2 className="h-6 w-6 text-violet-500 animate-spin" />
+                </div>
+              ) : announcements.length === 0 ? (
+                <p className="text-slate-550 text-center py-6">No active announcements. Use the form above to broadcast notices.</p>
+              ) : (
+                <div className="space-y-3">
+                  {announcements.map(ann => (
+                    <div key={ann.id} className="flex gap-4 p-4 bg-slate-955/40 border border-slate-850/60 rounded-xl hover:border-slate-800 transition-all">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex justify-between items-start gap-2 mb-1">
+                          <div className="flex items-center gap-2">
+                            <span className="font-bold text-slate-100">{ann.title}</span>
+                            <span className="bg-violet-600/10 text-violet-400 px-1.5 py-0.5 rounded text-[8px] font-extrabold uppercase tracking-wide border border-violet-500/15">
+                              {getTargetBadgeText(ann.targetGroup)}
+                            </span>
+                          </div>
+                          <span className="text-[9px] text-slate-500 font-medium">
+                            {new Date(ann.createdAt).toLocaleDateString()}
                           </span>
                         </div>
-                        <span className="text-[9px] text-slate-500 font-medium">
-                          {new Date(ann.createdAt).toLocaleDateString()}
-                        </span>
+                        <p className="text-slate-400 mt-1 leading-normal">{ann.content}</p>
                       </div>
-                      <p className="text-slate-400 mt-1 leading-normal">{ann.content}</p>
-                    </div>
 
-                    <button
-                      onClick={() => handleAnnouncementDelete(ann.id)}
-                      className="p-2 bg-slate-955 border border-slate-850 hover:border-rose-500/30 text-slate-500 hover:text-rose-455 rounded-lg transition-colors cursor-pointer flex-shrink-0 self-center"
-                      title="Delete Announcement"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
+                      <button
+                        onClick={() => handleAnnouncementDelete(ann.id)}
+                        className="p-2 bg-slate-955 border border-slate-850 hover:border-rose-500/30 text-slate-500 hover:text-rose-455 rounded-lg transition-colors cursor-pointer flex-shrink-0 self-center"
+                        title="Delete Announcement"
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
