@@ -1,0 +1,20 @@
+# Vercel Ignore
+node_modules
+node-portable
+node-portable-22
+git-portable
+jdk
+jdk21
+android-sdk
+android
+.next
+out
+build
+scratch
+.env
+.vercel_backup
+app-debug.apk
+jdk21.zip
+jdk.zip
+gradle-*.zip
+cmdline-tools.zip
