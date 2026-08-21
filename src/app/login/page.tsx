@@ -42,7 +42,11 @@ export default function LoginPage() {
     }
   }, []);
   
-  const [activeTab, setActiveTab] = useState<'admin' | 'student'>('admin');
+  const [isBookingMode, setIsBookingMode] = useState(false);
+  const [bookingName, setBookingName] = useState('');
+  const [bookingPhone, setBookingPhone] = useState('');
+  const [bookingSubmitting, setBookingSubmitting] = useState(false);
+  
   const [identifier, setIdentifier] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -79,6 +83,43 @@ export default function LoginPage() {
       setToast({ message: 'Login failed. Please check your network connection.', type: 'error' });
     } finally {
       setSubmitting(false);
+    }
+  };
+
+  const handleBookingSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!bookingName.trim() || !bookingPhone.trim()) {
+      setToast({ message: 'Please fill in all fields', type: 'error' });
+      return;
+    }
+
+    const phoneRegex = /^[6-9]\d{9}$/;
+    if (!phoneRegex.test(bookingPhone.trim())) {
+      setToast({ message: 'Invalid phone number. Must be a 10-digit Indian mobile number', type: 'error' });
+      return;
+    }
+
+    setBookingSubmitting(true);
+    try {
+      const res = await fetch('/api/public/book', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: bookingName, phone: bookingPhone })
+      });
+
+      const result = await res.json();
+      if (res.ok) {
+        setToast({ message: 'Booking request registered successfully! Admin will contact you.', type: 'success' });
+        setBookingName('');
+        setBookingPhone('');
+        setIsBookingMode(false);
+      } else {
+        setToast({ message: result.error || 'Registration failed', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Failed to submit booking. Check your connection.', type: 'error' });
+    } finally {
+      setBookingSubmitting(false);
     }
   };
 
@@ -167,105 +208,204 @@ export default function LoginPage() {
           <div className="bg-[#0b0f17]/75 rounded-[23px] p-6 sm:p-8 backdrop-blur-2xl relative z-10 border border-slate-850/50">
             
             {/* Logo / Brand Header */}
-            <div className="flex flex-col items-center mb-6">
-              {isMobileApp && (
+            {isBookingMode ? (
+              <>
+                {/* Logo / Brand Header */}
                 <div className="flex flex-col items-center mb-6">
-                  <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-16 w-16 rounded-2xl border border-slate-800 shadow-lg object-cover mb-2" />
-                  <h1 className="text-lg font-bold text-white tracking-tight">{brandName}</h1>
-                  <span className="text-[9px] block text-violet-400 font-bold uppercase tracking-wider text-center max-w-[280px]">{brandTag}</span>
+                  <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-2">
+                    <Compass className="h-5 w-5 text-violet-400" /> Book a Bed
+                  </h2>
+                  <p className="text-slate-400 text-xs mt-1">Enter details to request room booking & admission.</p>
                 </div>
-              )}
-              <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-2">
-                <KeyRound className="h-5 w-5 text-violet-400" /> System Sign In
-              </h2>
-              <p className="text-slate-400 text-xs mt-1">Single-tenant authentication gateway.</p>
-            </div>
 
-            {/* Login Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-slate-355 text-xs font-semibold mb-1.5">
-                  Phone Number
-                </label>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
-                    <Phone className="h-4.5 w-4.5" />
-                  </span>
-                  <input
-                    type="text"
-                    value={identifier}
-                    onChange={(e) => setIdentifier(e.target.value)}
-                    placeholder="9876543210"
-                    className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
-                    required
-                  />
-                </div>
-              </div>
+                {/* Booking Form */}
+                <form onSubmit={handleBookingSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-slate-355 text-xs font-semibold mb-1.5">
+                      Your Full Name
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
+                        <Users className="h-4.5 w-4.5 text-slate-500" />
+                      </span>
+                      <input
+                        type="text"
+                        value={bookingName}
+                        onChange={(e) => setBookingName(e.target.value)}
+                        placeholder="John Doe"
+                        className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
+                        required
+                      />
+                    </div>
+                  </div>
 
-              <div>
-                <div className="flex justify-between items-center mb-1.5">
-                  <label className="block text-slate-350 text-xs font-semibold">Password</label>
+                  <div>
+                    <label className="block text-slate-355 text-xs font-semibold mb-1.5">
+                      Mobile Number
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
+                        <Phone className="h-4.5 w-4.5 text-slate-500" />
+                      </span>
+                      <input
+                        type="text"
+                        value={bookingPhone}
+                        onChange={(e) => setBookingPhone(e.target.value)}
+                        placeholder="9876543210"
+                        className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={bookingSubmitting}
+                    className="w-full py-2.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-750 hover:from-violet-500 hover:via-indigo-500 hover:to-violet-650 text-white rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30 flex justify-center items-center gap-2 cursor-pointer mt-6"
+                  >
+                    {bookingSubmitting ? (
+                      <>
+                        <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                        Registering Booking...
+                      </>
+                    ) : (
+                      <>
+                        Request Room Booking
+                        <ArrowRight className="h-4.5 w-4.5" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                <div className="mt-6 pt-4 border-t border-slate-850/60 text-center">
                   <button
                     type="button"
-                    className="text-xs text-violet-400 hover:text-violet-355 transition-colors font-bold cursor-pointer"
-                    onClick={() => setToast({ message: 'Please contact the hostel administrator to reset your credentials.', type: 'info' as any })}
+                    onClick={() => setIsBookingMode(false)}
+                    className="text-xs text-violet-400 hover:text-violet-300 font-bold transition-colors cursor-pointer"
                   >
-                    Forgot?
+                    Already registered? Sign In
                   </button>
                 </div>
-                <div className="relative">
-                  <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
-                    <Lock className="h-4.5 w-4.5" />
-                  </span>
-                  <input
-                    type={showPassword ? 'text' : 'password'}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="••••••••"
-                    className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
-                    required
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
-                  >
-                    {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
-                  </button>
+              </>
+            ) : (
+              <>
+                {/* Logo / Brand Header */}
+                <div className="flex flex-col items-center mb-6">
+                  {isMobileApp && (
+                    <div className="flex flex-col items-center mb-6">
+                      <img src="/homestay_logo.jpg" alt="Brand Logo" className="h-16 w-16 rounded-2xl border border-slate-800 shadow-lg object-cover mb-2" />
+                      <h1 className="text-lg font-bold text-white tracking-tight">{brandName}</h1>
+                      <span className="text-[9px] block text-violet-400 font-bold uppercase tracking-wider text-center max-w-[280px]">{brandTag}</span>
+                    </div>
+                  )}
+                  <h2 className="text-xl font-bold text-white tracking-tight flex items-center gap-2 mt-2">
+                    <KeyRound className="h-5 w-5 text-violet-400" /> System Sign In
+                  </h2>
+                  <p className="text-slate-400 text-xs mt-1">Single-tenant authentication gateway.</p>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={submitting}
-                className="w-full py-2.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-750 hover:from-violet-500 hover:via-indigo-500 hover:to-violet-650 text-white rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30 flex justify-center items-center gap-2 cursor-pointer mt-6"
-              >
-                {submitting ? (
-                  <>
-                    <Loader2 className="h-4.5 w-4.5 animate-spin" />
-                    Connecting...
-                  </>
-                ) : (
-                  <>
-                    Authenticate Session
-                    <ArrowRight className="h-4.5 w-4.5" />
-                  </>
+                {/* Login Form */}
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-slate-355 text-xs font-semibold mb-1.5">
+                      Phone Number
+                    </label>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
+                        <Phone className="h-4.5 w-4.5" />
+                      </span>
+                      <input
+                        type="text"
+                        value={identifier}
+                        onChange={(e) => setIdentifier(e.target.value)}
+                        placeholder="9876543210"
+                        className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-4 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
+                        required
+                      />
+                    </div>
+                  </div>
+
+                  <div>
+                    <div className="flex justify-between items-center mb-1.5">
+                      <label className="block text-slate-350 text-xs font-semibold">Password</label>
+                      <button
+                        type="button"
+                        className="text-xs text-violet-400 hover:text-violet-355 transition-colors font-bold cursor-pointer"
+                        onClick={() => setToast({ message: 'Please contact the hostel administrator to reset your credentials.', type: 'info' as any })}
+                      >
+                        Forgot?
+                      </button>
+                    </div>
+                    <div className="relative">
+                      <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-505">
+                        <Lock className="h-4.5 w-4.5" />
+                      </span>
+                      <input
+                        type={showPassword ? 'text' : 'password'}
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        placeholder="••••••••"
+                        className="w-full bg-[#06090f]/75 border border-slate-800/80 hover:border-slate-700 focus:border-violet-500/80 focus:ring-2 focus:ring-violet-500/10 rounded-xl py-2.5 pl-11 pr-11 text-sm text-slate-100 placeholder-slate-500/60 focus:outline-none transition-all shadow-inner"
+                        required
+                      />
+                      <button
+                        type="button"
+                        onClick={() => setShowPassword(!showPassword)}
+                        className="absolute inset-y-0 right-0 flex items-center pr-3.5 text-slate-500 hover:text-slate-300 transition-colors cursor-pointer"
+                      >
+                        {showPassword ? <EyeOff className="h-4.5 w-4.5" /> : <Eye className="h-4.5 w-4.5" />}
+                      </button>
+                    </div>
+                  </div>
+
+                  <button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full py-2.5 bg-gradient-to-r from-violet-600 via-indigo-600 to-violet-750 hover:from-violet-500 hover:via-indigo-500 hover:to-violet-650 text-white rounded-xl text-xs font-bold transition-all duration-300 hover:scale-[1.01] active:scale-[0.99] shadow-lg shadow-violet-600/20 hover:shadow-violet-500/30 flex justify-center items-center gap-2 cursor-pointer mt-6"
+                  >
+                    {submitting ? (
+                      <>
+                        <Loader2 className="h-4.5 w-4.5 animate-spin" />
+                        Connecting...
+                      </>
+                    ) : (
+                      <>
+                        Authenticate Session
+                        <ArrowRight className="h-4.5 w-4.5" />
+                      </>
+                    )}
+                  </button>
+                </form>
+
+                {isMobileApp && settings?.phone && (
+                  <div className="mt-6 pt-4 border-t border-slate-850/60 text-center">
+                    <span className="text-[11px] text-slate-400">
+                      Emergency Support?{' '}
+                      <a 
+                        href={`tel:+91${settings.phone}`}
+                        className="text-violet-400 font-bold hover:underline"
+                      >
+                        Call Host
+                      </a>
+                    </span>
+                  </div>
                 )}
-              </button>
-            </form>
 
-            {isMobileApp && settings?.phone && (
-              <div className="mt-6 pt-4 border-t border-slate-850/60 text-center">
-                <span className="text-[11px] text-slate-400">
-                  Emergency Support?{' '}
-                  <a 
-                    href={`tel:+91${settings.phone}`}
-                    className="text-violet-400 font-bold hover:underline"
-                  >
-                    Call Host
-                  </a>
-                </span>
-              </div>
+                {!isMobileApp && (
+                  <div className="mt-6 pt-4 border-t border-slate-850/60 text-center">
+                    <span className="text-xs text-slate-400">
+                      New tenant?{' '}
+                      <button
+                        type="button"
+                        onClick={() => setIsBookingMode(true)}
+                        className="text-violet-400 hover:text-violet-300 font-bold hover:underline transition-colors cursor-pointer"
+                      >
+                        Book a Bed Now
+                      </button>
+                    </span>
+                  </div>
+                )}
+              </>
             )}
 
           </div>
