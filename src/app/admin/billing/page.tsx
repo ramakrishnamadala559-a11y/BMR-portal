@@ -138,8 +138,18 @@ export default function BillingPage() {
     setPrintModalOpen(true);
   };
 
-  const handlePrintTrigger = () => {
-    window.print();
+  const handlePrintTrigger = async () => {
+    if (typeof window !== 'undefined' && (window as any).Capacitor) {
+      try {
+        const { PrintWebview } = await import('@webnativellc/capacitor-print-webview');
+        await PrintWebview.print();
+      } catch (err) {
+        console.error('Capacitor printing failed, falling back to window.print', err);
+        window.print();
+      }
+    } else {
+      window.print();
+    }
   };
 
   const handleShareInvoiceWhatsApp = () => {
