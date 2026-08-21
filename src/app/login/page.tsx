@@ -466,7 +466,7 @@ export default function LoginPage() {
           </h2>
           
           <p className="text-slate-400 text-sm max-w-xl mx-auto">
-            Antigravity PG coordinates bookings, simplifies invoice processing, categorizesmess expenses, and monitors role-based staff matrices.
+            {brandName} coordinates bookings, simplifies invoice processing, categorizes mess expenses, and monitors role-based staff matrices.
           </p>
 
           {/* Clean SaaS Feature cards */}
