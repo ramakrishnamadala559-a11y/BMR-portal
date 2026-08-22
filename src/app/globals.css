@@ -108,11 +108,16 @@ body {
 /* Print CSS Styles */
 @media print {
   body {
-    visibility: hidden;
     background: white !important;
+    color: black !important;
+  }
+  body * {
+    visibility: hidden;
+  }
+  #printable-receipt, #printable-receipt * {
+    visibility: visible;
   }
   #printable-receipt {
-    visibility: visible;
     position: absolute;
     left: 50%;
     transform: translateX(-50%);
@@ -123,9 +128,6 @@ body {
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-  }
-  #printable-receipt * {
-    visibility: visible;
   }
 }
 

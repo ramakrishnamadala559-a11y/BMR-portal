@@ -216,27 +216,6 @@ export default function StudentHomePage() {
 
   return (
     <div className="space-y-8 animate-slide-in">
-      {/* Announcements (Only shown when added/present in database) */}
-      {announcements.length > 0 && (
-        <div className="bg-slate-900 border border-slate-800/80 p-5 rounded-2xl shadow-xl animate-fade-in space-y-4">
-          <div className="flex items-center gap-2 text-violet-400 font-bold text-[10px] uppercase tracking-wider">
-            <Bell className="h-4 w-4 animate-pulse" />
-            <span>PG Announcements & News</span>
-          </div>
-          <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
-            {announcements.map((ann: any) => (
-              <div key={ann.id} className="p-4 bg-slate-955/40 border border-slate-850/60 rounded-xl text-xs leading-normal">
-                <h4 className="font-bold text-slate-205">{ann.title}</h4>
-                <p className="text-slate-400 mt-1 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
-                <span className="text-[9px] text-slate-550 block mt-2 font-semibold">
-                  Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
-                </span>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
       {/* Welcome Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 bg-gradient-to-r from-slate-900 via-slate-900 to-violet-955/20 border border-slate-800/80 p-6 rounded-2xl shadow-xl relative overflow-hidden">
         <div className="absolute right-0 top-0 h-40 w-40 bg-violet-600/10 rounded-full blur-3xl pointer-events-none" />
@@ -281,6 +260,27 @@ export default function StudentHomePage() {
           )}
         </div>
       </div>
+
+      {/* Announcements (Only shown when added/present in database) */}
+      {announcements.length > 0 && (
+        <div className="bg-slate-900 border border-slate-800/80 p-5 rounded-2xl shadow-xl animate-fade-in space-y-4">
+          <div className="flex items-center gap-2 text-violet-400 font-bold text-[10px] uppercase tracking-wider">
+            <Bell className="h-4 w-4 animate-pulse" />
+            <span>PG Announcements & News</span>
+          </div>
+          <div className="space-y-3 max-h-60 overflow-y-auto pr-1">
+            {announcements.map((ann: any) => (
+              <div key={ann.id} className="p-4 bg-slate-955/40 border border-slate-850/60 rounded-xl text-xs leading-normal">
+                <h4 className="font-bold text-slate-205">{ann.title}</h4>
+                <p className="text-slate-400 mt-1 whitespace-pre-wrap leading-relaxed">{ann.content}</p>
+                <span className="text-[9px] text-slate-550 block mt-2 font-semibold">
+                  Posted on {new Date(ann.date).toLocaleDateString('en-GB')}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Room Details & Roommates Grid */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
