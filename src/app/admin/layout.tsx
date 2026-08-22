@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ThemeToggle from '@/components/ThemeToggle';
+import Toast from '@/components/Toast';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { user, loading, logout, hasPermission, settings } = useAuth();
@@ -35,6 +36,50 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [notifOpen, setNotifOpen] = useState(false);
   const [notifications, setNotifications] = useState<any[]>([]);
   const [notifLoading, setNotifLoading] = useState(false);
+
+  // Profile modal and password reset states
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [resetPhone, setResetPhone] = useState('');
+  const [resetPassword, setResetPassword] = useState('');
+  const [resetSubmitting, setResetSubmitting] = useState(false);
+  const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
+
+  const handleProfileResetPassword = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!resetPhone || resetPhone.trim().length < 10) {
+      setToast({ message: 'Please enter a valid 10-digit registered phone number', type: 'error' });
+      return;
+    }
+    if (!resetPassword || resetPassword.trim().length < 6) {
+      setToast({ message: 'Password must be at least 6 characters long', type: 'error' });
+      return;
+    }
+
+    setResetSubmitting(true);
+    try {
+      const res = await fetch('/api/settings/reset-password', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          phone: resetPhone.trim(),
+          newPassword: resetPassword.trim()
+        })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setToast({ message: data.message || 'Password reset successfully!', type: 'success' });
+        setResetPassword('');
+        setResetPhone('');
+      } else {
+        setToast({ message: data.error || 'Failed to reset password', type: 'error' });
+      }
+    } catch (err) {
+      setToast({ message: 'Network error. Please try again.', type: 'error' });
+    } finally {
+      setResetSubmitting(false);
+    }
+  };
 
   const fetchNotifications = async () => {
     try {
@@ -245,16 +290,19 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                )}
              </div>
 
-            {/* Profile Dropdown Placeholder */}
-            <div className="flex items-center gap-3">
-              <div className="hidden sm:block text-right">
-                <span className="block text-xs font-bold text-slate-200">{user.name}</span>
-                <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{user.role}</span>
-              </div>
-              <div className="h-9 w-9 bg-slate-855 rounded-xl border border-slate-800 flex items-center justify-center">
-                <UserIcon className="h-4.5 w-4.5 text-slate-400" />
-              </div>
-            </div>
+             {/* Profile Dropdown Trigger */}
+             <button
+               onClick={() => setProfileOpen(true)}
+               className="flex items-center gap-3 hover:bg-slate-800/40 p-1.5 rounded-xl border border-transparent hover:border-slate-800/60 transition-all cursor-pointer text-left"
+             >
+               <div className="hidden sm:block text-right">
+                 <span className="block text-xs font-bold text-slate-200">{user.name}</span>
+                 <span className="text-[9px] font-bold text-slate-500 uppercase tracking-wider">{user.role}</span>
+               </div>
+               <div className="h-9 w-9 bg-slate-855 rounded-xl border border-slate-800 flex items-center justify-center">
+                 <UserIcon className="h-4.5 w-4.5 text-slate-400" />
+               </div>
+             </button>
           </div>
         </header>
 
@@ -377,6 +425,106 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           <span className="text-[9px] font-bold uppercase tracking-wider">More Menu</span>
         </button>
       </nav>
+      {/* MODAL: PROFILE & PASSWORD RESET */}
+      {profileOpen && (
+        <div className="fixed inset-0 z-50 bg-black/75 backdrop-blur-sm flex items-center justify-center p-4">
+          <div className="bg-slate-900 border border-slate-800 rounded-2xl w-full max-w-md p-6 shadow-2xl animate-slide-in relative">
+            <button
+              onClick={() => setProfileOpen(false)}
+              className="absolute top-4 right-4 text-slate-400 hover:text-slate-100 transition-colors cursor-pointer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+
+            <h3 className="text-sm font-bold text-white uppercase tracking-wider mb-5 flex items-center gap-2">
+              <UserIcon className="h-4 w-4 text-violet-400" />
+              <span>User Profile Details</span>
+            </h3>
+
+            {/* Profile Info */}
+            <div className="flex items-center gap-4 p-4 bg-slate-950/40 border border-slate-850/60 rounded-xl mb-6">
+              <div className="h-14 w-14 bg-violet-600/10 border border-violet-500/20 text-violet-400 rounded-2xl flex items-center justify-center text-xl font-bold flex-shrink-0">
+                {user.name ? user.name.split(' ').map((n: string) => n[0]).join('').slice(0, 2).toUpperCase() : 'OW'}
+              </div>
+              <div className="min-w-0">
+                <h4 className="text-sm font-bold text-slate-200 truncate">{user.name}</h4>
+                <p className="text-[10px] text-slate-500 font-bold uppercase tracking-wider mt-0.5">{user.role}</p>
+                <div className="text-[11px] text-slate-400 mt-2 space-y-1">
+                  <p>📞 Phone: {user.phone}</p>
+                  {user.email && <p className="truncate">✉️ Email: {user.email}</p>}
+                </div>
+              </div>
+            </div>
+
+            {/* Reset Password Section (Only for OWNER role) */}
+            {user.role === 'OWNER' ? (
+              <form onSubmit={handleProfileResetPassword} className="space-y-4 pt-4 border-t border-slate-800/60">
+                <div className="flex justify-between items-center">
+                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Reset User Password</h4>
+                  <button
+                    type="button"
+                    onClick={() => setResetPhone(user.phone)}
+                    className="text-[10px] text-violet-400 hover:text-violet-300 font-bold uppercase tracking-wider hover:underline cursor-pointer"
+                  >
+                    Reset My Password
+                  </button>
+                </div>
+
+                <div>
+                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Registered Phone Number</label>
+                  <input
+                    type="text"
+                    value={resetPhone}
+                    onChange={(e) => setResetPhone(e.target.value)}
+                    placeholder="e.g. 9876543210"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-violet-500 transition-all font-medium font-mono"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">New Password (Min 6 chars)</label>
+                  <input
+                    type="password"
+                    value={resetPassword}
+                    onChange={(e) => setResetPassword(e.target.value)}
+                    placeholder="••••••••"
+                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-violet-500 transition-all font-medium font-mono"
+                    required
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={resetSubmitting}
+                  className="w-full bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs py-2.5 px-4 rounded-xl transition-all shadow-lg hover:shadow-violet-600/10 disabled:opacity-50 flex items-center justify-center gap-2 cursor-pointer"
+                >
+                  {resetSubmitting ? (
+                    <>
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      Resetting Password...
+                    </>
+                  ) : (
+                    'Confirm Password Reset'
+                  )}
+                </button>
+              </form>
+            ) : (
+              <div className="p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl text-[11px] text-amber-400 leading-normal text-center">
+                ⚠️ Password reset and settings administration are restricted to the primary property owner.
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
+      {toast && (
+        <Toast
+          message={toast.message}
+          type={toast.type}
+          onClose={() => setToast(null)}
+        />
+      )}
     </div>
   );
 }
