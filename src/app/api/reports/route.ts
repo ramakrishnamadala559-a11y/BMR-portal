@@ -73,40 +73,49 @@ export async function GET(request: Request) {
       oldestStudentPromise
     ]);
 
+    // Cap all analytical data to dates before August 2026 (i.e. July 2026 and earlier)
+    const capLimitDate = new Date('2026-08-01T00:00:00Z');
+
+    const filteredInvoices = invoices.filter(inv => new Date(inv.createdAt) < capLimitDate);
+    const filteredPayments = payments.filter(p => new Date(p.date) < capLimitDate);
+    const filteredExpenses = expenses.filter(e => new Date(e.date) < capLimitDate);
+
+    const oldestStudentDate = oldestStudent && new Date(oldestStudent.createdAt) < capLimitDate
+      ? new Date(oldestStudent.createdAt)
+      : new Date('2026-07-01T00:00:00Z');
+
     const totalBeds = beds.length;
     const occupiedBeds = beds.filter(b => b.status === 'OCCUPIED').length;
     const availableBeds = beds.filter(b => b.status === 'AVAILABLE').length;
     const reservedBeds = beds.filter(b => b.status === 'RESERVED').length;
     const maintenanceBeds = beds.filter(b => b.status === 'MAINTENANCE').length;
 
-    const totalInvoices = invoices.reduce((sum, inv) => sum + inv.total, 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + e.amount, 0);
-    const pendingRent = invoices.reduce((sum, inv) => sum + inv.balance, 0);
+    const totalInvoices = filteredInvoices.reduce((sum, inv) => sum + inv.total, 0);
+    const totalExpenses = filteredExpenses.reduce((sum, e) => sum + e.amount, 0);
+    const pendingRent = filteredInvoices.reduce((sum, inv) => sum + inv.balance, 0);
     const netIncome = totalInvoices - totalExpenses;
 
-    // Calculate Today's Collections
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-    const todaysCollections = payments
-      .filter(p => new Date(p.date) >= today)
-      .reduce((sum, p) => sum + p.amount, 0);
+    // Calculate Today's Collections (capping today at July 31, 2026, meaning 0 today collections since we are in August)
+    const todaysCollections = 0;
 
-    // Calculate current month generated bills, collections & expenses
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const monthlyRentCollections = invoices
-      .filter(inv => new Date(inv.createdAt) >= firstDayOfMonth)
+    // Calculate monthly values using July 2026 (the last active month before August 2026)
+    const lastMonthStart = new Date('2026-07-01T00:00:00Z');
+    const lastMonthEnd = new Date('2026-08-01T00:00:00Z');
+
+    const monthlyRentCollections = filteredInvoices
+      .filter(inv => new Date(inv.createdAt) >= lastMonthStart && new Date(inv.createdAt) < lastMonthEnd)
       .reduce((sum, inv) => sum + inv.total, 0);
 
-    const monthlyCollectedPayments = payments
-      .filter(p => new Date(p.date) >= firstDayOfMonth)
+    const monthlyCollectedPayments = filteredPayments
+      .filter(p => new Date(p.date) >= lastMonthStart && new Date(p.date) < lastMonthEnd)
       .reduce((sum, p) => sum + p.amount, 0);
 
-    const monthlyExpenses = expenses
-      .filter(e => new Date(e.date) >= firstDayOfMonth)
+    const monthlyExpenses = filteredExpenses
+      .filter(e => new Date(e.date) >= lastMonthStart && new Date(e.date) < lastMonthEnd)
       .reduce((sum, e) => sum + e.amount, 0);
 
-    // 3. Compile Monthly Trends (start from when students were added)
-    const startYearMonth = oldestStudent ? new Date(oldestStudent.createdAt) : new Date();
+    // 3. Compile Monthly Trends (start from oldest entry capped up to July 2026)
+    const startYearMonth = new Date(oldestStudentDate);
     startYearMonth.setDate(1);
     startYearMonth.setHours(0, 0, 0, 0);
 
@@ -114,7 +123,7 @@ export async function GET(request: Request) {
     const monthNames = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
 
     let currentIter = new Date(startYearMonth);
-    const tempToday = new Date(today.getFullYear(), today.getMonth(), 1);
+    const tempToday = new Date('2026-07-01T00:00:00Z');
 
     if (currentIter > tempToday) {
       currentIter = new Date(tempToday);
@@ -128,7 +137,7 @@ export async function GET(request: Request) {
     }
 
     // Populate revenue from generated invoices
-    invoices.forEach(inv => {
+    filteredInvoices.forEach(inv => {
       const date = new Date(inv.createdAt);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       if (monthlyTrendMap[key]) {
@@ -137,7 +146,7 @@ export async function GET(request: Request) {
     });
 
     // Populate expenses
-    expenses.forEach(e => {
+    filteredExpenses.forEach(e => {
       const date = new Date(e.date);
       const key = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
       if (monthlyTrendMap[key]) {
@@ -149,7 +158,7 @@ export async function GET(request: Request) {
 
     // 4. Compile Expense Categories
     const expenseCategoriesMap: { [key: string]: number } = {};
-    expenses.forEach(e => {
+    filteredExpenses.forEach(e => {
       expenseCategoriesMap[e.category] = (expenseCategoriesMap[e.category] || 0) + e.amount;
     });
 
