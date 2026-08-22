@@ -39,15 +39,37 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   // Profile modal and password reset states
   const [profileOpen, setProfileOpen] = useState(false);
-  const [resetPhone, setResetPhone] = useState('');
+  const [resetType, setResetType] = useState<'student' | 'staff'>('student');
+  const [selectedUserId, setSelectedUserId] = useState('');
   const [resetPassword, setResetPassword] = useState('');
   const [resetSubmitting, setResetSubmitting] = useState(false);
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' | 'info' } | null>(null);
 
+  const [students, setStudents] = useState<any[]>([]);
+  const [staffList, setStaffList] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (user && user.role === 'OWNER') {
+      fetch('/api/students')
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) setStudents(data);
+        })
+        .catch((err) => console.error('Failed to load students:', err));
+
+      fetch('/api/staff')
+        .then((res) => res.json())
+        .then((data) => {
+          if (Array.isArray(data)) setStaffList(data);
+        })
+        .catch((err) => console.error('Failed to load staff:', err));
+    }
+  }, [user]);
+
   const handleProfileResetPassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!resetPhone || resetPhone.trim().length < 10) {
-      setToast({ message: 'Please enter a valid 10-digit registered phone number', type: 'error' });
+    if (!selectedUserId) {
+      setToast({ message: 'Please select a user account to reset', type: 'error' });
       return;
     }
     if (!resetPassword || resetPassword.trim().length < 6) {
@@ -57,20 +79,27 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
     setResetSubmitting(true);
     try {
+      const payload: any = {
+        newPassword: resetPassword.trim()
+      };
+
+      if (resetType === 'student') {
+        payload.phone = selectedUserId;
+      } else {
+        payload.targetUserId = selectedUserId;
+      }
+
       const res = await fetch('/api/settings/reset-password', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          phone: resetPhone.trim(),
-          newPassword: resetPassword.trim()
-        })
+        body: JSON.stringify(payload)
       });
 
       const data = await res.json();
       if (res.ok) {
         setToast({ message: data.message || 'Password reset successfully!', type: 'success' });
         setResetPassword('');
-        setResetPhone('');
+        setSelectedUserId('');
       } else {
         setToast({ message: data.error || 'Failed to reset password', type: 'error' });
       }
@@ -460,26 +489,59 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {user.role === 'OWNER' ? (
               <form onSubmit={handleProfileResetPassword} className="space-y-4 pt-4 border-t border-slate-800/60">
                 <div className="flex justify-between items-center">
-                  <h4 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Reset User Password</h4>
+                  <h4 className="text-xs font-bold text-slate-350 uppercase tracking-wider">Reset User Password</h4>
                   <button
                     type="button"
-                    onClick={() => setResetPhone(user.phone)}
+                    onClick={() => {
+                      setResetType('staff');
+                      setSelectedUserId(user.id);
+                    }}
                     className="text-[10px] text-violet-400 hover:text-violet-300 font-bold uppercase tracking-wider hover:underline cursor-pointer"
                   >
                     Reset My Password
                   </button>
                 </div>
 
-                <div>
-                  <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Registered Phone Number</label>
-                  <input
-                    type="text"
-                    value={resetPhone}
-                    onChange={(e) => setResetPhone(e.target.value)}
-                    placeholder="e.g. 9876543210"
-                    className="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-2.5 text-xs text-white placeholder-slate-600 focus:outline-none focus:border-violet-500 transition-all font-medium font-mono"
-                    required
-                  />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Account Type</label>
+                    <select
+                      value={resetType}
+                      onChange={(e) => {
+                        setResetType(e.target.value as 'student' | 'staff');
+                        setSelectedUserId('');
+                      }}
+                      className="w-full bg-slate-950 border border-slate-850 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-all font-semibold cursor-pointer"
+                    >
+                      <option value="student">Student / Tenant</option>
+                      <option value="staff">Staff Member</option>
+                    </select>
+                  </div>
+
+                  <div>
+                    <label className="text-slate-500 block mb-1 font-bold text-[9px] uppercase tracking-wider">Select Account</label>
+                    <select
+                      value={selectedUserId}
+                      onChange={(e) => setSelectedUserId(e.target.value)}
+                      className="w-full bg-slate-950 border border-slate-850 focus:border-violet-500 rounded-xl px-3 py-2 text-xs text-white focus:outline-none transition-all font-semibold cursor-pointer"
+                      required
+                    >
+                      <option value="">-- Choose User --</option>
+                      {resetType === 'student' ? (
+                        students.map((s) => (
+                          <option key={s.id} value={s.phone}>
+                            {s.name} ({s.phone})
+                          </option>
+                        ))
+                      ) : (
+                        staffList.map((st) => (
+                          <option key={st.id} value={st.id}>
+                            {st.name} ({st.role.toLowerCase()})
+                          </option>
+                        ))
+                      )}
+                    </select>
+                  </div>
                 </div>
 
                 <div>
