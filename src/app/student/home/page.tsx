@@ -60,6 +60,13 @@ export default function StudentHomePage() {
       return;
     }
 
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem(`roommates_${profile.id}`);
+      if (cached) {
+        setRoommates(JSON.parse(cached));
+      }
+    }
+
     try {
       // Fetch Roommates (beds in the same room)
       if (profile.bed && profile.bed.roomId) {
@@ -69,6 +76,9 @@ export default function StudentHomePage() {
           // Filter out themselves to get actual roommates
           const mates = beds.filter((b: any) => b.studentId && b.studentId !== profile.id);
           setRoommates(mates);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`roommates_${profile.id}`, JSON.stringify(mates));
+          }
         }
       } else {
         setRoommates([]);
@@ -79,6 +89,14 @@ export default function StudentHomePage() {
   };
 
   const fetchAnnouncements = async (profile: any) => {
+    const cacheKey = profile ? `announcements_${profile.id}` : 'announcements_public';
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem(cacheKey);
+      if (cached) {
+        setAnnouncements(JSON.parse(cached));
+      }
+    }
+
     try {
       let url = '/api/public/announcements';
       const params = new URLSearchParams();
@@ -101,6 +119,9 @@ export default function StudentHomePage() {
       if (res.ok) {
         const data = await res.json();
         setAnnouncements(data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(cacheKey, JSON.stringify(data));
+        }
       }
     } catch (err) {
       console.error('Failed to load announcements:', err);

@@ -58,6 +58,17 @@ export default function StudentDashboardPage() {
       return;
     }
 
+    if (typeof window !== 'undefined') {
+      const cachedInvoices = localStorage.getItem(`invoices_${studentProfile.id}`);
+      const cachedRoommates = localStorage.getItem(`roommates_pay_${studentProfile.id}`);
+      if (cachedInvoices) {
+        setInvoices(JSON.parse(cachedInvoices));
+      }
+      if (cachedRoommates) {
+        setRoommates(JSON.parse(cachedRoommates));
+      }
+    }
+
     try {
       // 1. Fetch Invoices (restricted to self in backend API)
       const invRes = await fetch('/api/invoices');
@@ -65,6 +76,9 @@ export default function StudentDashboardPage() {
       if (invRes.ok) {
         invs = await invRes.json();
         setInvoices(invs);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem(`invoices_${studentProfile.id}`, JSON.stringify(invs));
+        }
       }
 
       // 2. Fetch Roommates (beds in the same room)
@@ -75,6 +89,9 @@ export default function StudentDashboardPage() {
           // Filter out themselves to get actual roommates
           const mates = beds.filter((b: any) => b.studentId && b.studentId !== studentProfile.id);
           setRoommates(mates);
+          if (typeof window !== 'undefined') {
+            localStorage.setItem(`roommates_pay_${studentProfile.id}`, JSON.stringify(mates));
+          }
         }
       }
     } catch (err) {

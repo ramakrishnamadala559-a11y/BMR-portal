@@ -34,11 +34,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
 
   const fetchSettings = async () => {
+    if (typeof window !== 'undefined') {
+      const cached = localStorage.getItem('cached_settings');
+      if (cached) {
+        setSettings(JSON.parse(cached));
+      }
+    }
+
     try {
       const res = await fetch('/api/settings');
       if (res.ok) {
         const data = await res.json();
         setSettings(data);
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('cached_settings', JSON.stringify(data));
+        }
       }
     } catch (err) {
       console.error('Failed to fetch settings:', err);
@@ -46,6 +56,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const fetchCurrentUser = async () => {
+    if (typeof window !== 'undefined') {
+      const cachedUser = localStorage.getItem('cached_user');
+      const cachedProfile = localStorage.getItem('cached_student_profile');
+      if (cachedUser) {
+        setUser(JSON.parse(cachedUser));
+      }
+      if (cachedProfile) {
+        setStudentProfile(JSON.parse(cachedProfile));
+      }
+    }
+
     try {
       const res = await fetch('/api/auth/me');
       if (res.ok) {
@@ -54,18 +75,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setStudentProfile(data.studentProfile);
         if (typeof window !== 'undefined') {
           localStorage.setItem('has_session', 'true');
+          localStorage.setItem('cached_user', JSON.stringify(data.user));
+          if (data.studentProfile) {
+            localStorage.setItem('cached_student_profile', JSON.stringify(data.studentProfile));
+          } else {
+            localStorage.removeItem('cached_student_profile');
+          }
         }
       } else {
         setUser(null);
         setStudentProfile(null);
         if (typeof window !== 'undefined') {
           localStorage.removeItem('has_session');
+          localStorage.removeItem('cached_user');
+          localStorage.removeItem('cached_student_profile');
         }
       }
     } catch (err) {
-      console.error('Failed to fetch auth state:', err);
-      setUser(null);
-      setStudentProfile(null);
+      console.error('Failed to fetch auth state (offline status), retaining cached session:', err);
     } finally {
       setLoading(false);
     }
@@ -112,6 +139,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setStudentProfile(null);
       if (typeof window !== 'undefined') {
         localStorage.removeItem('has_session');
+        localStorage.removeItem('cached_user');
+        localStorage.removeItem('cached_student_profile');
       }
       router.push('/login');
     }
