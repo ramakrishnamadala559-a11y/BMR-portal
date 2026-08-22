@@ -31,13 +31,26 @@ export default function BillingPage() {
   const [toast, setToast] = useState<{ message: string; type: 'success' | 'error' } | null>(null);
 
   // Navigation state
-  const [activeTab, setActiveTab] = useState<'invoices' | 'payments'>('invoices');
+  const [activeTab, setActiveTab] = useState<'invoices' | 'paid_invoices' | 'payments'>('invoices');
+  const [monthFilter, setMonthFilter] = useState('');
 
   // Filter states
   const [search, setSearch] = useState('');
-  const [statusFilter, setStatusFilter] = useState('');
   const [buildings, setBuildings] = useState<any[]>([]);
   const [buildingFilter, setBuildingFilter] = useState('');
+
+  const getMonthOptions = () => {
+    const options = [];
+    const date = new Date();
+    for (let i = 0; i < 12; i++) {
+      const year = date.getFullYear();
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const label = date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      options.push({ value: `${year}-${month}`, label });
+      date.setMonth(date.getMonth() - 1);
+    }
+    return options;
+  };
 
   // Modals state
   const [paymentModalOpen, setPaymentModalOpen] = useState(false);
@@ -53,7 +66,7 @@ export default function BillingPage() {
 
   const fetchBillingData = async () => {
     try {
-      const resInvoices = await fetch(`/api/invoices?search=${search}&status=${statusFilter}&buildingId=${buildingFilter}`);
+      const resInvoices = await fetch(`/api/invoices?search=${search}&buildingId=${buildingFilter}`);
       const resPayments = await fetch('/api/payments');
 
       if (resInvoices.ok && resPayments.ok) {
@@ -87,7 +100,7 @@ export default function BillingPage() {
 
   useEffect(() => {
     fetchBillingData();
-  }, [search, statusFilter, buildingFilter]);
+  }, [search, buildingFilter]);
 
   const handlePayClick = (invoice: any) => {
     setSelectedInvoice(invoice);
@@ -203,6 +216,36 @@ export default function BillingPage() {
     }
   };
 
+  const filteredInvoices = invoices.filter(inv => {
+    if (monthFilter) {
+      const invDate = new Date(inv.createdAt);
+      const y = invDate.getFullYear();
+      const m = String(invDate.getMonth() + 1).padStart(2, '0');
+      if (`${y}-${m}` !== monthFilter) return false;
+    }
+    return true;
+  });
+
+  const unpaidInvoices = filteredInvoices.filter(inv => inv.balance > 0);
+  const paidInvoices = filteredInvoices.filter(inv => inv.balance === 0);
+
+  const filteredPayments = payments.filter(pay => {
+    if (search) {
+      const name = pay.student?.name || '';
+      if (!name.toLowerCase().includes(search.toLowerCase())) return false;
+    }
+    if (buildingFilter) {
+      if (pay.student?.bed?.buildingId !== buildingFilter) return false;
+    }
+    if (monthFilter) {
+      const payDate = new Date(pay.date);
+      const y = payDate.getFullYear();
+      const m = String(payDate.getMonth() + 1).padStart(2, '0');
+      if (`${y}-${m}` !== monthFilter) return false;
+    }
+    return true;
+  });
+
   return (
     <div className="space-y-8 animate-slide-in">
       {/* Title */}
@@ -222,7 +265,18 @@ export default function BillingPage() {
           }`}
         >
           <Receipt className="h-4 w-4" />
-          Pending & Invoices
+          Pending & Unpaid
+        </button>
+        <button
+          onClick={() => setActiveTab('paid_invoices')}
+          className={`flex items-center gap-2 px-5 py-2.5 text-xs font-bold rounded-lg transition-all cursor-pointer ${
+            activeTab === 'paid_invoices'
+              ? 'bg-slate-950 text-white border border-slate-800/80 shadow-md'
+              : 'text-slate-400 hover:text-slate-200'
+          }`}
+        >
+          <TrendingUp className="h-4 w-4 text-emerald-450" />
+          Fully Paid Collections
         </button>
         <button
           onClick={() => setActiveTab('payments')}
@@ -233,74 +287,79 @@ export default function BillingPage() {
           }`}
         >
           <History className="h-4 w-4" />
-          Payment History
+          Payment History Log
         </button>
       </div>
 
-      {/* INVOICES SECTION */}
+      {/* Filter Bar */}
+      <div className="bg-slate-900 border border-slate-800/80 p-4 rounded-2xl shadow-xl flex flex-col md:flex-row gap-4 items-center">
+        <div className="relative flex-1 w-full">
+          <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
+            <Search className="h-4 w-4" />
+          </span>
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={
+              activeTab === 'payments'
+                ? "Search by student name..."
+                : "Search by student name or invoice number..."
+            }
+            className="w-full bg-slate-950/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-200 focus:outline-none placeholder-slate-600"
+          />
+        </div>
+
+        {/* Month Selector */}
+        <div className="w-full md:w-48">
+          <select
+            value={monthFilter}
+            onChange={(e) => setMonthFilter(e.target.value)}
+            className="w-full bg-slate-955/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none cursor-pointer"
+          >
+            <option value="">All Months</option>
+            {getMonthOptions().map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {/* Block Selector */}
+        <div className="w-full md:w-48">
+          <select
+            value={buildingFilter}
+            onChange={(e) => setBuildingFilter(e.target.value)}
+            className="w-full bg-slate-955/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none cursor-pointer"
+          >
+            <option value="">All Blocks</option>
+            {buildings.map((b) => (
+              <option key={b.id} value={b.id}>
+                {b.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      </div>
+
+      {/* UNPAID INVOICES SECTION */}
       {activeTab === 'invoices' && (
-        <div className="space-y-6">
-          {/* Filters */}
-          <div className="bg-slate-900 border border-slate-800/80 p-4 rounded-2xl shadow-xl flex flex-col md:flex-row gap-4 items-center">
-            <div className="relative flex-1 w-full">
-              <span className="absolute inset-y-0 left-0 flex items-center pl-3.5 pointer-events-none text-slate-500">
-                <Search className="h-4 w-4" />
-              </span>
-              <input
-                type="text"
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-                placeholder="Search by student name or invoice number..."
-                className="w-full bg-slate-950/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 pl-10 pr-4 text-xs text-slate-200 focus:outline-none placeholder-slate-600"
-              />
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 text-violet-500 animate-spin" />
             </div>
-
-             <div className="w-full md:w-48">
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-              >
-                <option value="">All Invoices</option>
-                <option value="PAID">Paid</option>
-                <option value="PENDING">Pending</option>
-                <option value="PARTIALLY_PAID">Partially Paid</option>
-                <option value="OVERDUE">Overdue</option>
-              </select>
+          ) : unpaidInvoices.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="h-10 w-10 text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-400 text-sm">No unpaid invoices found</p>
             </div>
-
-            <div className="w-full md:w-48">
-              <select
-                value={buildingFilter}
-                onChange={(e) => setBuildingFilter(e.target.value)}
-                className="w-full bg-slate-950/60 border border-slate-850 focus:border-violet-500/80 rounded-xl py-2.5 px-4 text-xs text-slate-300 focus:outline-none"
-              >
-                <option value="">All Blocks</option>
-                {buildings.map((b) => (
-                  <option key={b.id} value={b.id}>
-                    {b.name}
-                  </option>
-                ))}
-              </select>
-            </div>
-          </div>
-
-          {/* Invoices Table */}
-          <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
-            {loading ? (
-              <div className="flex justify-center items-center py-12">
-                <Loader2 className="h-8 w-8 text-violet-500 animate-spin" />
-              </div>
-            ) : invoices.length === 0 ? (
-              <div className="text-center py-12">
-                <Receipt className="h-10 w-10 text-slate-600 mx-auto mb-3" />
-                <p className="text-slate-400 text-sm">No invoices found</p>
-              </div>
-            ) : (
-              <div>
-                <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse">
+          ) : (
+            <div>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
                   <thead>
                     <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
                       <th className="py-4 px-6">Invoice No</th>
@@ -315,13 +374,12 @@ export default function BillingPage() {
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-slate-850/60 text-xs">
-                    {invoices.map((inv) => (
+                    {unpaidInvoices.map((inv) => (
                       <tr key={inv.id} className="hover:bg-slate-855/20 transition-colors">
                         <td className="py-4 px-6 font-mono text-slate-200 font-bold">{inv.invoiceNumber}</td>
                         <td className="py-4 px-6 font-mono text-violet-400 font-semibold">{inv.studentId}</td>
                         <td className="py-4 px-6 font-bold text-slate-100">{inv.studentName}</td>
                         <td className="py-4 px-6 text-slate-400">Room {inv.roomNumber} ({inv.bedName})</td>
-
                         <td className="py-4 px-6 text-slate-400">
                           <div>{inv.dueDate ? new Date(inv.dueDate).toLocaleDateString('en-GB') : 'N/A'}</div>
                           {inv.payments && inv.payments.length > 0 && (
@@ -368,10 +426,90 @@ export default function BillingPage() {
                     ))}
                   </tbody>
                 </table>
-                </div>
               </div>
-            )}
-          </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* FULLY PAID INVOICES SECTION */}
+      {activeTab === 'paid_invoices' && (
+        <div className="bg-slate-900 border border-slate-800/80 rounded-2xl shadow-xl overflow-hidden">
+          {loading ? (
+            <div className="flex justify-center items-center py-12">
+              <Loader2 className="h-8 w-8 text-violet-500 animate-spin" />
+            </div>
+          ) : paidInvoices.length === 0 ? (
+            <div className="text-center py-12">
+              <Receipt className="h-10 w-10 text-slate-600 mx-auto mb-3" />
+              <p className="text-slate-400 text-sm">No fully paid invoices found</p>
+            </div>
+          ) : (
+            <div>
+              <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead>
+                    <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
+                      <th className="py-4 px-6">Invoice No</th>
+                      <th className="py-4 px-6">Stu ID</th>
+                      <th className="py-4 px-6">Student</th>
+                      <th className="py-4 px-6">Room / Bed</th>
+                      <th className="py-4 px-6">Payment Date</th>
+                      <th className="py-4 px-6">Amount Paid</th>
+                      <th className="py-4 px-6">Status</th>
+                      <th className="py-4 px-6 text-right">Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850/60 text-xs">
+                    {paidInvoices.map((inv) => (
+                      <tr key={inv.id} className="hover:bg-slate-855/20 transition-colors">
+                        <td className="py-4 px-6 font-mono text-slate-200 font-bold">{inv.invoiceNumber}</td>
+                        <td className="py-4 px-6 font-mono text-violet-400 font-semibold">{inv.studentId}</td>
+                        <td className="py-4 px-6 font-bold text-slate-100">{inv.studentName}</td>
+                        <td className="py-4 px-6 text-slate-400">Room {inv.roomNumber} ({inv.bedName})</td>
+                        <td className="py-4 px-6 text-slate-400 font-semibold text-emerald-500">
+                          {inv.payments && inv.payments.length > 0 ? (
+                            new Date([...inv.payments].sort((a: any, b: any) => new Date(b.date).getTime() - new Date(a.date).getTime())[0].date).toLocaleDateString('en-GB')
+                          ) : (
+                            'N/A'
+                          )}
+                        </td>
+                        <td className="py-4 px-6 font-bold text-slate-100">
+                          ₹{inv.total.toLocaleString('en-IN')}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className={`px-2 py-0.5 rounded-full border text-[9px] font-bold uppercase ${getInvoiceBadge(inv.status)}`}>
+                            {inv.status.replace('_', ' ')}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 text-right">
+                          <div className="flex justify-end gap-2.5">
+                            <button
+                              onClick={() => handlePrintClick(inv)}
+                              className="p-1.5 hover:bg-slate-850 text-slate-400 hover:text-slate-100 rounded-lg transition-colors cursor-pointer"
+                              title="Print Receipt"
+                            >
+                              <Printer className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                setSelectedInvoice(inv);
+                                setPrintModalOpen(true);
+                              }}
+                              className="px-2.5 py-1.5 bg-emerald-600/10 border border-emerald-500/20 hover:bg-emerald-600 hover:text-white rounded-lg text-emerald-400 font-bold transition-all flex items-center gap-1 cursor-pointer"
+                            >
+                              View Statement
+                            </button>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
         </div>
       )}
 
@@ -382,7 +520,7 @@ export default function BillingPage() {
             <div className="flex justify-center items-center py-12">
               <Loader2 className="h-8 w-8 text-violet-500 animate-spin" />
             </div>
-          ) : payments.length === 0 ? (
+          ) : filteredPayments.length === 0 ? (
             <div className="text-center py-12">
               <History className="h-10 w-10 text-slate-600 mx-auto mb-3" />
               <p className="text-slate-400 text-sm">No payment history logged</p>
@@ -392,43 +530,43 @@ export default function BillingPage() {
               <span className="text-[10px] text-slate-500 font-bold uppercase tracking-wider block p-4 pb-0 lg:hidden">↔ Swipe table horizontally to see all columns & operations</span>
               <div className="overflow-x-auto">
                 <table className="w-full text-left border-collapse">
-                <thead>
-                  <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
-                    <th className="py-4 px-6">Receipt ID</th>
-                    <th className="py-4 px-6">Stu ID</th>
-                    <th className="py-4 px-6">Student Name</th>
-                    <th className="py-4 px-6">Invoice Number</th>
-                    <th className="py-4 px-6">Date</th>
-                    <th className="py-4 px-6">Payment Method</th>
-                    <th className="py-4 px-6">Amount Collected</th>
-                    <th className="py-4 px-6">Recorded By</th>
-                    <th className="py-4 px-6">Notes</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-850/60 text-xs">
-                  {payments.map((pay) => (
-                    <tr key={pay.id} className="hover:bg-slate-855/20 transition-colors">
-                      <td className="py-4 px-6 font-mono text-slate-200 font-bold">{pay.paymentId}</td>
-                      <td className="py-4 px-6 font-mono text-violet-400 font-semibold">{pay.studentId}</td>
-                      <td className="py-4 px-6 font-bold text-slate-100">{pay.student.name}</td>
-                      <td className="py-4 px-6 text-slate-400 font-mono">
-                        {pay.invoice ? pay.invoice.invoiceNumber : 'Manual / Security'}
-                      </td>
-                      <td className="py-4 px-6 text-slate-400">
-                        {new Date(pay.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
-                      </td>
-                      <td className="py-4 px-6">
-                        <span className="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[10px] text-slate-300 font-bold rounded">
-                          {pay.method}
-                        </span>
-                      </td>
-                      <td className="py-4 px-6 font-bold text-emerald-400">₹{pay.amount.toLocaleString('en-IN')}</td>
-                      <td className="py-4 px-6 text-slate-400">{pay.recordedBy}</td>
-                      <td className="py-4 px-6 text-slate-500 italic max-w-xs truncate">{pay.notes || '-'}</td>
+                  <thead>
+                    <tr className="bg-slate-950/30 text-slate-400 text-[10px] uppercase font-bold tracking-wider border-b border-slate-800/60">
+                      <th className="py-4 px-6">Receipt ID</th>
+                      <th className="py-4 px-6">Stu ID</th>
+                      <th className="py-4 px-6">Student Name</th>
+                      <th className="py-4 px-6">Invoice Number</th>
+                      <th className="py-4 px-6">Date</th>
+                      <th className="py-4 px-6">Payment Method</th>
+                      <th className="py-4 px-6">Amount Collected</th>
+                      <th className="py-4 px-6">Recorded By</th>
+                      <th className="py-4 px-6">Notes</th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
+                  </thead>
+                  <tbody className="divide-y divide-slate-850/60 text-xs">
+                    {filteredPayments.map((pay) => (
+                      <tr key={pay.id} className="hover:bg-slate-855/20 transition-colors">
+                        <td className="py-4 px-6 font-mono text-slate-200 font-bold">{pay.paymentId}</td>
+                        <td className="py-4 px-6 font-mono text-violet-400 font-semibold">{pay.studentId}</td>
+                        <td className="py-4 px-6 font-bold text-slate-100">{pay.student.name}</td>
+                        <td className="py-4 px-6 text-slate-400 font-mono">
+                          {pay.invoice ? pay.invoice.invoiceNumber : 'Manual / Security'}
+                        </td>
+                        <td className="py-4 px-6 text-slate-400">
+                          {new Date(pay.date).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}
+                        </td>
+                        <td className="py-4 px-6">
+                          <span className="px-2 py-0.5 bg-slate-950 border border-slate-800 text-[10px] text-slate-300 font-bold rounded">
+                            {pay.method}
+                          </span>
+                        </td>
+                        <td className="py-4 px-6 font-bold text-emerald-400">₹{pay.amount.toLocaleString('en-IN')}</td>
+                        <td className="py-4 px-6 text-slate-400">{pay.recordedBy}</td>
+                        <td className="py-4 px-6 text-slate-500 italic max-w-xs truncate">{pay.notes || '-'}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
               </div>
             </div>
           )}

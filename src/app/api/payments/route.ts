@@ -36,7 +36,11 @@ export async function GET(request: Request) {
           : undefined
       },
       include: {
-        student: true,
+        student: {
+          include: {
+            bed: true
+          }
+        },
         invoice: true
       },
       orderBy: {
